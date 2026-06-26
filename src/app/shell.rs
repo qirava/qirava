@@ -18,6 +18,8 @@ use crate::app::{document, respond_html, Css, Meta};
 const NAV: &[(&str, &str)] = &[
     ("Docs", "/docs"),
     ("Components", "/components"),
+    ("API", "/api"),
+    ("Architecture", "/architecture"),
     ("Products", "/products"),
     ("Roadmap", "/roadmap"),
 ];

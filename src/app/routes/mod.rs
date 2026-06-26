@@ -2,6 +2,8 @@
 //! that the worker calls for that page's URL. Wire a new page by adding its
 //! module here and listing it in `PAGES` in `main.rs`.
 
+pub mod api;
+pub mod architecture;
 pub mod components;
 pub mod docs;
 pub mod index;

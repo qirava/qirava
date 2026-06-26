@@ -58,6 +58,7 @@ struct Page {
 const PAGES: &[Page] = &[
     Page { id: "index", path: "/", handler: app::routes::index::respond },
     Page { id: "products", path: "/products", handler: app::routes::products::respond },
+    Page { id: "architecture", path: "/architecture", handler: app::routes::architecture::respond },
     Page { id: "roadmap", path: "/roadmap", handler: app::routes::roadmap::respond },
     // Docs framework (left sidebar -> pages, on-page TOC, prev/next, copy).
     Page { id: "docs", path: "/docs", handler: app::routes::docs::respond },
@@ -69,6 +70,8 @@ const PAGES: &[Page] = &[
     Page { id: "components-badge", path: "/components/badge", handler: app::routes::components::respond_badge },
     Page { id: "components-card", path: "/components/card", handler: app::routes::components::respond_card },
     Page { id: "components-tabs", path: "/components/tabs", handler: app::routes::components::respond_tabs },
+    // Products API reference, generated from the live qdms `/api/spec` catalog.
+    Page { id: "api", path: "/api", handler: app::routes::api::respond },
 ];
 
 fn main() -> std::io::Result<()> {
