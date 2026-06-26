@@ -6,7 +6,7 @@
 //! collects the chrome's own component CSS into the same accumulator, and hands
 //! the lot to [`document`] for the full `<html>` + framed response.
 
-use tqquill_design::{Logo, Mark, NavLink, Navbar};
+use tqquill_design::{NavLink, Navbar};
 use tqquill_view::{el, text, Node};
 
 use crate::app::{document, respond_html, Css, Meta};
@@ -19,14 +19,44 @@ const NAV: &[(&str, &str)] = &[
     ("Roadmap", "/roadmap"),
 ];
 
-/// The brand logo (the real Qirava wordmark), linked home.
-fn brand() -> tqquill_design::Styled {
-    Logo::new()
-        .mark(Mark::Wordmark)
-        .height(26)
-        .href("/")
-        .label("Qirava")
-        .render()
+/// The real Qirava brand wordmark (the source SVGs from the brand assets),
+/// linked home. Two variants ship — the dark-mode wordmark (light text) and the
+/// light-mode wordmark (dark text) — and [`brand_css`] shows the right one for
+/// the active `data-q-theme`, exactly as the brand usage rules require. They are
+/// `<img>` (referencing the copied source files), not inlined, so their shared
+/// gradient ids cannot collide.
+fn brand() -> Node {
+    el("a")
+        .class("q-brand")
+        .attr("href", "/")
+        .attr("aria-label", "Qirava — home")
+        .child(
+            el("img")
+                .class("q-brand__logo q-brand__logo--dark")
+                .attr("src", "/qirava-logo-dark.svg")
+                .attr("alt", "")
+                .attr("aria-hidden", "true")
+                .attr("width", "94")
+                .attr("height", "26"),
+        )
+        .child(
+            el("img")
+                .class("q-brand__logo q-brand__logo--light")
+                .attr("src", "/qirava-logo-light.svg")
+                .attr("alt", "")
+                .attr("aria-hidden", "true")
+                .attr("width", "94")
+                .attr("height", "26"),
+        )
+}
+
+/// Size the brand logo and swap the dark/light wordmark by theme (dark default).
+fn brand_css() -> &'static str {
+    ".q-brand{display:inline-flex;align-items:center;line-height:0}\
+     .q-brand__logo{height:26px;width:auto;display:block}\
+     .q-brand__logo--light{display:none}\
+     [data-q-theme=\"light\"] .q-brand__logo--dark{display:none}\
+     [data-q-theme=\"light\"] .q-brand__logo--light{display:block}"
 }
 
 /// Build the header nav. `active_path` marks the current top-level section so
@@ -39,7 +69,8 @@ fn header(css: &mut Css, active_path: &str) -> Node {
         .collect();
     links.push(NavLink::new("GitHub", "https://github.com/qirava/qirava"));
 
-    let mut nav = Navbar::new(links).label("Primary").brand(css.node(brand()));
+    css.push(brand_css().to_string());
+    let mut nav = Navbar::new(links).label("Primary").brand(brand());
     if let Some(i) = NAV.iter().position(|(_, href)| *href == active_path) {
         nav = nav.active(i);
     }

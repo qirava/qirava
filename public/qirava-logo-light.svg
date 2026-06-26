@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-labelledby="title desc">
-  <title id="title">Qirava Icon</title>
-  <desc id="desc">A transparent gradient Q mark with a central data core.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 100" role="img" aria-labelledby="title desc">
+  <title id="title">Qirava Logo Light</title>
+  <desc id="desc">Qirava light-mode wordmark with transparent gradient Q icon.</desc>
   <defs>
     <linearGradient id="qiravaGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#4F46E5"/>
@@ -10,4 +10,5 @@
   <circle cx="45" cy="45" r="30" fill="none" stroke="url(#qiravaGrad1)" stroke-width="12"/>
   <path d="M60 60 L85 85" fill="none" stroke="url(#qiravaGrad1)" stroke-width="12" stroke-linecap="round"/>
   <circle cx="45" cy="45" r="8" fill="#06B6D4"/>
+  <text x="116" y="62" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="44" font-weight="760" letter-spacing="0" fill="#0F172A">Qirava</text>
 </svg>
