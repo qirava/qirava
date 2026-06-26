@@ -7,7 +7,7 @@ license = "Apache-2.0"
 
 # ---------------------------------------------------------------------------
 # The Qirava website is itself a Qirava Quill app: a plain Rust binary that
-# depends on the DMS engine (`tqdms`) plus the Quill UI crates, registers its
+# depends on the DMS engine (`qdms`) plus the Quill UI crates, registers its
 # routes, and either SERVES server-rendered HTML over a worker (`cargo run`) or
 # EXPORTS a static `dist/` (`cargo run -- build`).
 #
@@ -16,16 +16,16 @@ license = "Apache-2.0"
 # `qquill/`, and `qpkgs/` under the Qirava root, so every path is `../`-relative.
 # ---------------------------------------------------------------------------
 [dependencies]
-tqdms           = { path = "../qdms" }
-tqexec          = { path = "../qpkgs/tqexec" }
-tqvalue         = { path = "../qpkgs/tqvalue" }
-tqquill-view    = { path = "../qquill/qquill-view" }
-tqquill-style   = { path = "../qquill/qquill-style" }
-tqquill-build   = { path = "../qquill/qquill-build" }
-tqquill-runtime = { path = "../qquill/qquill-runtime" }
-tqquill-design  = { path = "../qquill/qquill-design" }
-tqquill-theme   = { path = "../qquill/qquill-theme" }
-tqquill-icons   = { path = "../qquill/qquill-icons" }
+qdms           = { path = "../qdms" }
+qexec          = { path = "../qpkgs/qexec" }
+qvalue         = { path = "../qpkgs/qvalue" }
+qquill-view    = { path = "../qquill/qquill-view" }
+qquill-style   = { path = "../qquill/qquill-style" }
+qquill-build   = { path = "../qquill/qquill-build" }
+qquill-runtime = { path = "../qquill/qquill-runtime" }
+qquill-design  = { path = "../qquill/qquill-design" }
+qquill-theme   = { path = "../qquill/qquill-theme" }
+qquill-icons   = { path = "../qquill/qquill-icons" }
 
 [[bin]]
 name = "qirava-site"

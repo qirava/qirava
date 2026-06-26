@@ -4,9 +4,9 @@
 //! order and links out to the GitHub repo for the full pages. The full content
 //! migration is a later pass.
 
-use tqexec::FunctionResponse;
-use tqquill_design::{Card, Effect, Radius, Tone};
-use tqquill_view::{el, text, Node};
+use qexec::FunctionResponse;
+use qquill_design::{Card, Effect, Radius, Tone};
+use qquill_view::{el, text, Node};
 
 use crate::app::routes::{code_block, status_badge, CodeLine, Status};
 use crate::app::shell::page;
@@ -103,7 +103,7 @@ fn get_started() -> Node {
     let code = code_block(&[
         CodeLine::Comment("# clone with submodules and build the DMS"),
         CodeLine::Cmd("git clone --recursive https://github.com/qirava/qirava"),
-        CodeLine::Cmd("cargo build --release -p tqdms"),
+        CodeLine::Cmd("cargo build --release -p qdms"),
         CodeLine::Cmd("./target/release/qdms"),
         CodeLine::Comment("# Studio (UI) + API on 127.0.0.1:7179"),
         CodeLine::Comment("# the first-run bootstrap credential is printed once — save it"),

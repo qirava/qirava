@@ -3,9 +3,9 @@
 //! Sourced from `ARCHITECTURE_OVERVIEW.md` and `CLOUD_MULTITENANT.md §0`. No
 //! dates are promised — only state.
 
-use tqexec::FunctionResponse;
-use tqquill_design::{HeaderCell, Size, Table};
-use tqquill_view::{el, text, Node};
+use qexec::FunctionResponse;
+use qquill_design::{HeaderCell, Size, Table};
+use qquill_view::{el, text, Node};
 
 use crate::app::routes::{status_badge, Status};
 use crate::app::shell::page;
@@ -24,7 +24,7 @@ struct Row {
 
 const ROWS: &[Row] = &[
     Row { area: "Workers", capability: "before → handle → after pipeline; HTTP + WS + SSR/SSG/ISR on one port", status: Status::Built },
-    Row { area: "Executor", capability: "tqexec bounded executor — the single chokepoint to the engine", status: Status::Built },
+    Row { area: "Executor", capability: "qexec bounded executor — the single chokepoint to the engine", status: Status::Built },
     Row { area: "Function registry", capability: "one execute primitive; governance/KMS/db/jobs as registered functions", status: Status::Built },
     Row { area: "Engine + storage", capability: "the database engine, storage layer, and write-ahead log (WAL)", status: Status::Built },
     Row { area: "Governance / RBAC", capability: "QQL-level RBAC; custodian > admin > user > guest; single-use invites", status: Status::Built },

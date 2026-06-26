@@ -6,8 +6,8 @@
 //! collects the chrome's own component CSS into the same accumulator, and hands
 //! the lot to [`document`] for the full `<html>` + framed response.
 
-use tqquill_design::{NavLink, Navbar};
-use tqquill_view::{el, text, Node};
+use qquill_design::{NavLink, Navbar};
+use qquill_view::{el, text, Node};
 
 use crate::app::{document, respond_html, Css, Meta};
 
@@ -108,7 +108,7 @@ fn footer() -> Node {
 ///
 /// `content` is the route's `<main>`-and-below body; `css` is the accumulator it
 /// filled. This adds the chrome CSS, then renders the document and frames it.
-pub fn page(meta: &Meta, mut css: Css, content: Node) -> tqexec::FunctionResponse {
+pub fn page(meta: &Meta, mut css: Css, content: Node) -> qexec::FunctionResponse {
     let header = header(&mut css, meta.path);
 
     let body = el("div")

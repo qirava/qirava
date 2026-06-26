@@ -1,8 +1,8 @@
 //! `GET /` — the landing page. Pure server-rendered HTML, zero JavaScript.
 
-use tqexec::FunctionResponse;
-use tqquill_design::{Card, Effect, Radius, Size, Stat, Tone};
-use tqquill_view::{el, text, Node};
+use qexec::FunctionResponse;
+use qquill_design::{Card, Effect, Radius, Size, Stat, Tone};
+use qquill_view::{el, text, Node};
 
 use crate::app::routes::{code_block, inline_code, section, status_badge, CodeLine, Status};
 use crate::app::shell::page;
@@ -124,8 +124,8 @@ fn pillars(css: &mut Css) -> Node {
             "p-tq",
             "The tq* stdlib",
             "qpkgs",
-            "13 zero-dependency crates: the substrate tqexec (bounded executor) and \
-             tqvalue (value/ABI), plus array, object, string, math, number, convert, \
+            "13 zero-dependency crates: the substrate qexec (bounded executor) and \
+             qvalue (value/ABI), plus array, object, string, math, number, convert, \
              crypto, encoding, regex, time, and uuid — shared across every product.",
             Status::Built,
             "/products",
@@ -174,7 +174,7 @@ fn architecture() -> Node {
     section(
         Some("Architecture"),
         "The planner is the only door",
-        "One executor (tqexec) is the chokepoint. Governance/RBAC, KMS, the database, \
+        "One executor (qexec) is the chokepoint. Governance/RBAC, KMS, the database, \
          workers, and replication are all functions behind it.",
         prose,
     )
@@ -185,7 +185,7 @@ fn quickstart() -> Node {
     let code = code_block(&[
         CodeLine::Comment("# clone with submodules, build the DMS, run it"),
         CodeLine::Cmd("git clone --recursive https://github.com/qirava/qirava"),
-        CodeLine::Cmd("cargo build --release -p tqdms"),
+        CodeLine::Cmd("cargo build --release -p qdms"),
         CodeLine::Cmd("./target/release/qdms"),
         CodeLine::Comment("# UI + API on 127.0.0.1:7179 — first-run credential printed once"),
         CodeLine::Plain(""),

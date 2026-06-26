@@ -3,197 +3,197 @@
 version = 4
 
 [[package]]
+name = "qarray"
+version = "0.1.0"
+dependencies = [
+ "qexec",
+ "qvalue",
+]
+
+[[package]]
+name = "qconvert"
+version = "0.1.0"
+dependencies = [
+ "qexec",
+ "qvalue",
+]
+
+[[package]]
+name = "qcrypto"
+version = "0.1.0"
+dependencies = [
+ "qencoding",
+ "qexec",
+ "qvalue",
+]
+
+[[package]]
+name = "qdms"
+version = "0.1.0"
+dependencies = [
+ "qarray",
+ "qconvert",
+ "qcrypto",
+ "qencoding",
+ "qexec",
+ "qmath",
+ "qnumber",
+ "qobject",
+ "qquill-build",
+ "qquill-design",
+ "qquill-docs",
+ "qquill-runtime",
+ "qquill-style",
+ "qquill-theme",
+ "qquill-view",
+ "qregex",
+ "qstring",
+ "qtime",
+ "quuid",
+ "qvalue",
+]
+
+[[package]]
+name = "qencoding"
+version = "0.1.0"
+dependencies = [
+ "qexec",
+ "qvalue",
+]
+
+[[package]]
+name = "qexec"
+version = "0.1.0"
+
+[[package]]
 name = "qirava-site"
 version = "0.1.0"
 dependencies = [
- "tqdms",
- "tqexec",
- "tqquill-build",
- "tqquill-design",
- "tqquill-icons",
- "tqquill-runtime",
- "tqquill-style",
- "tqquill-theme",
- "tqquill-view",
- "tqvalue",
+ "qdms",
+ "qexec",
+ "qquill-build",
+ "qquill-design",
+ "qquill-icons",
+ "qquill-runtime",
+ "qquill-style",
+ "qquill-theme",
+ "qquill-view",
+ "qvalue",
 ]
 
 [[package]]
-name = "tqarray"
+name = "qmath"
 version = "0.1.0"
 dependencies = [
- "tqexec",
- "tqvalue",
+ "qexec",
+ "qvalue",
 ]
 
 [[package]]
-name = "tqconvert"
+name = "qnumber"
 version = "0.1.0"
 dependencies = [
- "tqexec",
- "tqvalue",
+ "qexec",
+ "qvalue",
 ]
 
 [[package]]
-name = "tqcrypto"
+name = "qobject"
 version = "0.1.0"
 dependencies = [
- "tqencoding",
- "tqexec",
- "tqvalue",
+ "qexec",
+ "qvalue",
 ]
 
 [[package]]
-name = "tqdms"
+name = "qquill-build"
+version = "0.1.0"
+
+[[package]]
+name = "qquill-design"
 version = "0.1.0"
 dependencies = [
- "tqarray",
- "tqconvert",
- "tqcrypto",
- "tqencoding",
- "tqexec",
- "tqmath",
- "tqnumber",
- "tqobject",
- "tqquill-build",
- "tqquill-design",
- "tqquill-docs",
- "tqquill-runtime",
- "tqquill-style",
- "tqquill-theme",
- "tqquill-view",
- "tqregex",
- "tqstring",
- "tqtime",
- "tquuid",
- "tqvalue",
+ "qquill-icons",
+ "qquill-style",
+ "qquill-theme",
+ "qquill-ui",
+ "qquill-view",
 ]
 
 [[package]]
-name = "tqencoding"
+name = "qquill-docs"
 version = "0.1.0"
 dependencies = [
- "tqexec",
- "tqvalue",
+ "qquill-design",
+ "qquill-icons",
+ "qquill-style",
+ "qquill-theme",
+ "qquill-ui",
+ "qquill-view",
 ]
 
 [[package]]
-name = "tqexec"
-version = "0.1.0"
-
-[[package]]
-name = "tqmath"
+name = "qquill-icons"
 version = "0.1.0"
 dependencies = [
- "tqexec",
- "tqvalue",
+ "qquill-view",
 ]
 
 [[package]]
-name = "tqnumber"
+name = "qquill-runtime"
+version = "0.1.0"
+
+[[package]]
+name = "qquill-style"
+version = "0.1.0"
+
+[[package]]
+name = "qquill-theme"
+version = "0.1.0"
+
+[[package]]
+name = "qquill-ui"
 version = "0.1.0"
 dependencies = [
- "tqexec",
- "tqvalue",
+ "qquill-view",
 ]
 
 [[package]]
-name = "tqobject"
+name = "qquill-view"
+version = "0.1.0"
+
+[[package]]
+name = "qregex"
 version = "0.1.0"
 dependencies = [
- "tqexec",
- "tqvalue",
+ "qexec",
+ "qvalue",
 ]
 
 [[package]]
-name = "tqquill-build"
-version = "0.1.0"
-
-[[package]]
-name = "tqquill-design"
+name = "qstring"
 version = "0.1.0"
 dependencies = [
- "tqquill-icons",
- "tqquill-style",
- "tqquill-theme",
- "tqquill-ui",
- "tqquill-view",
+ "qexec",
+ "qvalue",
 ]
 
 [[package]]
-name = "tqquill-docs"
+name = "qtime"
 version = "0.1.0"
 dependencies = [
- "tqquill-design",
- "tqquill-icons",
- "tqquill-style",
- "tqquill-theme",
- "tqquill-ui",
- "tqquill-view",
+ "qexec",
+ "qvalue",
 ]
 
 [[package]]
-name = "tqquill-icons"
+name = "quuid"
 version = "0.1.0"
 dependencies = [
- "tqquill-view",
+ "qexec",
+ "qvalue",
 ]
 
 [[package]]
-name = "tqquill-runtime"
-version = "0.1.0"
-
-[[package]]
-name = "tqquill-style"
-version = "0.1.0"
-
-[[package]]
-name = "tqquill-theme"
-version = "0.1.0"
-
-[[package]]
-name = "tqquill-ui"
-version = "0.1.0"
-dependencies = [
- "tqquill-view",
-]
-
-[[package]]
-name = "tqquill-view"
-version = "0.1.0"
-
-[[package]]
-name = "tqregex"
-version = "0.1.0"
-dependencies = [
- "tqexec",
- "tqvalue",
-]
-
-[[package]]
-name = "tqstring"
-version = "0.1.0"
-dependencies = [
- "tqexec",
- "tqvalue",
-]
-
-[[package]]
-name = "tqtime"
-version = "0.1.0"
-dependencies = [
- "tqexec",
- "tqvalue",
-]
-
-[[package]]
-name = "tquuid"
-version = "0.1.0"
-dependencies = [
- "tqexec",
- "tqvalue",
-]
-
-[[package]]
-name = "tqvalue"
+name = "qvalue"
 version = "0.1.0"

@@ -19,13 +19,13 @@
 
 use std::sync::Arc;
 
-use tqdms::engine::Qdb;
-use tqdms::workers::qquill::take_response_headers;
-use tqdms::workers::{
+use qdms::engine::Qdb;
+use qdms::workers::qquill::take_response_headers;
+use qdms::workers::{
     ensure_system_tables, load_routes_for, system_worker, WorkerHost, SYSTEM_WORKER_ID,
 };
-use tqexec::{FunctionResponse, FunctionScope, ResourceRequest};
-use tqquill_build::{
+use qexec::{FunctionResponse, FunctionScope, ResourceRequest};
+use qquill_build::{
     export_static, handler_key, sys_routes_insert, ExportPage, ExportPlan, RouteDef,
 };
 
@@ -81,7 +81,7 @@ fn main() -> std::io::Result<()> {
 /// NO database and NO socket: it calls each page's `respond(&[])` directly (the
 /// SAME render path the server uses), strips the `__headers` response frame to
 /// get the bare HTML bytes (and the page's `Cache-Control`), and hands them to
-/// the `tqquill-build` export helper, which owns the URL→file mapping, the
+/// the `qquill-build` export helper, which owns the URL→file mapping, the
 /// `public/` copy, and the Cloudflare Pages `_headers`/`_redirects`/`404.html`.
 fn cmd_build(out_dir: Option<&str>) -> std::io::Result<()> {
     let out = std::path::PathBuf::from(out_dir.unwrap_or(DEFAULT_OUT_DIR));

@@ -1,8 +1,8 @@
 //! `GET /products` — the products overview. Pure SSR, zero JavaScript.
 
-use tqexec::FunctionResponse;
-use tqquill_design::{Card, Effect, Radius, Tone};
-use tqquill_view::{el, text, Node};
+use qexec::FunctionResponse;
+use qquill_design::{Card, Effect, Radius, Tone};
+use qquill_view::{el, text, Node};
 
 use crate::app::routes::{inline_code, status_badge, Status};
 use crate::app::shell::page;
@@ -102,11 +102,11 @@ fn body(css: &mut Css) -> Node {
         "The tq* stdlib",
         "qpkgs",
         Status::Built,
-        "13 zero-dependency crates shared across every product. The substrate is tqexec \
-         (the bounded executor) and tqvalue (the value/ABI); the rest are focused \
+        "13 zero-dependency crates shared across every product. The substrate is qexec \
+         (the bounded executor) and qvalue (the value/ABI); the rest are focused \
          utility crates.",
         &[
-            "Substrate: tqexec (bounded executor) + tqvalue (value model + ABI).",
+            "Substrate: qexec (bounded executor) + qvalue (value model + ABI).",
             "Utilities: array, object, string, math, number, convert, crypto, encoding, regex, time, uuid.",
             "Products depend on tq*; tq* never depends on the products — the dependency arrow points one way.",
         ],

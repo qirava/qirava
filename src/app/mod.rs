@@ -8,9 +8,9 @@
 //!
 //! ## Why pages return CSS, not just a Node
 //!
-//! Unlike the bare scaffold, this site uses the styled `tqquill-design`
+//! Unlike the bare scaffold, this site uses the styled `qquill-design`
 //! components (`Navbar`, `Card`, `Button`, `Badge`, `Stat`, ...). Each one
-//! returns a [`Styled`](tqquill_design::Styled) = `(Node, StyleBlock)`: the
+//! returns a [`Styled`](qquill_design::Styled) = `(Node, StyleBlock)`: the
 //! component *carries its own CSS*. So `document()` cannot rely on the theme CSS
 //! alone — it must gather every component's `StyleBlock` and concatenate it into
 //! the head. The [`Css`] accumulator below is that collector; pages push each
@@ -20,8 +20,8 @@ pub mod routes;
 pub mod shell;
 pub mod theme;
 
-use tqquill_design::Styled;
-use tqquill_view::{el, raw, render_into, text, Node};
+use qquill_design::Styled;
+use qquill_view::{el, raw, render_into, text, Node};
 
 /// A small CSS accumulator. Pages render styled components into their tree and
 /// push each component's companion CSS here; the deduped, concatenated string is
@@ -84,19 +84,19 @@ const SITE_ORIGIN: &str = "https://qirava.dev";
 pub fn document(meta: &Meta, head_css: String, body: Node) -> Node {
     // The full stylesheet: theme variable blocks (the dark/light contract) +
     // the site layout + the collected component CSS + the a11y media resets.
-    let themes = tqquill_theme::default_theme_set();
-    let boot = tqquill_theme::BootConfig::new(tqquill_theme::ThemeMode::Dark);
+    let themes = qquill_theme::default_theme_set();
+    let boot = qquill_theme::BootConfig::new(qquill_theme::ThemeMode::Dark);
 
     let mut css = themes.to_css();
     css.push_str(&theme::layout_css());
     css.push_str(&head_css);
-    css.push_str(&tqquill_design::reduced_motion_css());
-    css.push_str(&tqquill_design::reduced_transparency_css());
+    css.push_str(&qquill_design::reduced_motion_css());
+    css.push_str(&qquill_design::reduced_transparency_css());
 
     // The concrete bg the page paints at boot, for the chrome theme-color meta.
     let theme_color = themes
-        .resolve(boot.mode(), tqquill_theme::Token::color("bg"))
-        .or_else(|| themes.base().get(tqquill_theme::Token::color("bg")))
+        .resolve(boot.mode(), qquill_theme::Token::color("bg"))
+        .or_else(|| themes.base().get(qquill_theme::Token::color("bg")))
         .unwrap_or("#0b0c10")
         .to_string();
 
@@ -152,7 +152,7 @@ pub fn document(meta: &Meta, head_css: String, body: Node) -> Node {
         )
         // The no-flicker theme boot MUST run before the stylesheet so the correct
         // `data-q-theme` is set pre-paint.
-        .child(raw(tqquill_theme::boot_script_tag(&boot)))
+        .child(raw(qquill_theme::boot_script_tag(&boot)))
         // Critical CSS inlined (theme vars + layout + components). The compiled
         // CSS is trusted (we generated it) -> Raw.
         .child(el("style").child(Node::Raw(css.into())));
@@ -169,18 +169,18 @@ pub fn document(meta: &Meta, head_css: String, body: Node) -> Node {
 /// JavaScript is injected — the site ships no runtime. The bytes are prefixed
 /// with `<!doctype html>` and framed with a `Cache-Control` header so the worker
 /// serves them as native HTML.
-pub fn respond_html(tree: &Node) -> tqexec::FunctionResponse {
+pub fn respond_html(tree: &Node) -> qexec::FunctionResponse {
     let mut html = String::from("<!doctype html>");
     render_into(tree, &mut html);
 
     // The island rule: only pages that actually use islands ship a runtime.
-    if tqquill_view::page_has_islands(tree) {
-        let kinds = tqquill_view::collect_island_kinds(tree);
+    if qquill_view::page_has_islands(tree) {
+        let kinds = qquill_view::collect_island_kinds(tree);
         let kind_refs: Vec<&str> = kinds.iter().map(|s| s.as_str()).collect();
         let mut payload = String::new();
-        tqquill_view::collect_island_sidecars_into(tree, &mut payload);
+        qquill_view::collect_island_sidecars_into(tree, &mut payload);
         payload.push_str("<script>");
-        payload.push_str(&tqquill_runtime::runtime_bundle_for(&kind_refs));
+        payload.push_str(&qquill_runtime::runtime_bundle_for(&kind_refs));
         payload.push_str("</script>");
         if let Some(pos) = html.rfind("</body>") {
             html.insert_str(pos, &payload);
@@ -190,7 +190,7 @@ pub fn respond_html(tree: &Node) -> tqexec::FunctionResponse {
     }
 
     let headers = vec![("Cache-Control".to_string(), CACHE_CONTROL.to_string())];
-    tqexec::FunctionResponse::ok(tqdms::workers::qquill::frame_response(
+    qexec::FunctionResponse::ok(qdms::workers::qquill::frame_response(
         html.as_bytes(),
         &headers,
     ))

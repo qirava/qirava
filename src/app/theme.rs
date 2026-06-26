@@ -1,6 +1,6 @@
 //! Site layout styles.
 //!
-//! The *color* system comes from `tqquill-theme` (the typed `--q-*` design
+//! The *color* system comes from `qquill-theme` (the typed `--q-*` design
 //! tokens + the light/dark/contrast contract + the no-flicker boot), inlined by
 //! [`crate::app::document`]. This module adds only the SITE-SPECIFIC layout: the
 //! page shell, the marketing header/footer, the hero, and the responsive grids
@@ -12,7 +12,7 @@
 
 /// The site layout CSS, appended after the theme variables in the `<head>`.
 pub fn layout_css() -> String {
-    let block = tqquill_style::style! {
+    let block = qquill_style::style! {
         "*" {
             "box-sizing": "border-box";
         }

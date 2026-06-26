@@ -7,8 +7,8 @@ pub mod index;
 pub mod products;
 pub mod roadmap;
 
-use tqquill_design::{Badge, Size, Tone, Variant};
-use tqquill_view::{el, raw, text, Node};
+use qquill_design::{Badge, Size, Tone, Variant};
+use qquill_view::{el, raw, text, Node};
 
 use crate::app::Css;
 
