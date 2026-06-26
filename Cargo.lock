@@ -11,6 +11,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "qbrand"
+version = "0.1.0"
+
+[[package]]
 name = "qconvert"
 version = "0.1.0"
 dependencies = [
@@ -69,10 +73,12 @@ version = "0.1.0"
 name = "qirava-site"
 version = "0.1.0"
 dependencies = [
+ "qbrand",
  "qdms",
  "qexec",
  "qquill-build",
  "qquill-design",
+ "qquill-docs",
  "qquill-icons",
  "qquill-runtime",
  "qquill-style",

@@ -16,6 +16,7 @@ license = "Apache-2.0"
 # `qquill/`, and `qpkgs/` under the Qirava root, so every path is `../`-relative.
 # ---------------------------------------------------------------------------
 [dependencies]
+qbrand         = { path = "../qbrand" }
 qdms           = { path = "../qdms" }
 qexec          = { path = "../qpkgs/qexec" }
 qvalue         = { path = "../qpkgs/qvalue" }
@@ -26,6 +27,7 @@ qquill-runtime = { path = "../qquill/qquill-runtime" }
 qquill-design  = { path = "../qquill/qquill-design" }
 qquill-theme   = { path = "../qquill/qquill-theme" }
 qquill-icons   = { path = "../qquill/qquill-icons" }
+qquill-docs    = { path = "../qquill/qquill-docs" }
 
 [[bin]]
 name = "qirava-site"

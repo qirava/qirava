@@ -2,15 +2,39 @@
 //! that the worker calls for that page's URL. Wire a new page by adding its
 //! module here and listing it in `PAGES` in `main.rs`.
 
+pub mod components;
 pub mod docs;
 pub mod index;
 pub mod products;
 pub mod roadmap;
 
 use qquill_design::{Badge, Size, Tone, Variant};
-use qquill_view::{el, raw, text, Node};
+use qquill_view::{el, island, raw, text, Node, Trigger};
 
 use crate::app::Css;
+
+/// Wrap arbitrary content in a `reveal` island so its `[data-q-reveal]` children
+/// fade/slide in on scroll. `instance_id` must be unique per page. The SSR
+/// fallback is the content itself (revealed by the island; visible without JS
+/// because the reduced-motion reset and the island both end at the shown state).
+pub fn reveal(instance_id: &'static str, content: Node) -> Node {
+    island(instance_id, "reveal", Trigger::Load, "{}", content)
+}
+
+/// A copy-enabled code block: a `copy` island wrapping a `<pre data-q-part=code>`
+/// and a "Copy" button. `lines` build the `<pre>` (escaped); the button copies
+/// the rendered text on click. Static and correct with JS off (button hidden).
+pub fn copy_code(instance_id: &'static str, lines: &[CodeLine]) -> Node {
+    let pre = code_block(lines).attr("data-q-part", "code");
+    let btn = el("button")
+        .class("q-copy")
+        .attr("type", "button")
+        .attr("data-q-part", "copy")
+        .attr("aria-label", "Copy code")
+        .child(el("span").attr("data-q-part", "label").child(text("Copy")));
+    let wrap = el("div").class("q-codewrap").child(btn).child(pre);
+    island(instance_id, "copy", Trigger::Load, "{}", wrap)
+}
 
 /// A status pill, used across pages for the BUILT / PARTIAL / PLANNED legend.
 /// Tone maps: built -> brand, partial -> neutral, planned -> neutral (outline).

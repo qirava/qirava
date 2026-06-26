@@ -1,2 +1,11 @@
 /target
 /dist
+
+# Brand assets are generated from the qbrand crate at build (qbrand::write_assets).
+# Single source of truth = ../qbrand; never commit copies here.
+/public/favicon.svg
+/public/icon.svg
+/public/icon-logos.svg
+/public/logo.svg
+/public/logo-lowercase.svg
+/public/logo-uppercase.svg

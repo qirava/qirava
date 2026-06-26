@@ -58,8 +58,17 @@ struct Page {
 const PAGES: &[Page] = &[
     Page { id: "index", path: "/", handler: app::routes::index::respond },
     Page { id: "products", path: "/products", handler: app::routes::products::respond },
-    Page { id: "docs", path: "/docs", handler: app::routes::docs::respond },
     Page { id: "roadmap", path: "/roadmap", handler: app::routes::roadmap::respond },
+    // Docs framework (left sidebar -> pages, on-page TOC, prev/next, copy).
+    Page { id: "docs", path: "/docs", handler: app::routes::docs::respond },
+    Page { id: "docs-getting-started", path: "/docs/getting-started", handler: app::routes::docs::respond_getting_started },
+    Page { id: "docs-concepts", path: "/docs/concepts", handler: app::routes::docs::respond_concepts },
+    // Component showcase + interactive playground.
+    Page { id: "components", path: "/components", handler: app::routes::components::respond },
+    Page { id: "components-button", path: "/components/button", handler: app::routes::components::respond_button },
+    Page { id: "components-badge", path: "/components/badge", handler: app::routes::components::respond_badge },
+    Page { id: "components-card", path: "/components/card", handler: app::routes::components::respond_card },
+    Page { id: "components-tabs", path: "/components/tabs", handler: app::routes::components::respond_tabs },
 ];
 
 fn main() -> std::io::Result<()> {
@@ -85,6 +94,11 @@ fn main() -> std::io::Result<()> {
 /// `public/` copy, and the Cloudflare Pages `_headers`/`_redirects`/`404.html`.
 fn cmd_build(out_dir: Option<&str>) -> std::io::Result<()> {
     let out = std::path::PathBuf::from(out_dir.unwrap_or(DEFAULT_OUT_DIR));
+
+    // Brand assets come from the ONE source (the qbrand crate), never a
+    // hand-copied SVG. Write the canonical icon/logo lockups + favicon.svg into
+    // `public/` so the export (which copies `public/`) ships them verbatim.
+    qbrand::write_assets(std::path::Path::new(PUBLIC_DIR))?;
 
     // Render each page exactly as the server would, then unframe to raw HTML.
     let mut pages = Vec::with_capacity(PAGES.len());
@@ -129,6 +143,10 @@ fn cmd_build(out_dir: Option<&str>) -> std::io::Result<()> {
 
 /// Open a db, register each page's handler + route row, and serve over a worker.
 fn cmd_serve() -> std::io::Result<()> {
+    // Brand assets from qbrand (the single source) into `public/` so the served
+    // favicon + lockups match the exported site exactly.
+    qbrand::write_assets(std::path::Path::new(PUBLIC_DIR))?;
+
     // 1. Open an in-memory database and ensure the framework's system tables
     //    (`_sys_routes`, `_sys_pages`, `_sys_assets`, ...).
     let db = Arc::new(Qdb::new());
