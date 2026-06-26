@@ -1,0 +1,32 @@
+[package]
+name = "qirava-site"
+version = "0.1.0"
+edition = "2021"
+description = "The Qirava website — a Quill app that dogfoods Quill (static SSG)."
+license = "Apache-2.0"
+
+# ---------------------------------------------------------------------------
+# The Qirava website is itself a Qirava Quill app: a plain Rust binary that
+# depends on the DMS engine (`tqdms`) plus the Quill UI crates, registers its
+# routes, and either SERVES server-rendered HTML over a worker (`cargo run`) or
+# EXPORTS a static `dist/` (`cargo run -- build`).
+#
+# ZERO third-party dependencies — std + first-party Qirava crates only. These
+# are RELATIVE path deps into the sibling crates: `qirava/` sits beside `qdms/`,
+# `qquill/`, and `qpkgs/` under the Qirava root, so every path is `../`-relative.
+# ---------------------------------------------------------------------------
+[dependencies]
+tqdms           = { path = "../qdms" }
+tqexec          = { path = "../qpkgs/tqexec" }
+tqvalue         = { path = "../qpkgs/tqvalue" }
+tqquill-view    = { path = "../qquill/qquill-view" }
+tqquill-style   = { path = "../qquill/qquill-style" }
+tqquill-build   = { path = "../qquill/qquill-build" }
+tqquill-runtime = { path = "../qquill/qquill-runtime" }
+tqquill-design  = { path = "../qquill/qquill-design" }
+tqquill-theme   = { path = "../qquill/qquill-theme" }
+tqquill-icons   = { path = "../qquill/qquill-icons" }
+
+[[bin]]
+name = "qirava-site"
+path = "src/main.rs"

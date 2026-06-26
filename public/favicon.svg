@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Qirava">
+  <defs>
+    <linearGradient id="qiravaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4F46E5"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+  </defs>
+  <circle cx="45" cy="45" r="30" fill="none" stroke="url(#qiravaGrad)" stroke-width="12"/>
+  <path d="M60 60 L85 85" fill="none" stroke="url(#qiravaGrad)" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="45" cy="45" r="8" fill="#06B6D4"/>
+</svg>

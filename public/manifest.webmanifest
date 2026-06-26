@@ -1,0 +1,17 @@
+{
+  "name": "Qirava",
+  "short_name": "Qirava",
+  "description": "An AI-native, zero-dependency data system — and a Rust-native UI framework to build on it.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b0c10",
+  "theme_color": "#4F46E5",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
