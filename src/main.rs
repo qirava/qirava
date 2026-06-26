@@ -70,6 +70,18 @@ const PAGES: &[Page] = &[
     Page { id: "components-badge", path: "/components/badge", handler: app::routes::components::respond_badge },
     Page { id: "components-card", path: "/components/card", handler: app::routes::components::respond_card },
     Page { id: "components-tabs", path: "/components/tabs", handler: app::routes::components::respond_tabs },
+    Page { id: "components-alert", path: "/components/alert", handler: app::routes::components::respond_alert },
+    Page { id: "components-stat", path: "/components/stat", handler: app::routes::components::respond_stat },
+    Page { id: "components-list", path: "/components/list", handler: app::routes::components::respond_list },
+    Page { id: "components-divider", path: "/components/divider", handler: app::routes::components::respond_divider },
+    Page { id: "components-breadcrumb", path: "/components/breadcrumb", handler: app::routes::components::respond_breadcrumb },
+    // Interactive island components: each ships a LIVE island demo + its code.
+    Page { id: "components-dialog", path: "/components/dialog", handler: app::routes::components::respond_dialog },
+    Page { id: "components-menu", path: "/components/menu", handler: app::routes::components::respond_menu },
+    Page { id: "components-tooltip", path: "/components/tooltip", handler: app::routes::components::respond_tooltip },
+    Page { id: "components-checkbox", path: "/components/checkbox", handler: app::routes::components::respond_checkbox },
+    Page { id: "components-switch", path: "/components/switch", handler: app::routes::components::respond_switch },
+    Page { id: "components-accordion", path: "/components/accordion", handler: app::routes::components::respond_accordion },
     // Products API reference, generated from the live qdms `/api/spec` catalog.
     Page { id: "api", path: "/api", handler: app::routes::api::respond },
 ];
