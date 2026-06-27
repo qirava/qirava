@@ -355,13 +355,14 @@ fn home_css() -> &'static str {
 /* ---- hero ---- */\
 .q-home-hero{position:relative;padding:calc(var(--q-space-8) * var(--q-density,1)) 0 var(--q-space-6);overflow:hidden}\
 .q-home-hero>*{position:relative;z-index:1}\
-.q-home-glow{position:absolute;inset:-45% -15% auto -15%;height:600px;z-index:0;pointer-events:none;\
-background:radial-gradient(55% 60% at 28% 18%,color-mix(in srgb,var(--q-color-brand) 30%,transparent),transparent 70%),\
-radial-gradient(45% 55% at 82% 8%,color-mix(in srgb,var(--q-color-accent,var(--q-color-brand)) 22%,transparent),transparent 70%);\
-filter:blur(8px);animation:q-drift 20s var(--q-ease-in-out) infinite alternate}\
-@keyframes q-drift{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(4%,2%,0) scale(1.1)}}\
+.q-home-glow{position:absolute;inset:-45% -15% auto -15%;height:640px;z-index:0;pointer-events:none;\
+background:radial-gradient(55% 60% at 26% 16%,color-mix(in srgb,var(--q-color-brand) 44%,transparent),transparent 70%),\
+radial-gradient(46% 56% at 82% 6%,color-mix(in srgb,var(--q-color-accent,var(--q-color-brand)) 36%,transparent),transparent 70%),\
+radial-gradient(40% 50% at 60% 32%,color-mix(in srgb,var(--q-color-brand) 18%,transparent),transparent 72%);\
+filter:blur(10px);animation:q-drift 22s var(--q-ease-in-out) infinite alternate}\
+@keyframes q-drift{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(4%,2%,0) scale(1.12)}}\
 .q-home-title{max-width:22ch;margin:0 0 var(--q-space-5)}\
-.q-grad{background:linear-gradient(100deg,var(--q-color-brand),color-mix(in srgb,var(--q-color-brand) 50%,var(--q-color-fg)));\
+.q-grad{background:linear-gradient(100deg,var(--q-color-brand),var(--q-color-accent));\
 -webkit-background-clip:text;background-clip:text;color:transparent}\
 .q-home-lead{max-width:62ch;margin:0 0 var(--q-space-6)}\
 .q-arr{transition:transform var(--q-duration-fast) var(--q-ease-out)}\

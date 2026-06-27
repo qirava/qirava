@@ -351,7 +351,7 @@ fn chrome_css() -> &'static str {
 /* ---- brand lockup (full LOGO_LOWERCASE, inherits currentColor) ---- */\
 .q-brand{display:inline-flex;align-items:center;line-height:0;color:var(--q-color-fg);min-height:var(--q-control-h,2.5rem)}\
 .q-brand:hover{text-decoration:none;opacity:.85}\
-.q-brand__lockup{display:inline-flex;height:calc(1.5rem * var(--q-density,1))}\
+.q-brand__lockup{display:inline-flex;height:calc(2.05rem * var(--q-density,1))}\
 .q-brand__lockup svg{height:100%;width:auto;display:block}\
 /* ---- nav ---- */\
 .q-nav-wrap{display:flex;align-items:center;gap:.5rem}\
@@ -398,7 +398,7 @@ fn chrome_css() -> &'static str {
 @media (max-width:820px){.q-foot__top{grid-template-columns:1fr 1fr}}\
 @media (max-width:520px){.q-foot__top{grid-template-columns:1fr}}\
 .q-foot__brand{color:var(--q-color-fg)}\
-.q-foot__lockup{height:1.6rem}\
+.q-foot__lockup{height:1.95rem}\
 .q-foot__tag{color:var(--q-color-muted);max-width:36ch;margin:1rem 0 0;font-size:.92rem;line-height:1.6}\
 .q-foot__col{display:flex;flex-direction:column;gap:.6rem}\
 .q-foot__title{color:var(--q-color-fg);font-weight:var(--q-font-weight-bold);margin:0 0 .35rem;font-size:.78rem;text-transform:uppercase;letter-spacing:.1em}\

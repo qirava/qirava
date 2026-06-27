@@ -291,6 +291,33 @@ pub fn layout_css() -> String {
     out
 }
 
+/// The **Qirava brand palette** — Ink + Azure. Overrides `qquill-theme`'s default
+/// indigo/cyan tokens with the Qirava identity: the brand mark is monochrome ink
+/// (`#0C1E3C`), so the site uses ink as the dark base / light ink, and an **azure**
+/// accent (the framework default gives no on-brand accent). Emitted with the SAME
+/// `:root` / `:root[data-q-theme="…"]` selectors as the theme and pushed AFTER it,
+/// so equal-specificity + later-position wins — a pure variable re-point, no fork.
+///
+/// Contrast: dark uses a bright azure brand (`#5b9cff`) as text/links on the ink
+/// bg with dark on-brand text on azure fills; light uses ink (`#0c1e3c`) as fg and
+/// a deep azure (`#2563eb`) brand with white on-brand text.
+pub fn brand_palette_css() -> &'static str {
+    "\
+/* ---- Qirava brand palette: Ink + Azure (overrides qquill-theme defaults) ---- */\
+:root,:root[data-q-theme=\"light\"]{\
+--q-color-brand:#2563eb;--q-color-accent:#0ea5e9;--q-color-on-brand:#ffffff;\
+--q-color-bg:#f6f8fc;--q-color-surface:#ffffff;--q-color-surface-selected:#e7eefb;\
+--q-color-fg:#0c1e3c;--q-color-muted:#51637e;--q-color-border:#e1e7f0;--q-color-border-strong:#64748b;\
+--q-effect-gradient-brand:linear-gradient(120deg,#2563eb 0%,#0ea5e9 100%)\
+}\
+:root[data-q-theme=\"dark\"]{\
+--q-color-brand:#5b9cff;--q-color-accent:#38bdf8;--q-color-on-brand:#07101f;\
+--q-color-bg:#0a1322;--q-color-surface:#111c30;--q-color-surface-selected:#1b2a45;\
+--q-color-fg:#e8eef7;--q-color-muted:#93a4be;--q-color-border:#1f2d45;--q-color-border-strong:#3a4e70;\
+--q-effect-gradient-brand:linear-gradient(120deg,#5b9cff 0%,#38bdf8 100%)\
+}"
+}
+
 /// Site-level design tokens layered on top of `qquill-theme`'s base set.
 ///
 /// This does NOT fork the theme: it overrides the font *stacks* (so there is no

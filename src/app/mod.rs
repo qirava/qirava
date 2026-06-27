@@ -90,6 +90,10 @@ pub fn document(meta: &Meta, head_css: String, body: Node) -> Node {
     let boot = qquill_theme::BootConfig::new(qquill_theme::ThemeMode::Dark);
 
     let mut css = themes.to_css();
+    // The Qirava brand palette (Ink + Azure) re-points the theme's default tokens
+    // immediately after the theme block, so every `var(--q-color-*)` downstream
+    // resolves to the brand identity.
+    css.push_str(theme::brand_palette_css());
     css.push_str(&theme::layout_css());
     css.push_str(&head_css);
     css.push_str(&qquill_design::reduced_motion_css());
