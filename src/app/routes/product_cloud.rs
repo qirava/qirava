@@ -1,248 +1,303 @@
-//! `GET /products/cloud` — the Qirava Cloud product page. **PLANNED.**
+//! `GET /products/cloud` — the Qirava Cloud product page.
 //!
-//! Cloud in one read: a MANAGED DMS service. A customer subscribes, picks
-//! resources (storage: dynamic auto-scale or fixed; mode: standalone or cluster,
-//! switchable either direction non-destructively because the on-disk layout is
-//! identical), and gets their OWN ISOLATED DMS — own custodian governance, own
-//! dbs, own Studio. The Cloud is the control plane only (subscriptions, billing,
-//! server allocation, scaling); it never touches tenant data. Vertical scaling
-//! signals the running DMS to use new resources live; horizontal admits/rebalances
-//! tenants and grows clusters. Content is accurate to `docs/CLOUD_MULTITENANT.md`
-//! and is clearly marked PLANNED.
+//! Cloud in one read: a managed-DMS control plane — a Qirava DMS that manages
+//! OTHER DMSes. An operator provisions a tenant, the placer bin-packs it onto a
+//! node, and the tenant gets its own isolated DMS (own custodian governance, own
+//! databases, own Studio). The control plane is itself a DMS running a `cloud`
+//! app: it persists the whole fleet through `_cp_*` catalogs and `cloud.*`
+//! orchestration functions, behind a deny-by-default, RBAC-gated Console. It is
+//! honest about its seam: the DATA MODEL is real and durable (provision, place,
+//! scale, switch, suspend, terminate, invoice all persist); the INFRA EFFECT each
+//! one would have (spawning a tenant DMS, applying cgroup caps, live-scaling,
+//! taking payment) is SIMULATED and clearly badged. Content is accurate to the
+//! `qcloud` submodule and `docs/CLOUD_MULTITENANT.md`.
 
 use qexec::FunctionResponse;
 use qquill_view::{el, text, Node};
 
 use crate::app::routes::product_page::{
-    closing, feature_section, hero, product_css, status_section, Cta, Feature, HeroStat, GITHUB_URL,
+    arch_anim, arch_anim_css, closing, feature_section, hero, main_wrap, product_css,
+    status_section, ArchNode, Cta, Feature, HeroStat, GITHUB_URL,
 };
 use crate::app::routes::{reveal, Status};
 use crate::app::shell::page;
 use crate::app::{Css, Meta};
 
-const TITLE: &str = "Qirava Cloud (Planned) — a managed DMS service";
-const DESCRIPTION: &str = "Qirava Cloud (PLANNED) is a managed DMS service: subscribe, pick your \
-resources and mode, and get your own isolated DMS — own custodian governance, dbs, and Studio. \
-The Cloud is the control plane only; it never touches tenant data.";
+const TITLE: &str = "Qirava Cloud — the managed-DMS control plane";
+const DESCRIPTION: &str = "Qirava Cloud is a managed-DMS control plane: a DMS that manages other \
+DMSes. Provision a tenant, the placer bin-packs it onto a node, and it gets its own isolated DMS — \
+own custodian governance, databases, and Studio. The control plane never touches tenant data.";
 
-/// The PLANNED banner that opens the page, so the status is unmissable.
-fn planned_banner() -> Node {
+fn body(css: &mut Css) -> Node {
+    css.push(product_css().to_string());
+    css.push(arch_anim_css().to_string());
+    css.push(cloud_css().to_string());
+
+    let hero = hero(
+        css,
+        "Qirava Cloud",
+        "qcloud",
+        "A DMS that manages ",
+        "other DMSes",
+        ".",
+        "Qirava Cloud is a managed-DMS control plane. An operator provisions a tenant, the placer \
+         bin-packs it onto a node, and that tenant gets its own fully isolated DMS — its own \
+         custodian governance, databases, and Studio. The control plane is itself a Qirava DMS \
+         running a cloud app: it persists the whole fleet and orchestrates lifecycle, and it never \
+         reads or mutates tenant data. The open-core managed layer; the engine stays Apache-2.0.",
+        &[
+            Cta { label: "Read the cloud docs", href: "/docs/cloud", solid: true },
+            Cta { label: "View on GitHub", href: GITHUB_URL, solid: false },
+        ],
+        &[
+            HeroStat { value: "1", label: "isolated DMS per tenant" },
+            HeroStat { value: "7", label: "_cp_* control catalogs" },
+            HeroStat { value: "2-way", label: "standalone ↔ cluster" },
+            HeroStat { value: "0", label: "tenant data the Cloud sees" },
+        ],
+    );
+
+    // What it is — the control-plane-vs-tenant separation, stated plainly.
+    let what = feature_section(
+        "cloud-what",
+        "gradient",
+        "What it is",
+        "A control plane that allocates resources — never your data",
+        "The Cloud is a Qirava DMS running a cloud app, the same way Studio is the system app. It \
+         orchestrates the fleet — provisioning, placement, scaling, billing — and that is all. The \
+         tenant DMS it stands up is a separate instance with its own data, WAL, governance, and \
+         Studio; the two authority domains never cross.",
+        &[
+            Feature {
+                kicker: "a DMS of DMSes",
+                title: "The plane is just a DMS",
+                body: "The control plane runs as a normal Qirava DMS with a cloud app on top. No \
+                       new runtime, no special server — the same execute() funnel, the same auth \
+                       checkpoints. It manages the fleet from inside its own catalogs.",
+            },
+            Feature {
+                kicker: "one DMS per tenant",
+                title: "Hard tenant isolation",
+                body: "A provisioned tenant is its own DMS instance: own data, WAL, _sys_* \
+                       catalogs, seed, custodian governance, and Studio UI. A tenant never sees \
+                       the control plane or any sibling — the cap is the only thing shared.",
+            },
+            Feature {
+                kicker: "control plane only",
+                title: "It never touches tenant data",
+                body: "The Cloud allocates resources and manages lifecycle; it has no privileged \
+                       side-door into a tenant. The same L1→L2→L3 gate the core enforces keeps the \
+                       operator out of tenant tables — by design, not by policy.",
+            },
+        ],
+    );
+
+    // Features grid — the operator-facing capabilities.
+    let features = feature_section(
+        "cloud-features",
+        "glass",
+        "Features",
+        "Everything an operator needs to run the fleet",
+        "The Console exposes the full lifecycle of a tenant as a set of governed actions. Each one \
+         persists durably to the control catalogs; each one writes an audit row; each one is gated \
+         by the operator's cloud role, deny-by-default.",
+        &[
+            Feature {
+                kicker: "provision · place",
+                title: "Provision + bin-pack placement",
+                body: "Create a tenant and the placer runs first-fit bin-packing over the node \
+                       fleet, picking the first node with cap headroom and bumping its allocation \
+                       — or flagging the operator when the fleet is full.",
+            },
+            Feature {
+                kicker: "vertical · horizontal",
+                title: "Scale up and scale out",
+                body: "Grow one tenant's CPU/memory/storage cap, or grow its cluster by adding \
+                       replicas on distinct nodes. The new cap and replica count persist to the \
+                       tenant row and the node allocations adjust.",
+            },
+            Feature {
+                kicker: "standalone ↔ cluster",
+                title: "Switch mode, non-destructively",
+                body: "Flip a tenant between standalone and cluster either direction. Because the \
+                       on-disk storage layout is identical across modes, the switch is \
+                       non-destructive — it just adds or drops followers.",
+            },
+            Feature {
+                kicker: "suspend · resume · terminate",
+                title: "Full lifecycle control",
+                body: "Suspend a tenant on non-payment, resume it in place, or terminate it — \
+                       releasing its node allocation. Each transition is one durable status change \
+                       on the tenant row.",
+            },
+            Feature {
+                kicker: "metering · invoices",
+                title: "Per-unit billing",
+                body: "Usage counters (thread-seconds, GB-hours, GB stored, GB bandwidth) feed a \
+                       per-unit plan — priced per thread-hour, GB-hour, GB-month, and GB transfer \
+                       — and generate durable invoices. No fixed tiers.",
+            },
+            Feature {
+                kicker: "audit · RBAC console",
+                title: "Audited, role-gated Console",
+                body: "Every mutation writes a _cp_audit row (operator, action, tenant, node, \
+                       result). The Console renders only the screens the signed-in cloud role can \
+                       reach, and each action re-checks the role server-side.",
+            },
+        ],
+    );
+
+    // How it works — concrete and plain.
+    let how = feature_section(
+        "cloud-how",
+        "flat",
+        "How it works",
+        "Persisted in catalogs, run through one funnel, gated by role",
+        "There is no magic and no hidden service. The control plane keeps its entire state in a \
+         handful of catalogs, mutates it only through one set of functions, and gates those \
+         functions on the operator's cloud role.",
+        &[
+            Feature {
+                kicker: "two authority domains",
+                title: "Control plane ≠ tenant",
+                body: "Cloud governance (the operators of the fleet) is a completely separate \
+                       authority from any tenant's custodian. A cloud admin governs plans, nodes, \
+                       caps, and billing — and never a tenant's data or governance.",
+            },
+            Feature {
+                kicker: "_cp_* catalogs",
+                title: "The whole fleet is rows",
+                body: "_cp_tenants, _cp_nodes, _cp_plans, _cp_subscriptions, _cp_usage, \
+                       _cp_invoices, and _cp_audit hold the entire control-plane state. There is \
+                       no out-of-band config — placement and billing read these tables.",
+            },
+            Feature {
+                kicker: "cloud.* funnel",
+                title: "One orchestration funnel",
+                body: "Every change runs through a cloud.* function — provision, scale_vertical, \
+                       scale_horizontal, switch_mode, suspend, resume, terminate, generate_invoice \
+                       — reached via execute(). One write path, durable through the WAL.",
+            },
+            Feature {
+                kicker: "deny-by-default",
+                title: "Role gates, re-checked server-side",
+                body: "The Console only shows what your cloud role permits, but the gate that \
+                       matters is in the function: each cloud.* re-checks ctx.role and refuses if \
+                       it is below the required rank. The UI is a convenience, not the boundary.",
+            },
+            Feature {
+                kicker: "first-fit",
+                title: "Bin-packing placement",
+                body: "The placer walks nodes in a stable order and takes the first with enough \
+                       thread/memory/storage headroom, then records the allocation delta. \
+                       Deterministic, so placement is testable and repeatable.",
+            },
+            Feature {
+                kicker: "real vs simulated",
+                title: "Durable data, simulated infra",
+                body: "Each cloud.* function persists the INTENDED new state and returns it; the \
+                       physical INFRA EFFECT — spawning the tenant DMS, applying OS caps, taking \
+                       payment — is simulated and badged. The data model is real today.",
+            },
+        ],
+    );
+
+    // Architecture animation — the control-plane-over-tenants diagram, honest badges.
+    let arch = arch_anim(
+        "cloud-arch",
+        "Architecture",
+        "The control plane over the tenant fleet",
+        "An operator action enters the Console, runs through the cloud.* funnel, persists to the \
+         _cp_* catalogs, and the placer assigns a node — at which point a tenant DMS would be \
+         stood up. The persistence is real (BUILT); the physical infra step is SIMULATED.",
+        &[
+            ArchNode {
+                label: "Console",
+                sub: "RBAC-gated, deny-by-default",
+                badge: "BUILT",
+            },
+            ArchNode {
+                label: "cloud.* funnel",
+                sub: "execute() · audited",
+                badge: "BUILT",
+            },
+            ArchNode {
+                label: "_cp_* catalogs",
+                sub: "durable · WAL-backed",
+                badge: "BUILT",
+            },
+            ArchNode {
+                label: "placer",
+                sub: "first-fit bin-pack",
+                badge: "BUILT",
+            },
+            ArchNode {
+                label: "tenant DMS",
+                sub: "spawn · cap · serve",
+                badge: "SIMULATED",
+            },
+        ],
+    );
+
+    // Honest status — BUILT data model, SIMULATED infra, PLANNED real provisioning.
+    let status = status_section(
+        "cloud-status",
+        "Status",
+        "What's built, what's simulated, what's planned",
+        "The control-plane DATA MODEL is built and tested — provision, place, scale, switch, \
+         suspend, terminate, and invoice all persist durably through one funnel. The physical \
+         infra each action implies is SIMULATED; real tenant provisioning is the planned next step.",
+        &[
+            (Status::Built, "Control plane + _cp_* catalogs",
+             "A real Qirava DMS running the cloud app; seven _cp_* catalogs hold the whole fleet, created and seeded idempotently."),
+            (Status::Built, "cloud.* orchestration funnel",
+             "provision · scale_vertical · scale_horizontal · switch_mode · suspend · resume · terminate · generate_invoice — each persists and audits."),
+            (Status::Built, "RBAC-gated Console + audit trail",
+             "Deny-by-default Console: it renders only reachable screens and each action re-checks ctx.role; every mutation writes a _cp_audit row."),
+            (Status::Built, "First-fit bin-packing placement",
+             "Deterministic placement over _cp_nodes by cap headroom, with allocation deltas recorded on the chosen node."),
+            (Status::Partial, "Infra effects (SIMULATED)",
+             "Spawning the tenant DMS, applying cgroup/OS caps, live-scaling, and taking payment are simulated against the data model and clearly badged."),
+            (Status::Planned, "Real tenant provisioning",
+             "Booting an actual isolated tenant DMS/CVM, wiring OS-level caps around the executor budget, and live billing replace the simulated effects."),
+        ],
+    );
+
+    let closing = closing(
+        "cloud-closing",
+        "Run the fleet from the docs",
+        "Qirava Cloud is documented in the open repo — the control catalogs, the cloud.* funnel, \
+         the placement model, and the real-vs-simulated seam. Read how the managed layer works and \
+         where it is honest about what is not yet real.",
+        Cta { label: "Read the cloud docs", href: "/docs/cloud", solid: true },
+        Cta { label: "Explore the DMS today", href: "/products/dms", solid: false },
+    );
+
+    // The honest banner sits right after the hero so the seam is unmissable.
+    let mut sections =
+        vec![hero, el("section").class("q-section").child(honest_banner())];
+    sections.extend([what, features, how, arch, status, closing]);
+    main_wrap(sections)
+}
+
+/// A short banner directly under the hero making the real-vs-simulated seam
+/// impossible to miss. Token-driven; the reveal island animates it in.
+fn honest_banner() -> Node {
     reveal(
         "cloud-banner",
         el("div")
             .class("q-cloud-banner")
             .attr("data-q-reveal", "")
             .attr("role", "note")
-            .child(el("span").class("q-cloud-banner__tag").child(text("Planned")))
+            .child(el("span").class("q-cloud-banner__tag").child(text("Honest")))
             .child(el("p").class("q-cloud-banner__text").child(text(
-                "Qirava Cloud is the designed-but-not-yet-built managed offering. The single-tenant \
-                 DMS primitives it will orchestrate — resource governance, RBAC, config-as-data, \
-                 replication, the worker/function model — are already shipping in the open-core \
-                 engine. This page describes the target architecture.",
+                "The control-plane data model is real and durable today: provisioning, placement, \
+                 scaling, lifecycle, and billing all persist through one audited funnel. The \
+                 physical infra each action implies — spawning a tenant DMS, applying OS caps, \
+                 taking payment — is SIMULATED and clearly badged. This page says exactly which is \
+                 which.",
             ))),
     )
-}
-
-fn body(css: &mut Css) -> Node {
-    css.push(product_css().to_string());
-    css.push(cloud_css().to_string());
-
-    let hero = hero(
-        css,
-        "Qirava Cloud",
-        "qcloud · planned",
-        "A managed DMS service — ",
-        "your own isolated DMS",
-        ".",
-        "Subscribe, pick your resources and mode, and get a fully isolated Qirava DMS: your own \
-         custodian governance, your own databases, your own Studio UI. The Cloud is the control \
-         plane only — subscriptions, billing, server allocation, and scaling. It never reaches \
-         into your data. The open-core managed layer; the engine stays Apache-2.0.",
-        &[
-            Cta { label: "Read the cloud design", href: "/architecture", solid: true },
-            Cta { label: "View on GitHub", href: GITHUB_URL, solid: false },
-        ],
-        &[
-            HeroStat { value: "1", label: "isolated DMS per tenant" },
-            HeroStat { value: "2-way", label: "standalone ↔ cluster" },
-            HeroStat { value: "0", label: "tenant data the Cloud sees" },
-            HeroStat { value: "Planned", label: "current status" },
-        ],
-    );
-
-    // What the customer chooses.
-    let choose = feature_section(
-        "cloud-choose",
-        "gradient",
-        "The subscription",
-        "Pick your resources — and change your mind, non-destructively",
-        "There are no fixed tiers. You choose storage and DMS mode, and either choice can change \
-         at any time. The on-disk storage layout is identical across modes, so switching is \
-         non-destructive in both directions.",
-        &[
-            Feature {
-                kicker: "storage",
-                title: "Dynamic or fixed",
-                body: "Choose dynamic auto-scale (grows with usage, billed by what you store) or a \
-                       fixed size. Dynamic storage grows without operator action; overflow is a \
-                       billing event, never a hard block.",
-            },
-            Feature {
-                kicker: "standalone ↔ cluster",
-                title: "Switchable either direction",
-                body: "Run standalone or as a cluster, and switch either way at any time. Because \
-                       the storage layout is identical across modes, going cluster (add followers) \
-                       or back to standalone (drop them) is non-destructive.",
-            },
-            Feature {
-                kicker: "pay per unit",
-                title: "Per-resource pricing",
-                body: "Price is per CPU thread, GB of memory, GB of storage, and GB of bandwidth — \
-                       shown live. The slider is the plan; there are no predefined fixed plans.",
-            },
-        ],
-    );
-
-    // Isolation + governance.
-    let isolation = feature_section(
-        "cloud-isolation",
-        "glass",
-        "Isolation",
-        "Your own DMS, your own custodian, your own Studio",
-        "Each tenant is one isolated DMS — its own process, WAL, _sys_* catalogs, seed, and \
-         governance. It is the same custodian governance as any DMS, just one isolated instance \
-         per tenant.",
-        &[
-            Feature {
-                kicker: "one DMS per tenant",
-                title: "Hard isolation",
-                body: "A tenant is a separate DMS instance with its own data, WAL, governance \
-                       hierarchy, and resource cap. A tenant never sees the control plane or any \
-                       sibling tenant.",
-            },
-            Feature {
-                kicker: "custodian > admin > user > guest",
-                title: "The same governance",
-                body: "Your DMS uses the exact custodian governance model the open-core engine \
-                       ships — you are root of trust inside your own tenant, and only there. You \
-                       sign into your own Studio UI.",
-            },
-            Feature {
-                kicker: "two authority domains",
-                title: "Control plane ≠ tenant authority",
-                body: "The Cloud's operators govern plans, nodes, caps, billing, and placement — \
-                       and never your data or governance. The two authority domains never cross.",
-            },
-        ],
-    );
-
-    // Control plane scope.
-    let control = feature_section(
-        "cloud-control",
-        "flat",
-        "The control plane",
-        "It allocates resources — it never touches your data",
-        "The Cloud is itself a Qirava DMS running a cloud app (the same way Studio is the system \
-         app). It orchestrates lifecycle and billing; it adds no privileged side-door into a \
-         tenant.",
-        &[
-            Feature {
-                kicker: "subscriptions · billing",
-                title: "Metering + dynamic billing",
-                body: "Per-tenant usage counters (thread-seconds, GB-hours, GB stored, GB \
-                       bandwidth) stream to the billing engine; the slider sets the cap and the \
-                       meter sets the invoice.",
-            },
-            Feature {
-                kicker: "allocation · placement",
-                title: "Server allocation",
-                body: "The control plane provisions a tenant, picks a node with headroom, and \
-                       mirrors the cap into the tenant's executor budget and OS-level resource \
-                       caps.",
-            },
-            Feature {
-                kicker: "control plane only",
-                title: "Never inside tenant data",
-                body: "A DMS that manages other DMSes: the Cloud allocates resources and manages \
-                       lifecycle, and that is all. It does not read or mutate a tenant's data — the \
-                       same L1→L2→L3 gate the core enforces applies.",
-            },
-        ],
-    );
-
-    // Scaling, vertical + horizontal.
-    let scaling = feature_section(
-        "cloud-scaling",
-        "flat",
-        "Scaling",
-        "Grow live, vertically and horizontally",
-        "Vertical scaling grows one tenant's cap and signals the running DMS to use the new \
-         resources without a rebuild or downtime; horizontal scaling admits and rebalances \
-         tenants and grows clusters.",
-        &[
-            Feature {
-                kicker: "vertical",
-                title: "Bigger, live",
-                body: "Grow a tenant's CPU/memory/storage cap, then signal the running DMS to start \
-                       using the newly allocated resources live — it re-reads its cap and expands \
-                       its executor budget and storage with no rebuild and no downtime.",
-            },
-            Feature {
-                kicker: "horizontal",
-                title: "More tenants, bigger clusters",
-                body: "Admit more tenants, rebalance them across nodes as hardware is added, and \
-                       grow a tenant's cluster (more nodes/replicas) as its data and load grow — \
-                       reusing the replication promotion path.",
-            },
-            Feature {
-                kicker: "isolation preserved",
-                title: "Every move keeps the invariants",
-                body: "Rebalancing moves a tenant by promoting/migrating via replication, draining \
-                       the source — and every move preserves all per-tenant isolation invariants.",
-            },
-        ],
-    );
-
-    let status = status_section(
-        "cloud-status",
-        "Status",
-        "Planned — and what it builds on",
-        "The control plane, OS-level caps, metering, and billing are PLANNED. They orchestrate \
-         single-tenant primitives that are already BUILT and tested in the open-core engine.",
-        &[
-            (Status::Built, "In-process resource budget",
-             "qexec bounds memory, threads, and jobs per call — the cap the control plane will mirror."),
-            (Status::Built, "Per-tenant DMS instance",
-             "One DMS = one tenant today: own process, WAL, _sys_* catalogs, seed, and governance."),
-            (Status::Built, "RBAC + governance + privileged-key gate",
-             "The same custodian governance and L1→L2→L3 gate each isolated tenant will run."),
-            (Status::Built, "Single-leader replication",
-             "The promotion/migration path rebalance reuses; dual-master is itself still planned."),
-            (Status::Planned, "Control plane (provision · place · scale · rebalance)",
-             "The cloud app, _cp_* catalogs, and Cloud Console that orchestrate the fleet."),
-            (Status::Planned, "OS-level caps + metering + billing",
-             "cgroups/namespaces around the budget, per-tenant usage counters, and dynamic per-unit billing."),
-        ],
-    );
-
-    let closing = closing(
-        "cloud-closing",
-        "Designed in the open",
-        "Qirava Cloud is documented in the open repo so the contracts it relies on — resource \
-         caps, RBAC, isolation seams — are correct in the Apache-2.0 core. Read the architecture \
-         while it is being built.",
-        Cta { label: "Read the architecture", href: "/architecture", solid: true },
-        Cta { label: "Explore the DMS today", href: "/products/dms", solid: false },
-    );
-
-    // Build the main with the PLANNED banner inserted right after the hero.
-    let mut main = el("main").class("q-main").id("main");
-    main = main.child(hero);
-    main = main.child(el("section").class("q-section").child(planned_banner()));
-    for s in [choose, isolation, control, scaling, status, closing] {
-        main = main.child(s);
-    }
-    main
 }
 
 pub fn respond(_input: &[u8]) -> FunctionResponse {
@@ -252,7 +307,7 @@ pub fn respond(_input: &[u8]) -> FunctionResponse {
     page(&meta, css, content)
 }
 
-/// Cloud-only CSS: the PLANNED banner. Token-driven; pushed once + deduped.
+/// Cloud-only CSS: the honest banner. Token-driven; pushed once + deduped.
 fn cloud_css() -> &'static str {
     "\
 .q-cloud-banner{display:flex;align-items:flex-start;gap:var(--q-space-3);padding:var(--q-space-4) var(--q-space-5);border:1px solid color-mix(in srgb,var(--q-color-brand) 35%,var(--q-color-border));border-left:3px solid var(--q-color-brand);border-radius:var(--q-radius-lg);background:color-mix(in srgb,var(--q-color-brand) 7%,var(--q-color-surface))}\

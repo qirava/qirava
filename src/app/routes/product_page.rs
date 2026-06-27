@@ -246,6 +246,105 @@ fn leak_id(base: &'static str, suffix: &'static str) -> &'static str {
     Box::leak(format!("{base}{suffix}").into_boxed_str())
 }
 
+/// One labelled node in the architecture animation: a layer/box drawn as a chip
+/// that pulses in sequence. `step` (0-based) staggers its keyframe so the chips
+/// light up one after another, suggesting flow through the system. `badge` is an
+/// optional small status tag (e.g. `BUILT` / `SIMULATED`) the honest cloud page
+/// uses; pass `""` for none.
+#[allow(dead_code)] // reusable scaffolding; wired by the four product pages as they adopt it.
+pub struct ArchNode {
+    pub label: &'static str,
+    pub sub: &'static str,
+    pub badge: &'static str,
+}
+
+/// A reusable, reduced-motion-safe ARCHITECTURE ANIMATION block: a heading +
+/// lead, then an animated CSS/SVG diagram — a row of theme-token-colored chips
+/// (each an [`ArchNode`]) joined by an animated SVG connector whose dash flows
+/// brand-to-fg, with the chips lighting up in sequence. Generic enough for all
+/// four product pages: pass the section copy and the ordered nodes; the page
+/// supplies a unique `id` so the scroll-reveal + keyframes stay distinct.
+///
+/// All color/spacing is via `--q-*` tokens (no hardcoded hex) so it flips with
+/// theme/size/radius; every motion is wrapped so the `prefers-reduced-motion`
+/// reset (in [`arch_anim_css`]) neutralizes it to a static, fully legible
+/// diagram. Server-rendered and correct with JS off — the only island on the
+/// page remains the shared `reveal`.
+#[allow(dead_code)] // reusable scaffolding; wired by the four product pages as they adopt it.
+pub fn arch_anim(
+    id: &'static str,
+    eyebrow: &str,
+    heading: &str,
+    lead: &str,
+    nodes: &[ArchNode],
+) -> Node {
+    let head = el("div")
+        .class("q-pp-head")
+        .child(el("p").class("q-eyebrow").child(text(eyebrow.to_string())))
+        .child(el("h2").class("q-h2").child(text(heading.to_string())))
+        .child(el("p").class("q-lead").child(text(lead.to_string())));
+
+    // The flowing connector behind the chips: a dashed SVG line whose offset
+    // animates so the "current" flows along the architecture. Decorative.
+    let connector = raw(
+        "<svg class=\"q-arch__line\" viewBox=\"0 0 100 4\" preserveAspectRatio=\"none\" \
+         aria-hidden=\"true\"><line x1=\"0\" y1=\"2\" x2=\"100\" y2=\"2\" \
+         vector-effect=\"non-scaling-stroke\"/></svg>",
+    );
+
+    let mut track = el("div").class("q-arch__track").child(connector);
+    for (i, n) in nodes.iter().enumerate() {
+        let mut chip = el("div")
+            .class("q-arch__node")
+            .attr("style", format!("--q-arch-step:{i}"));
+        if !n.badge.is_empty() {
+            chip = chip.child(el("span").class("q-arch__badge").child(text(n.badge.to_string())));
+        }
+        chip = chip
+            .child(el("span").class("q-arch__node-label").child(text(n.label.to_string())));
+        if !n.sub.is_empty() {
+            chip = chip.child(el("span").class("q-arch__node-sub").child(text(n.sub.to_string())));
+        }
+        track = track.child(chip);
+    }
+
+    let diagram = el("div")
+        .class("q-arch")
+        .attr("data-q-surface", "flat")
+        .attr("role", "img")
+        .attr("aria-label", format!("{heading}: {lead}"))
+        .child(track);
+
+    el("section")
+        .class("q-section")
+        .child(reveal(leak_id(id, "-head"), head))
+        .child(reveal(id, diagram))
+}
+
+/// The CSS for [`arch_anim`]. Token-only (flips with theme/size/radius) and the
+/// motion is fully neutralized under `prefers-reduced-motion`. Pushed once per
+/// page; the accumulator dedupes it.
+#[allow(dead_code)] // reusable scaffolding; wired by the four product pages as they adopt it.
+pub fn arch_anim_css() -> &'static str {
+    "\
+.q-arch{padding:var(--q-space-6) var(--q-space-5);border:1px solid var(--q-color-border);border-radius:var(--q-radius-xl);background:var(--q-color-surface);overflow:hidden}\
+.q-arch__track{position:relative;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:var(--q-space-4);align-items:stretch}\
+@media (max-width:640px){.q-arch__track{grid-auto-flow:row;grid-auto-columns:auto}}\
+.q-arch__line{position:absolute;inset:50% 0 auto;width:100%;height:3px;transform:translateY(-50%);z-index:0;pointer-events:none}\
+.q-arch__line line{stroke:var(--q-color-border);stroke-width:2;stroke-dasharray:6 7;stroke-linecap:round;animation:q-arch-flow 2.4s linear infinite}\
+@media (max-width:640px){.q-arch__line{display:none}}\
+.q-arch__node{position:relative;z-index:1;display:flex;flex-direction:column;gap:.2rem;padding:var(--q-space-4) var(--q-space-4);border:1px solid var(--q-color-border);border-radius:var(--q-radius-lg);background:var(--q-color-bg);text-align:center;align-items:center;justify-content:center;animation:q-arch-pulse 3s var(--q-ease-in-out) infinite;animation-delay:calc(var(--q-arch-step,0) * .4s)}\
+.q-arch__node-label{font-weight:var(--q-font-weight-bold);font-size:.96rem;letter-spacing:-.01em;color:var(--q-color-fg)}\
+.q-arch__node-sub{font-family:var(--q-font-mono);font-size:.74rem;line-height:1.4;color:var(--q-color-muted)}\
+.q-arch__badge{font-size:.6rem;font-weight:var(--q-font-weight-bold);letter-spacing:.08em;text-transform:uppercase;padding:.12rem .4rem;border-radius:var(--q-radius-full);color:var(--q-color-brand);border:1px solid color-mix(in srgb,var(--q-color-brand) 45%,transparent);background:color-mix(in srgb,var(--q-color-brand) 12%,transparent)}\
+@keyframes q-arch-flow{to{stroke-dashoffset:-26}}\
+@keyframes q-arch-pulse{0%,100%{border-color:var(--q-color-border);box-shadow:none}50%{border-color:color-mix(in srgb,var(--q-color-brand) 60%,var(--q-color-border));box-shadow:0 0 0 1px color-mix(in srgb,var(--q-color-brand) 30%,transparent),0 14px 36px -22px color-mix(in srgb,var(--q-color-brand) 70%,transparent)}}\
+@media (prefers-reduced-motion:reduce){\
+.q-arch__line line{animation:none}\
+.q-arch__node{animation:none;border-color:color-mix(in srgb,var(--q-color-brand) 30%,var(--q-color-border))}\
+}"
+}
+
 /// The product-page CSS. Self-contained (does not depend on the home page's
 /// sheet): every value references a `--q-*` token so it restyles on any
 /// theme/size/radius switch with no reflow; motion is neutralized under

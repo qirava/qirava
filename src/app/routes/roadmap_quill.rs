@@ -87,7 +87,7 @@ fn body(css: &mut Css) -> Node {
         text("Read the ".to_string()),
         el("a").attr("href", "/docs/quill").child(text("Quill docs")),
         text(" or browse the ".to_string()),
-        el("a").attr("href", "/components").child(text("component showcase")),
+        el("a").attr("href", "/docs/quill/components").child(text("component showcase")),
         text(" — every component on this site is a live Quill component.".to_string()),
     ]));
 

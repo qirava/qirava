@@ -66,7 +66,7 @@ fn body(css: &mut Css) -> Node {
          (infra effect simulated), and the RBAC-gated Cloud Console. The live infra, public signup, \
          the FIFO-hold cutover, delegation, and metered payment are planned. No dates — only state.",
         &[
-            Cta { label: "Read the architecture", href: "/architecture/cloud", solid: true },
+            Cta { label: "Read the architecture", href: "/docs/cloud/architecture", solid: true },
             Cta { label: "Explore Qirava Cloud", href: "/products/cloud", solid: false },
         ],
         &[
@@ -93,9 +93,9 @@ fn body(css: &mut Css) -> Node {
     );
     board_section = board_section.child(legend()).child(note(vec![
         text("Sourced from the ".to_string()),
-        el("a").attr("href", "/architecture/cloud").child(text("Cloud control plane")),
+        el("a").attr("href", "/docs/cloud/architecture").child(text("Cloud control plane")),
         text(" and ".to_string()),
-        el("a").attr("href", "/architecture/cluster").child(text("Scaling & upgrades")),
+        el("a").attr("href", "/docs/cloud/scaling-architecture").child(text("Scaling & upgrades")),
         text(" architecture pages — the single source of truth. The managed-cloud layer is the \
               commercial open-core offering atop the Apache-2.0 core."
             .to_string()),

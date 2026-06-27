@@ -85,7 +85,7 @@ fn body(css: &mut Css) -> Node {
     );
     board_section = board_section.child(legend()).child(note(vec![
         text("The crypto order is sourced from the repo's PENDING list and ".to_string()),
-        el("a").attr("href", "/architecture").child(text("the architecture")),
+        el("a").attr("href", "/docs/dms/architecture-overview").child(text("the architecture")),
         text("; the dependency arrow points one way — products depend on q*, never the reverse."
             .to_string()),
     ]));

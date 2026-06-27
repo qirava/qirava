@@ -147,7 +147,7 @@ fn products() -> Node {
          "A Rust-native, zero-dependency UI framework: shadcn-like components, Next.js-like \
           authoring — native SSR, islands, and SSG/ISR — behind a hand-written ~4 KB runtime. \
           This very site is built with it.",
-         Status::Built, "Browse components", "/components"),
+         Status::Built, "Browse components", "/docs/quill/components"),
         ("The q* stdlib", "qpkgs",
          "13 zero-dependency crates: the substrate qexec (bounded executor) and qvalue \
           (value/ABI), plus array, object, string, math, number, convert, crypto, encoding, \
@@ -326,14 +326,14 @@ fn closing() -> Node {
                 .child(
                     el("a")
                         .class("q-btn q-btn--invert")
-                        .attr("href", "/docs/dms/getting-started")
+                        .attr("href", "/docs/dms/quick-start")
                         .child(text("Get started"))
                         .child(raw(ARROW_SVG)),
                 )
                 .child(
                     el("a")
                         .class("q-btn q-btn--on-grad")
-                        .attr("href", "/architecture")
+                        .attr("href", "/docs/dms/architecture-overview")
                         .child(text("Read the architecture")),
                 ),
         );

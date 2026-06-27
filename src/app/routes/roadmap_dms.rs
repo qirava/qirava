@@ -71,7 +71,7 @@ fn body(css: &mut Css) -> Node {
          custodian seed ceremony are planned. No dates promised — only state.",
         &[
             Cta { label: "Explore the DMS", href: "/products/dms", solid: true },
-            Cta { label: "Read the architecture", href: "/architecture", solid: false },
+            Cta { label: "Read the architecture", href: "/docs/dms/architecture-overview", solid: false },
         ],
         &[
             HeroStat { value: "13", label: "capabilities shipping" },
@@ -96,7 +96,7 @@ fn body(css: &mut Css) -> Node {
     );
     board_section = board_section.child(legend()).child(note(vec![
         text("Sourced from ".to_string()),
-        el("a").attr("href", "/architecture").child(text("the architecture")),
+        el("a").attr("href", "/docs/dms/architecture-overview").child(text("the architecture")),
         text(", the DMS docs, and the cluster/replication + security-governance design docs in the repo."
             .to_string()),
     ]));
