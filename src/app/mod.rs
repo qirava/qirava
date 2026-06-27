@@ -16,7 +16,6 @@
 //! the head. The [`Css`] accumulator below is that collector; pages push each
 //! component's `.style().to_css()` into it as they build their tree.
 
-pub mod arch_kit;
 pub mod docs_kit;
 pub mod routes;
 pub mod shell;

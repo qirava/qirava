@@ -3,13 +3,9 @@
 //! module here and listing it in `PAGES` in `main.rs`.
 
 pub mod api;
-pub mod arch_cloud;
-pub mod arch_cluster;
-pub mod arch_embed;
-pub mod arch_security;
-pub mod architecture;
 pub mod components;
 pub mod docs;
+pub mod docs_content;
 pub mod index;
 pub mod product_cloud;
 pub mod product_dms;
@@ -25,7 +21,7 @@ pub mod roadmap_quill;
 pub mod roadmap_stdlib;
 
 use qquill_design::{Badge, Size, Tone, Variant};
-use qquill_view::{el, island, raw, text, Node, Trigger};
+use qquill_view::{el, island, text, Node, Trigger};
 
 use crate::app::Css;
 
@@ -43,21 +39,6 @@ pub fn reveal(instance_id: &'static str, content: Node) -> Node {
 /// or on a touch device — the elements sit flat, fully functional.
 pub fn tilt(instance_id: &'static str, content: Node) -> Node {
     island(instance_id, "tilt", Trigger::Load, "{}", content)
-}
-
-/// A copy-enabled code block: a `copy` island wrapping a `<pre data-q-part=code>`
-/// and a "Copy" button. `lines` build the `<pre>` (escaped); the button copies
-/// the rendered text on click. Static and correct with JS off (button hidden).
-pub fn copy_code(instance_id: &'static str, lines: &[CodeLine]) -> Node {
-    let pre = code_block(lines).attr("data-q-part", "code");
-    let btn = el("button")
-        .class("q-copy")
-        .attr("type", "button")
-        .attr("data-q-part", "copy")
-        .attr("aria-label", "Copy code")
-        .child(el("span").attr("data-q-part", "label").child(text("Copy")));
-    let wrap = el("div").class("q-codewrap").child(btn).child(pre);
-    island(instance_id, "copy", Trigger::Load, "{}", wrap)
 }
 
 /// A status pill, used across pages for the BUILT / PARTIAL / PLANNED legend.
@@ -119,44 +100,6 @@ pub fn section(eyebrow: Option<&str>, heading: &str, lead: &str, body: Node) -> 
         .class("q-section")
         .child(head)
         .child(body)
-}
-
-/// A monospace code block. `lines` are `(is_comment, text)`; a leading `$`
-/// prompt is highlighted. Content is escaped (built from `text`), the structural
-/// spans are trusted markup.
-pub fn code_block(lines: &[CodeLine]) -> Node {
-    let mut pre = el("pre").class("q-code");
-    let mut code = el("code");
-    for (i, line) in lines.iter().enumerate() {
-        if i > 0 {
-            code = code.child(raw("\n"));
-        }
-        match line {
-            CodeLine::Comment(t) => {
-                code = code.child(el("span").class("q-comment").child(text(t.to_string())));
-            }
-            CodeLine::Cmd(t) => {
-                code = code
-                    .child(el("span").class("q-prompt").child(text("$ ")))
-                    .child(text(t.to_string()));
-            }
-            CodeLine::Plain(t) => {
-                code = code.child(text(t.to_string()));
-            }
-        }
-    }
-    pre = pre.child(code);
-    pre
-}
-
-/// A line in a [`code_block`].
-pub enum CodeLine {
-    /// A `# ...` comment line (muted).
-    Comment(&'static str),
-    /// A shell command line (prefixed with a highlighted `$`).
-    Cmd(&'static str),
-    /// A plain output / continuation line.
-    Plain(&'static str),
 }
 
 /// An inline `<code>` snippet.

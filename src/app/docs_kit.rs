@@ -68,9 +68,17 @@ pub struct Page {
 pub fn render_block(b: &Block) -> Node {
     match b {
         Block::Prose(t) => p(t),
-        Block::Code { code, .. } => el("pre")
-            .class("q-code")
-            .child(el("code").child(text(code.clone()))),
+        Block::Code { lang, code } => {
+            let pre = el("pre").class("q-code").child(el("code").child(text(code.clone())));
+            if lang.trim().is_empty() {
+                pre
+            } else {
+                el("figure")
+                    .class("q-codeblock")
+                    .child(el("figcaption").class("q-codeblock__lang").child(text(lang.clone())))
+                    .child(pre)
+            }
+        }
         Block::Example { request, response, output } => example(request, response, output),
         Block::Ascii { caption, diagram } => ascii(caption, diagram),
         Block::Table { headers, rows } => {
@@ -90,7 +98,7 @@ pub fn render_block(b: &Block) -> Node {
             let tag = if *ordered { "ol" } else { "ul" };
             let mut list = el(tag).class("q-doc-list");
             for it in items {
-                list = list.child(el("li").child(text(it.clone())));
+                list = list.child(el("li").children(inline(it)));
             }
             list
         }
@@ -113,9 +121,50 @@ pub fn render_doc_body(page: &Page) -> (Node, Toc) {
 
 // --- shared content primitives (used by render_block and by hub/landing pages) ---
 
-/// A paragraph of body prose.
+/// Render inline prose, converting `code` spans to `<code>` and `**bold**` to
+/// `<strong>`. Authored content uses light inline markdown; block structure
+/// (headings, lists, examples, …) is explicit, so only these two inline forms
+/// need handling. Backtick/asterisk are ASCII, so byte slicing stays on char
+/// boundaries.
+pub fn inline(s: &str) -> Vec<Node> {
+    let mut out: Vec<Node> = Vec::new();
+    let mut plain = String::new();
+    let mut i = 0usize;
+    while i < s.len() {
+        let rest = &s[i..];
+        if let Some(stripped) = rest.strip_prefix("**") {
+            if let Some(end) = stripped.find("**") {
+                if !plain.is_empty() {
+                    out.push(text(std::mem::take(&mut plain)));
+                }
+                out.push(el("strong").child(text(stripped[..end].to_string())));
+                i += 2 + end + 2;
+                continue;
+            }
+        }
+        if rest.starts_with('`') {
+            if let Some(end) = rest[1..].find('`') {
+                if !plain.is_empty() {
+                    out.push(text(std::mem::take(&mut plain)));
+                }
+                out.push(el("code").class("q-inline").child(text(rest[1..1 + end].to_string())));
+                i += 1 + end + 1;
+                continue;
+            }
+        }
+        let ch = rest.chars().next().unwrap();
+        plain.push(ch);
+        i += ch.len_utf8();
+    }
+    if !plain.is_empty() {
+        out.push(text(plain));
+    }
+    out
+}
+
+/// A paragraph of body prose (with inline `code`/`**bold**`).
 pub fn p(s: &str) -> Node {
-    el("p").class("q-doc-p").child(text(s.to_string()))
+    el("p").class("q-doc-p").children(inline(s))
 }
 
 /// A worked example: labelled Request / Response / Output panes (panes with
@@ -171,7 +220,7 @@ pub fn callout(kind: &str, label: &str, body: &str) -> Node {
     el("aside")
         .class(format!("q-callout q-callout--{kind}"))
         .child(el("span").class("q-callout__label").child(text(label.to_string())))
-        .child(el("p").class("q-callout__body").child(text(body.to_string())))
+        .child(el("p").class("q-callout__body").children(inline(body)))
 }
 
 /// A definition list (term → description).
@@ -180,7 +229,7 @@ pub fn defs(rows: &[(&str, &str)]) -> Node {
     for (term, desc) in rows {
         dl = dl
             .child(el("dt").child(text((*term).to_string())))
-            .child(el("dd").child(text((*desc).to_string())));
+            .child(el("dd").children(inline(desc)));
     }
     dl
 }
@@ -246,42 +295,92 @@ pub struct DocRef {
 /// automatically. Keep each product's pages contiguous for readability (the
 /// scoping does not require it, but the source reads better).
 pub const DOCS: &[DocRef] = &[
-    // ---- DMS -------------------------------------------------------------
     DocRef { path: "/docs/dms", title: "Overview", product: Product::Dms, section: "Start here" },
-    DocRef { path: "/docs/dms/getting-started", title: "Installation", product: Product::Dms, section: "Get started" },
-    DocRef { path: "/docs/dms/quick-start", title: "Quick start", product: Product::Dms, section: "Get started" },
-    DocRef { path: "/docs/dms/concepts", title: "Core concepts", product: Product::Dms, section: "Core" },
-    DocRef { path: "/docs/dms/execute-model", title: "The execute model", product: Product::Dms, section: "Core" },
-    DocRef { path: "/docs/dms/workers", title: "Workers", product: Product::Dms, section: "Core" },
-    DocRef { path: "/docs/dms/access-control", title: "Access control", product: Product::Dms, section: "Core" },
-    DocRef { path: "/docs/dms/qql-reading", title: "Reading", product: Product::Dms, section: "QQL" },
-    DocRef { path: "/docs/dms/qql-writing", title: "Writing", product: Product::Dms, section: "QQL" },
-    DocRef { path: "/docs/dms/qql-search", title: "Search", product: Product::Dms, section: "QQL" },
-    DocRef { path: "/docs/dms/qql-graph", title: "Graph", product: Product::Dms, section: "QQL" },
-    DocRef { path: "/docs/dms/qql-vector", title: "Vector", product: Product::Dms, section: "QQL" },
-    DocRef { path: "/docs/dms/api-spec", title: "The self-describing API", product: Product::Dms, section: "API" },
-    DocRef { path: "/docs/dms/api-envelope", title: "Envelope & error codes", product: Product::Dms, section: "API" },
-    // ---- Quill -----------------------------------------------------------
+    DocRef { path: "/docs/dms/install", title: "Installation & build", product: Product::Dms, section: "Get started" },
+    DocRef { path: "/docs/dms/quick-start", title: "Quick start: boot & first query", product: Product::Dms, section: "Get started" },
+    DocRef { path: "/docs/dms/configuration", title: "Configuration", product: Product::Dms, section: "Get started" },
+    DocRef { path: "/docs/dms/tuning", title: "Performance tuning", product: Product::Dms, section: "Get started" },
+    DocRef { path: "/docs/dms/concepts", title: "Core concepts", product: Product::Dms, section: "Core architecture" },
+    DocRef { path: "/docs/dms/access-model-overview", title: "Access model: three-tier authorization", product: Product::Dms, section: "Core architecture" },
+    DocRef { path: "/docs/dms/worker-pipeline", title: "Worker pipeline: before -> handle -> after", product: Product::Dms, section: "Core architecture" },
+    DocRef { path: "/docs/dms/execute-model", title: "The execute model & function scope", product: Product::Dms, section: "Core architecture" },
+    DocRef { path: "/docs/dms/architecture-overview", title: "Architecture overview", product: Product::Dms, section: "Core architecture" },
+    DocRef { path: "/docs/dms/architecture-security", title: "Security & governance architecture", product: Product::Dms, section: "Core architecture" },
+    DocRef { path: "/docs/dms/embedded-and-sync", title: "Embedded & sync", product: Product::Dms, section: "Core architecture" },
+    DocRef { path: "/docs/dms/qql-basics", title: "QQL fundamentals & core syntax", product: Product::Dms, section: "QQL" },
+    DocRef { path: "/docs/dms/qql-reading-filters", title: "Reading: filters, ranges, AND/OR, composite prefixes", product: Product::Dms, section: "QQL" },
+    DocRef { path: "/docs/dms/qql-reading-streaming", title: "Reading: streaming SELECT, aggregates, early-stop limit", product: Product::Dms, section: "QQL" },
+    DocRef { path: "/docs/dms/qql-reading-sort-index", title: "Reading: sort-via-index (top-K)", product: Product::Dms, section: "QQL" },
+    DocRef { path: "/docs/dms/qql-reading-joins", title: "Reading: joins (nested-loop with index probing)", product: Product::Dms, section: "QQL" },
+    DocRef { path: "/docs/dms/qql-search-inverted", title: "Search: full-text inverted index", product: Product::Dms, section: "QQL" },
+    DocRef { path: "/docs/dms/qql-graph-traverse", title: "Graph: breadth-first traversal", product: Product::Dms, section: "QQL" },
+    DocRef { path: "/docs/dms/qql-vector-ann", title: "Vector: approximate nearest neighbor (LSH k-NN)", product: Product::Dms, section: "QQL" },
+    DocRef { path: "/docs/dms/qql-writing-acid", title: "Writing: INSERT/UPDATE/DELETE with ACID (WAL + indexes)", product: Product::Dms, section: "QQL" },
+    DocRef { path: "/docs/dms/qql-ddl-tables", title: "DDL: CREATE TABLE (schema/schemaless, columns, TTL)", product: Product::Dms, section: "QQL" },
+    DocRef { path: "/docs/dms/qql-ddl-indexes", title: "DDL: CREATE INDEX (filter/sort/search/vector/graph/nested/composite)", product: Product::Dms, section: "QQL" },
+    DocRef { path: "/docs/dms/qql-return-shaping", title: "Response: RETURN custom shaping", product: Product::Dms, section: "QQL" },
+    DocRef { path: "/docs/dms/qql-batch", title: "QQL batch: concurrent statements", product: Product::Dms, section: "QQL" },
+    DocRef { path: "/docs/dms/qql-plan-cache", title: "Performance: prepared-plan cache", product: Product::Dms, section: "QQL" },
+    DocRef { path: "/docs/dms/qql-ttl-sweep", title: "Maintenance: TTL sweep", product: Product::Dms, section: "QQL" },
+    DocRef { path: "/docs/dms/qql-wal-recovery", title: "Durability: WAL & crash recovery", product: Product::Dms, section: "QQL" },
+    DocRef { path: "/docs/dms/session-tokens-lifecycle", title: "Session tokens: mint, validate, extend", product: Product::Dms, section: "Authentication & RBAC" },
+    DocRef { path: "/docs/dms/hmac-signed-api-keys", title: "HMAC-signed API keys & replay guard", product: Product::Dms, section: "Authentication & RBAC" },
+    DocRef { path: "/docs/dms/api-keys-minting-rotation", title: "API keys: minting, storage, scope & rotation", product: Product::Dms, section: "Authentication & RBAC" },
+    DocRef { path: "/docs/dms/rbac-roles-onboarding", title: "RBAC: four roles & invite-only onboarding", product: Product::Dms, section: "Authentication & RBAC" },
+    DocRef { path: "/docs/dms/table-level-rbac-grants", title: "Table-level RBAC: grants CSV & deny-by-default", product: Product::Dms, section: "Authentication & RBAC" },
+    DocRef { path: "/docs/dms/response-envelope", title: "Response envelope: {error|data|root}", product: Product::Dms, section: "API & discovery" },
+    DocRef { path: "/docs/dms/api-spec-catalog", title: "Self-describing API: /api/spec", product: Product::Dms, section: "API & discovery" },
+    DocRef { path: "/docs/dms/openapi-projection", title: "OpenAPI 3.1 projection: /api/spec/openapi", product: Product::Dms, section: "API & discovery" },
+    DocRef { path: "/docs/dms/system-catalogs", title: "System catalogs: config-as-data (_sys_*)", product: Product::Dms, section: "Operations" },
+    DocRef { path: "/docs/dms/scheduler-jobs", title: "Per-function scheduler: interval & daily cron", product: Product::Dms, section: "Operations" },
+    DocRef { path: "/docs/dms/studio-overview", title: "Studio: the admin app", product: Product::Dms, section: "Studio" },
+    DocRef { path: "/docs/dms/studio-authentication", title: "Studio authentication: sessions, cookies, CSRF", product: Product::Dms, section: "Studio" },
+    DocRef { path: "/docs/dms/studio-rbac", title: "Studio RBAC: role hierarchy & screen permissions", product: Product::Dms, section: "Studio" },
+    DocRef { path: "/docs/dms/studio-ui-architecture", title: "Studio UI architecture: SSR, components, shell", product: Product::Dms, section: "Studio" },
     DocRef { path: "/docs/quill", title: "Overview", product: Product::Quill, section: "Start here" },
-    DocRef { path: "/docs/quill/installation", title: "Installation", product: Product::Quill, section: "Get started" },
-    DocRef { path: "/docs/quill/quickstart", title: "Quickstart", product: Product::Quill, section: "Get started" },
-    DocRef { path: "/docs/quill/project-structure", title: "Project structure", product: Product::Quill, section: "Get started" },
-    DocRef { path: "/docs/quill/view-macro", title: "The view macro", product: Product::Quill, section: "Authoring" },
-    DocRef { path: "/docs/quill/components", title: "Components", product: Product::Quill, section: "Authoring" },
-    DocRef { path: "/docs/quill/theming", title: "Theming", product: Product::Quill, section: "Authoring" },
-    DocRef { path: "/docs/quill/islands", title: "Islands", product: Product::Quill, section: "Interactivity" },
-    DocRef { path: "/docs/quill/building-an-island", title: "Building an island", product: Product::Quill, section: "Interactivity" },
-    DocRef { path: "/docs/quill/static-export", title: "Static export & deploy", product: Product::Quill, section: "Ship" },
-    // ---- stdlib ----------------------------------------------------------
+    DocRef { path: "/docs/quill/installation", title: "Installation & getting started", product: Product::Quill, section: "Get started" },
+    DocRef { path: "/docs/quill/project-structure", title: "Project structure & architecture", product: Product::Quill, section: "Get started" },
+    DocRef { path: "/docs/quill/cli-scaffolding", title: "CLI: scaffolding & commands", product: Product::Quill, section: "Get started" },
+    DocRef { path: "/docs/quill/view-authoring", title: "View layer & authoring (view! macro)", product: Product::Quill, section: "Authoring" },
+    DocRef { path: "/docs/quill/styling-css", title: "CSS compilation (style! macro)", product: Product::Quill, section: "Authoring" },
+    DocRef { path: "/docs/quill/design-tokens-theming", title: "Design tokens & theme system", product: Product::Quill, section: "Authoring" },
+    DocRef { path: "/docs/quill/components-ui", title: "Headless components (qquill-ui)", product: Product::Quill, section: "Components" },
+    DocRef { path: "/docs/quill/styled-components", title: "Styled components (qquill-design)", product: Product::Quill, section: "Components" },
+    DocRef { path: "/docs/quill/components", title: "Component library", product: Product::Quill, section: "Components" },
+    DocRef { path: "/docs/quill/islands-hydration", title: "Islands & client hydration", product: Product::Quill, section: "Interactivity" },
+    DocRef { path: "/docs/quill/signals", title: "Signals & reactive state", product: Product::Quill, section: "Interactivity" },
+    DocRef { path: "/docs/quill/client-runtime", title: "Client runtime & behaviors", product: Product::Quill, section: "Interactivity" },
+    DocRef { path: "/docs/quill/static-export-ssg", title: "Static export & SSG (qquill-build)", product: Product::Quill, section: "Ship" },
+    DocRef { path: "/docs/quill/examples-patterns", title: "Common patterns & examples", product: Product::Quill, section: "Ship" },
     DocRef { path: "/docs/stdlib", title: "Overview", product: Product::Stdlib, section: "Start here" },
-    DocRef { path: "/docs/stdlib/substrate", title: "The substrate: qexec + qvalue", product: Product::Stdlib, section: "Substrate" },
-    DocRef { path: "/docs/stdlib/utilities", title: "Utility crates", product: Product::Stdlib, section: "Crates" },
-    DocRef { path: "/docs/stdlib/dependency-rule", title: "The dependency rule", product: Product::Stdlib, section: "Rules" },
-    // ---- Cloud -----------------------------------------------------------
+    DocRef { path: "/docs/stdlib/substrate", title: "Substrate: qexec executor & qvalue model", product: Product::Stdlib, section: "Substrate" },
+    DocRef { path: "/docs/stdlib/dependencies", title: "Dependency rules & architecture", product: Product::Stdlib, section: "Substrate" },
+    DocRef { path: "/docs/stdlib/qarray", title: "qarray: list operations", product: Product::Stdlib, section: "Utility crates" },
+    DocRef { path: "/docs/stdlib/qobject", title: "qobject: map operations", product: Product::Stdlib, section: "Utility crates" },
+    DocRef { path: "/docs/stdlib/qstring", title: "qstring: string operations", product: Product::Stdlib, section: "Utility crates" },
+    DocRef { path: "/docs/stdlib/qmath", title: "qmath: fast floating-point arithmetic", product: Product::Stdlib, section: "Utility crates" },
+    DocRef { path: "/docs/stdlib/qnumber", title: "qnumber: arbitrary-precision arithmetic", product: Product::Stdlib, section: "Utility crates" },
+    DocRef { path: "/docs/stdlib/qconvert", title: "qconvert: type casting", product: Product::Stdlib, section: "Utility crates" },
+    DocRef { path: "/docs/stdlib/qencoding", title: "qencoding: base64 & hex codecs", product: Product::Stdlib, section: "Utility crates" },
+    DocRef { path: "/docs/stdlib/qcrypto", title: "qcrypto: cryptographic hashing", product: Product::Stdlib, section: "Utility crates" },
+    DocRef { path: "/docs/stdlib/qregex", title: "qregex: regular expression matching", product: Product::Stdlib, section: "Utility crates" },
+    DocRef { path: "/docs/stdlib/qtime", title: "qtime: time operations", product: Product::Stdlib, section: "Utility crates" },
+    DocRef { path: "/docs/stdlib/quuid", title: "quuid: UUID generation", product: Product::Stdlib, section: "Utility crates" },
     DocRef { path: "/docs/cloud", title: "Overview", product: Product::Cloud, section: "Start here" },
-    DocRef { path: "/docs/cloud/plans-and-resources", title: "Plans & resources", product: Product::Cloud, section: "Using Cloud" },
-    DocRef { path: "/docs/cloud/scaling", title: "Scaling", product: Product::Cloud, section: "Using Cloud" },
-    DocRef { path: "/docs/cloud/architecture", title: "Architecture", product: Product::Cloud, section: "How it works" },
+    DocRef { path: "/docs/cloud/control-plane-model", title: "Control plane data model (_cp_* catalogs)", product: Product::Cloud, section: "How it works" },
+    DocRef { path: "/docs/cloud/orchestration-functions", title: "Orchestration functions (cloud.* API)", product: Product::Cloud, section: "How it works" },
+    DocRef { path: "/docs/cloud/placement-binpack", title: "Placement: first-fit bin-packing", product: Product::Cloud, section: "How it works" },
+    DocRef { path: "/docs/cloud/architecture", title: "Cloud architecture", product: Product::Cloud, section: "How it works" },
+    DocRef { path: "/docs/cloud/scaling-vertical", title: "Vertical scaling: live capacity growth", product: Product::Cloud, section: "Scaling" },
+    DocRef { path: "/docs/cloud/scaling-horizontal", title: "Horizontal scaling: cluster replica count", product: Product::Cloud, section: "Scaling" },
+    DocRef { path: "/docs/cloud/mode-switching", title: "Mode switching: standalone <-> cluster", product: Product::Cloud, section: "Scaling" },
+    DocRef { path: "/docs/cloud/scaling-architecture", title: "Scaling, migration & upgrades (mechanism)", product: Product::Cloud, section: "Scaling" },
+    DocRef { path: "/docs/cloud/suspension-termination", title: "Lifecycle: suspend, resume, terminate", product: Product::Cloud, section: "Operations" },
+    DocRef { path: "/docs/cloud/billing-metering", title: "Billing & metering", product: Product::Cloud, section: "Operations" },
+    DocRef { path: "/docs/cloud/console-ui", title: "Cloud Console: RBAC-gated web interface", product: Product::Cloud, section: "Console" },
+    DocRef { path: "/docs/cloud/rbac-enforcement", title: "RBAC: deny-by-default role gates", product: Product::Cloud, section: "Console" },
+    DocRef { path: "/docs/cloud/audit-trail", title: "Audit trail: control-plane action logging", product: Product::Cloud, section: "Console" },
+    DocRef { path: "/docs/cloud/built-vs-planned", title: "Built vs planned", product: Product::Cloud, section: "Console" },
 ];
 
 /// Look up a page's `DocRef` by path (so a route can derive its own product).
@@ -453,6 +552,10 @@ pub fn docs_extras_css() -> &'static str {
 .q-doc-body h2{scroll-margin-top:5rem}\
 .q-doc-list{margin:0 0 1.1rem;padding-left:1.2rem;color:var(--q-color-fg);line-height:1.7}\
 .q-doc-list li{margin:.3rem 0}\
+.q-doc-body .q-code{margin:1.25rem 0}\
+.q-codeblock{margin:1.25rem 0}\
+.q-codeblock .q-code{margin:0}\
+.q-codeblock__lang{margin:0 0 .3rem;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--q-color-muted);font-weight:var(--q-font-weight-bold)}\
 /* ---- worked example (request / response / output) ---- */\
 .q-eg{display:grid;gap:.75rem;margin:1.5rem 0}\
 .q-eg__pane{border:1px solid var(--q-color-border);border-radius:var(--q-radius-lg);overflow:hidden;background:var(--q-color-surface)}\
