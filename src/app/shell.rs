@@ -41,10 +41,11 @@ const MENUS: &[Menu] = &[
         label: "Developer Docs",
         id: "docs",
         items: &[
-            ("Documentation", "Guides, concepts, references", "/docs"),
-            ("Getting started", "From zero to first app", "/docs/getting-started"),
-            ("API reference", "The function + worker surface", "/api"),
-            ("Components", "The Quill component catalog", "/components"),
+            ("Qirava DMS", "Data system: install, concepts, auth model", "/docs/dms"),
+            ("Quill", "UI framework: SSR, islands, components", "/docs/quill"),
+            ("The q* stdlib", "qexec, qvalue, and the utility crates", "/docs/stdlib"),
+            ("Qirava Cloud", "Managed control plane (planned)", "/docs/cloud"),
+            ("All docs", "The per-product documentation hub", "/docs"),
         ],
     },
     Menu {
@@ -289,7 +290,7 @@ fn footer() -> Node {
                     ))
                     .child(col(
                         "Developers",
-                        &[("Getting started", "/docs/getting-started"), ("API reference", "/api"), ("Architecture", "/architecture")],
+                        &[("Getting started", "/docs/dms/getting-started"), ("API reference", "/api"), ("Architecture", "/architecture")],
                     ))
                     .child(col(
                         "Project",

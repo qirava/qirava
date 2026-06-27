@@ -170,7 +170,7 @@ fn body(css: &mut Css) -> Node {
         "Browse the component catalog with its live playground, follow the getting-started guide, \
          or read how the islands runtime hydrates in place.",
         Cta { label: "Browse components", href: "/components", solid: true },
-        Cta { label: "Get started", href: "/docs/getting-started", solid: false },
+        Cta { label: "Get started", href: "/docs/quill", solid: false },
     );
 
     main_wrap(vec![hero, authoring, rendering, runtime, status, closing])

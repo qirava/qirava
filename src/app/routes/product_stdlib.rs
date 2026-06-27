@@ -110,7 +110,7 @@ fn body(css: &mut Css) -> Node {
          that replace what would otherwise be third-party dependencies. Products depend on q*; \
          q* never depends on a product.",
         &[
-            Cta { label: "Read the concepts", href: "/docs/concepts", solid: true },
+            Cta { label: "Read the concepts", href: "/docs/stdlib", solid: true },
             Cta { label: "View on GitHub", href: GITHUB_URL, solid: false },
         ],
         &[
@@ -178,7 +178,7 @@ fn body(css: &mut Css) -> Node {
         "Stand on the substrate",
         "Read the concepts behind the value model and the bounded executor, or see how the \
          products are composed from these crates.",
-        Cta { label: "Read the concepts", href: "/docs/concepts", solid: true },
+        Cta { label: "Read the concepts", href: "/docs/stdlib", solid: true },
         Cta { label: "See the architecture", href: "/architecture", solid: false },
     );
 

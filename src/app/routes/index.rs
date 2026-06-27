@@ -151,7 +151,7 @@ fn products() -> Node {
          "13 zero-dependency crates: the substrate qexec (bounded executor) and qvalue \
           (value/ABI), plus array, object, string, math, number, convert, crypto, encoding, \
           regex, time, and uuid — shared across every product.",
-         Status::Built, "Read the concepts", "/docs/concepts"),
+         Status::Built, "Read the concepts", "/docs/dms/concepts"),
         ("Qirava Cloud", "—",
          "A managed control plane for the DMS — confidential compute (SEV-SNP), custodian-gated \
           key management, and single-leader replication, operated for you. Open-core; the engine \
@@ -324,7 +324,7 @@ fn closing() -> Node {
                 .child(
                     el("a")
                         .class("q-btn q-btn--invert")
-                        .attr("href", "/docs/getting-started")
+                        .attr("href", "/docs/dms/getting-started")
                         .child(text("Get started"))
                         .child(raw(ARROW_SVG)),
                 )

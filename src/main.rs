@@ -65,10 +65,45 @@ const PAGES: &[Page] = &[
     Page { id: "products-cloud", path: "/products/cloud", handler: app::routes::product_cloud::respond },
     Page { id: "architecture", path: "/architecture", handler: app::routes::architecture::respond },
     Page { id: "roadmap", path: "/roadmap", handler: app::routes::roadmap::respond },
-    // Docs framework (left sidebar -> pages, on-page TOC, prev/next, copy).
+    // Per-product docs framework: /docs is a hub; each product owns a scoped
+    // sidebar + pager (left sidebar -> pages, on-page TOC, prev/next, copy).
     Page { id: "docs", path: "/docs", handler: app::routes::docs::respond },
-    Page { id: "docs-getting-started", path: "/docs/getting-started", handler: app::routes::docs::respond_getting_started },
-    Page { id: "docs-concepts", path: "/docs/concepts", handler: app::routes::docs::respond_concepts },
+    // DMS
+    Page { id: "docs-dms", path: "/docs/dms", handler: app::routes::docs::respond_dms },
+    Page { id: "docs-dms-getting-started", path: "/docs/dms/getting-started", handler: app::routes::docs::respond_getting_started },
+    Page { id: "docs-dms-quick-start", path: "/docs/dms/quick-start", handler: app::routes::docs::respond_quick_start },
+    Page { id: "docs-dms-concepts", path: "/docs/dms/concepts", handler: app::routes::docs::respond_concepts },
+    Page { id: "docs-dms-execute-model", path: "/docs/dms/execute-model", handler: app::routes::docs::respond_execute_model },
+    Page { id: "docs-dms-workers", path: "/docs/dms/workers", handler: app::routes::docs::respond_workers },
+    Page { id: "docs-dms-access-control", path: "/docs/dms/access-control", handler: app::routes::docs::respond_access_control },
+    Page { id: "docs-dms-qql-reading", path: "/docs/dms/qql-reading", handler: app::routes::docs::respond_qql_reading },
+    Page { id: "docs-dms-qql-writing", path: "/docs/dms/qql-writing", handler: app::routes::docs::respond_qql_writing },
+    Page { id: "docs-dms-qql-search", path: "/docs/dms/qql-search", handler: app::routes::docs::respond_qql_search },
+    Page { id: "docs-dms-qql-graph", path: "/docs/dms/qql-graph", handler: app::routes::docs::respond_qql_graph },
+    Page { id: "docs-dms-qql-vector", path: "/docs/dms/qql-vector", handler: app::routes::docs::respond_qql_vector },
+    Page { id: "docs-dms-api-spec", path: "/docs/dms/api-spec", handler: app::routes::docs::respond_api_spec },
+    Page { id: "docs-dms-api-envelope", path: "/docs/dms/api-envelope", handler: app::routes::docs::respond_api_envelope },
+    // Quill
+    Page { id: "docs-quill", path: "/docs/quill", handler: app::routes::docs::respond_quill },
+    Page { id: "docs-quill-installation", path: "/docs/quill/installation", handler: app::routes::docs::respond_quill_installation },
+    Page { id: "docs-quill-quickstart", path: "/docs/quill/quickstart", handler: app::routes::docs::respond_quill_quickstart },
+    Page { id: "docs-quill-project-structure", path: "/docs/quill/project-structure", handler: app::routes::docs::respond_quill_project_structure },
+    Page { id: "docs-quill-view-macro", path: "/docs/quill/view-macro", handler: app::routes::docs::respond_quill_view_macro },
+    Page { id: "docs-quill-components", path: "/docs/quill/components", handler: app::routes::docs::respond_quill_components },
+    Page { id: "docs-quill-theming", path: "/docs/quill/theming", handler: app::routes::docs::respond_quill_theming },
+    Page { id: "docs-quill-islands", path: "/docs/quill/islands", handler: app::routes::docs::respond_quill_islands },
+    Page { id: "docs-quill-building-an-island", path: "/docs/quill/building-an-island", handler: app::routes::docs::respond_quill_building_an_island },
+    Page { id: "docs-quill-static-export", path: "/docs/quill/static-export", handler: app::routes::docs::respond_quill_static_export },
+    // q* stdlib
+    Page { id: "docs-stdlib", path: "/docs/stdlib", handler: app::routes::docs::respond_stdlib },
+    Page { id: "docs-stdlib-substrate", path: "/docs/stdlib/substrate", handler: app::routes::docs::respond_stdlib_substrate },
+    Page { id: "docs-stdlib-utilities", path: "/docs/stdlib/utilities", handler: app::routes::docs::respond_stdlib_utilities },
+    Page { id: "docs-stdlib-dependency-rule", path: "/docs/stdlib/dependency-rule", handler: app::routes::docs::respond_stdlib_dependency_rule },
+    // Cloud
+    Page { id: "docs-cloud", path: "/docs/cloud", handler: app::routes::docs::respond_cloud },
+    Page { id: "docs-cloud-plans-and-resources", path: "/docs/cloud/plans-and-resources", handler: app::routes::docs::respond_cloud_plans },
+    Page { id: "docs-cloud-scaling", path: "/docs/cloud/scaling", handler: app::routes::docs::respond_cloud_scaling },
+    Page { id: "docs-cloud-architecture", path: "/docs/cloud/architecture", handler: app::routes::docs::respond_cloud_architecture },
     // Component showcase + interactive playground.
     Page { id: "components", path: "/components", handler: app::routes::components::respond },
     Page { id: "components-button", path: "/components/button", handler: app::routes::components::respond_button },

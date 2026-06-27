@@ -212,7 +212,7 @@ fn body(css: &mut Css) -> Node {
         "Build on the DMS",
         "Read the getting-started guide, browse the self-describing API reference, or dive into \
          the three-checkpoint access model.",
-        Cta { label: "Get started", href: "/docs/getting-started", solid: true },
+        Cta { label: "Get started", href: "/docs/dms/getting-started", solid: true },
         Cta { label: "Read the architecture", href: "/architecture", solid: false },
     );
 
