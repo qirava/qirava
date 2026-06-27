@@ -513,7 +513,7 @@ pub fn layout(product: Product, current: &str, title: &str, lead: &str, content:
         .class("q-docs__main")
         .child(el("p").class("q-docs__crumb").child(text(format!("{} docs", product.name()))))
         .child(el("h1").child(text(title.to_string())))
-        .child(el("p").class("q-lead").child(text(lead.to_string())))
+        .child(el("p").class("q-lead").children(inline(lead)))
         .child(content)
         .child(prev_next(product, current));
 
