@@ -411,12 +411,15 @@ fn motion_css() -> &'static str {
     "\
 :root{--q-ease-out:cubic-bezier(.16,1,.3,1);--q-ease-in-out:cubic-bezier(.65,0,.35,1)}\
 .q-main{flex:1 1 auto;width:100%;max-width:72rem;margin:0 auto;padding:3.5rem 1.5rem 5rem}\
-/* ---- scroll reveal (the `reveal` island toggles data-revealed) ---- */\
-[data-q-reveal]{opacity:0;transform:translateY(18px);transition:opacity .6s var(--q-ease-out),transform .6s var(--q-ease-out)}\
-[data-q-reveal][data-revealed=\"true\"]{opacity:1;transform:none}\
-[data-q-reveal][data-reveal-delay=\"1\"]{transition-delay:.08s}\
-[data-q-reveal][data-reveal-delay=\"2\"]{transition-delay:.16s}\
-[data-q-reveal][data-reveal-delay=\"3\"]{transition-delay:.24s}\
+/* ---- reveal: a load-time fade-up that ALWAYS ends visible (no JS needed, no \
+   blank sections). The `reveal` island still sets data-revealed but is no longer \
+   required for visibility. ---- */\
+[data-q-reveal]{animation:q-reveal .6s var(--q-ease-out) both}\
+@keyframes q-reveal{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}\
+[data-q-reveal][data-reveal-delay=\"1\"]{animation-delay:.08s}\
+[data-q-reveal][data-reveal-delay=\"2\"]{animation-delay:.16s}\
+[data-q-reveal][data-reveal-delay=\"3\"]{animation-delay:.24s}\
+@media (prefers-reduced-motion:reduce){[data-q-reveal]{animation:none}}\
 /* ---- hero ---- */\
 .q-hero{position:relative;padding:2.5rem 0 1rem;overflow:hidden}\
 .q-hero__glow{position:absolute;inset:-40% -10% auto -10%;height:520px;z-index:0;pointer-events:none;background:radial-gradient(60% 60% at 30% 20%,color-mix(in srgb,var(--q-color-brand) 26%,transparent),transparent 70%),radial-gradient(50% 50% at 80% 10%,color-mix(in srgb,var(--q-color-brand) 16%,transparent),transparent 70%);filter:blur(6px);animation:q-drift 18s var(--q-ease-in-out) infinite alternate}\
