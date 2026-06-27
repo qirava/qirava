@@ -85,7 +85,10 @@ pub fn render_doc(path: &str) -> FunctionResponse {
     css.push(docs_kit::docs_extras_css().to_string());
     css.push(docs_kit::pager_css().to_string());
 
-    let (body, toc, lead) = match crate::app::routes::docs_content::content(path) {
+    // Hand-authored (verified) content wins; otherwise the generated content.
+    let page_opt = crate::app::routes::docs_authored::content(path)
+        .or_else(|| crate::app::routes::docs_content::content(path));
+    let (body, toc, lead) = match page_opt {
         Some(p) => {
             let (b, t) = docs_kit::render_doc_body(&p);
             (b, t, p.lead)

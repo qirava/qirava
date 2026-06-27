@@ -5,6 +5,7 @@
 pub mod api;
 pub mod components;
 pub mod docs;
+pub mod docs_authored;
 pub mod docs_content;
 pub mod index;
 pub mod product_cloud;
