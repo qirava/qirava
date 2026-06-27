@@ -64,7 +64,13 @@ const PAGES: &[Page] = &[
     Page { id: "products-stdlib", path: "/products/stdlib", handler: app::routes::product_stdlib::respond },
     Page { id: "products-cloud", path: "/products/cloud", handler: app::routes::product_cloud::respond },
     Page { id: "architecture", path: "/architecture", handler: app::routes::architecture::respond },
+    // Per-product roadmap: /roadmap is a hub; each product owns a BUILT /
+    // PARTIAL / PLANNED status board (mirrors the /docs hub).
     Page { id: "roadmap", path: "/roadmap", handler: app::routes::roadmap::respond },
+    Page { id: "roadmap-dms", path: "/roadmap/dms", handler: app::routes::roadmap_dms::respond },
+    Page { id: "roadmap-quill", path: "/roadmap/quill", handler: app::routes::roadmap_quill::respond },
+    Page { id: "roadmap-stdlib", path: "/roadmap/stdlib", handler: app::routes::roadmap_stdlib::respond },
+    Page { id: "roadmap-cloud", path: "/roadmap/cloud", handler: app::routes::roadmap_cloud::respond },
     // Per-product docs framework: /docs is a hub; each product owns a scoped
     // sidebar + pager (left sidebar -> pages, on-page TOC, prev/next, copy).
     Page { id: "docs", path: "/docs", handler: app::routes::docs::respond },

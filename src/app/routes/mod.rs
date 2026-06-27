@@ -14,6 +14,11 @@ pub mod product_quill;
 pub mod product_stdlib;
 pub mod products;
 pub mod roadmap;
+pub mod roadmap_cloud;
+pub mod roadmap_dms;
+pub mod roadmap_page;
+pub mod roadmap_quill;
+pub mod roadmap_stdlib;
 
 use qquill_design::{Badge, Size, Tone, Variant};
 use qquill_view::{el, island, raw, text, Node, Trigger};

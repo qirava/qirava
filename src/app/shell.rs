@@ -52,8 +52,11 @@ const MENUS: &[Menu] = &[
         label: "Roadmap",
         id: "roadmap",
         items: &[
-            ("Roadmap", "What's shipped and what's next", "/roadmap"),
-            ("Architecture", "Security + performance pillars", "/architecture"),
+            ("Qirava DMS", "Engine, workers, RBAC — built; cluster planned", "/roadmap/dms"),
+            ("Quill", "SSR, islands, CLI — built; more next", "/roadmap/quill"),
+            ("The q* stdlib", "13 crates built; more crypto planned", "/roadmap/stdlib"),
+            ("Qirava Cloud", "Managed control plane (planned)", "/roadmap/cloud"),
+            ("All roadmaps", "The per-product roadmap hub", "/roadmap"),
         ],
     },
 ];
