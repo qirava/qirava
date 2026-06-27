@@ -96,7 +96,6 @@ fn nav_menu(menu: &Menu, active_path: &str) -> Node {
     let mut surface = el("div")
         .class("q-menu__surface")
         .attr("data-q-part", "surface")
-        .attr("data-q-surface", "glass")
         .attr("role", "menu")
         .attr("hidden", "")
         .attr("aria-hidden", "true")
@@ -161,7 +160,6 @@ fn theme_panel() -> Node {
 
     let panel = el("div")
         .class("q-tc__panel")
-        .attr("data-q-surface", "glass")
         .attr("role", "menu")
         .attr("aria-label", "Appearance settings")
         .child(group("Theme", "theme", &[("Light", "light"), ("Dark", "dark")], "dark"))
@@ -353,7 +351,7 @@ fn chrome_css() -> &'static str {
 .q-ext{opacity:.55}\
 /* ---- dropdown menus (the `menu` island) ---- */\
 .q-menu{position:relative;display:inline-flex}\
-.q-menu__surface{position:absolute;top:calc(100% + .5rem);left:0;z-index:50;min-width:17rem;display:flex;flex-direction:column;gap:.1rem;padding:.4rem;border-radius:var(--q-radius-lg);transform-origin:top left;animation:q-menu-in var(--q-duration-fast) var(--q-ease-out)}\
+.q-menu__surface{position:absolute;top:calc(100% + .5rem);left:0;z-index:50;min-width:17rem;display:flex;flex-direction:column;gap:.1rem;padding:.4rem;border-radius:var(--q-radius-lg);background:var(--q-color-surface);border:1px solid var(--q-color-border);box-shadow:var(--q-shadow-lg);transform-origin:top left;animation:q-menu-in var(--q-duration-fast) var(--q-ease-out)}\
 .q-menu__surface[hidden]{display:none}\
 @keyframes q-menu-in{from{opacity:0;transform:translateY(-6px) scale(.98)}to{opacity:1;transform:none}}\
 .q-menu__item{display:flex;flex-direction:column;gap:.1rem;padding:.55rem .7rem;border-radius:var(--q-radius-md);color:var(--q-color-fg);transition:background-color var(--q-duration-fast) var(--q-ease-out)}\

@@ -88,11 +88,11 @@ fn hero(css: &mut Css) -> Node {
 // PRODUCTS OVERVIEW
 // ---------------------------------------------------------------------------
 
-/// One product card, hand-built so it can carry a `data-q-surface` treatment and
-/// the home hover-depth. Renders eyebrow (name + crate), blurb, a status chip,
-/// and a "Learn more" link.
+/// One product card, hand-built so it carries the home hover-depth. Renders
+/// eyebrow (name + crate), blurb, a status chip, and a "Learn more" link. The
+/// surface treatment is NOT pinned per-card: cards consume the cascading
+/// `--q-surf-*` vars set by the header's global surface control.
 fn product_card(
-    surface: &str,
     name: &str,
     crate_name: &str,
     blurb: &str,
@@ -122,7 +122,6 @@ fn product_card(
 
     el("article")
         .class("q-pcard")
-        .attr("data-q-surface", surface.to_string())
         .child(head)
         .child(el("p").class("q-pcard__blurb").child(text(blurb.to_string())))
         .child(
@@ -138,22 +137,22 @@ fn product_card(
 /// a staggered `[data-q-reveal]` child, wrapped in one scroll-reveal island.
 fn products() -> Node {
     let cards = [
-        ("gradient", "Qirava DMS", "qdms",
+        ("Qirava DMS", "qdms",
          "One AI-native, zero-dep data system: a single execute primitive and one function \
           registry. Governance, KMS, database, jobs, and replication are functions; a worker \
           layer serves HTTP, WS, and native SSR/SSG/ISR on one port.",
          Status::Built, "Explore the DMS", "/products"),
-        ("glass", "Quill", "qquill",
+        ("Quill", "qquill",
          "A Rust-native, zero-dependency UI framework: shadcn-like components, Next.js-like \
           authoring — native SSR, islands, and SSG/ISR — behind a hand-written ~4 KB runtime. \
           This very site is built with it.",
          Status::Built, "Browse components", "/components"),
-        ("neu", "The q* stdlib", "qpkgs",
+        ("The q* stdlib", "qpkgs",
          "13 zero-dependency crates: the substrate qexec (bounded executor) and qvalue \
           (value/ABI), plus array, object, string, math, number, convert, crypto, encoding, \
           regex, time, and uuid — shared across every product.",
          Status::Built, "Read the concepts", "/docs/concepts"),
-        ("flat", "Qirava Cloud", "—",
+        ("Qirava Cloud", "—",
          "A managed control plane for the DMS — confidential compute (SEV-SNP), custodian-gated \
           key management, and single-leader replication, operated for you. Open-core; the engine \
           stays Apache-2.0.",
@@ -161,12 +160,12 @@ fn products() -> Node {
     ];
 
     let mut grid = el("div").class("q-pcards");
-    for (i, (surface, name, cr, blurb, status, cta, href)) in cards.iter().enumerate() {
+    for (i, (name, cr, blurb, status, cta, href)) in cards.iter().enumerate() {
         grid = grid.child(
             el("div")
                 .attr("data-q-reveal", "")
                 .attr("data-reveal-delay", ((i % 3) + 1).to_string())
-                .child(product_card(surface, name, cr, blurb, *status, cta, href)),
+                .child(product_card(name, cr, blurb, *status, cta, href)),
         );
     }
 
@@ -382,32 +381,39 @@ padding:var(--q-space-5) 0 0;border-top:1px solid var(--q-color-border)}\
 .q-pcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,19rem),1fr));gap:var(--q-space-4)}\
 .q-pcards>*{height:100%}\
 .q-pcard{display:flex;flex-direction:column;gap:var(--q-space-3);height:100%;padding:var(--q-space-5);\
-border-radius:var(--q-radius-lg);transition:transform var(--q-duration-base) var(--q-ease-out),box-shadow var(--q-duration-base) var(--q-ease-out),border-color var(--q-duration-base) var(--q-ease-out)}\
+border-radius:var(--q-radius-lg);\
+background:var(--q-surf-bg,var(--q-color-surface));color:var(--q-surf-fg,var(--q-color-fg));\
+border:1px solid var(--q-surf-border,var(--q-color-border));box-shadow:var(--q-surf-shadow,none);\
+-webkit-backdrop-filter:blur(var(--q-surf-blur,0px));backdrop-filter:blur(var(--q-surf-blur,0px));\
+transition:transform var(--q-duration-base) var(--q-ease-out),box-shadow var(--q-duration-base) var(--q-ease-out),background var(--q-duration-base) var(--q-ease-out),border-color var(--q-duration-base) var(--q-ease-out),color var(--q-duration-base) var(--q-ease-out)}\
 .q-pcard:hover{transform:translateY(-4px);box-shadow:0 18px 48px -20px color-mix(in srgb,var(--q-color-brand) 55%,transparent)}\
-.q-pcard[data-q-surface=\"flat\"]:hover,.q-pcard[data-q-surface=\"neu\"]:hover{border-color:color-mix(in srgb,var(--q-color-brand) 50%,var(--q-color-border))}\
+.q-pcard:hover{border-color:color-mix(in srgb,var(--q-color-brand) 50%,var(--q-surf-border,var(--q-color-border)))}\
 .q-pcard__head{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--q-space-3)}\
 .q-pcard__id{display:flex;flex-direction:column;gap:.15rem}\
 .q-pcard__name{font-weight:var(--q-font-weight-bold);font-size:1.15rem;line-height:1.2;letter-spacing:-.01em}\
 .q-pcard__crate{font-family:var(--q-font-mono);font-size:.78rem;color:var(--q-color-muted)}\
-.q-pcard[data-q-surface=\"gradient\"] .q-pcard__crate{color:color-mix(in srgb,var(--q-color-on-brand) 75%,transparent)}\
+[data-q-surface=\"gradient\"] .q-pcard__crate{color:color-mix(in srgb,var(--q-color-on-brand) 75%,transparent)}\
 .q-pcard__status{flex:0 0 auto;font-size:.68rem;font-weight:var(--q-font-weight-bold);letter-spacing:.08em;text-transform:uppercase;\
 padding:.2rem .5rem;border-radius:var(--q-radius-full);border:1px solid var(--q-color-border);color:var(--q-color-muted)}\
 .q-pcard__status.is-built{color:var(--q-color-brand);border-color:color-mix(in srgb,var(--q-color-brand) 45%,transparent);\
 background:color-mix(in srgb,var(--q-color-brand) 12%,transparent)}\
-.q-pcard[data-q-surface=\"gradient\"] .q-pcard__status.is-built{color:var(--q-color-on-brand);\
+[data-q-surface=\"gradient\"] .q-pcard__status.is-built{color:var(--q-color-on-brand);\
 border-color:color-mix(in srgb,var(--q-color-on-brand) 45%,transparent);background:color-mix(in srgb,var(--q-color-on-brand) 16%,transparent)}\
 .q-pcard__blurb{margin:0;font-size:.95rem;line-height:1.65;color:var(--q-color-muted);flex:1 1 auto}\
-.q-pcard[data-q-surface=\"gradient\"] .q-pcard__blurb{color:color-mix(in srgb,var(--q-color-on-brand) 85%,transparent)}\
+[data-q-surface=\"gradient\"] .q-pcard__blurb{color:color-mix(in srgb,var(--q-color-on-brand) 85%,transparent)}\
 .q-pcard__link{display:inline-flex;align-items:center;gap:.35rem;font-weight:var(--q-font-weight-medium);font-size:.92rem;\
 color:var(--q-color-brand)}\
 .q-pcard__link:hover{text-decoration:none}\
-.q-pcard[data-q-surface=\"gradient\"] .q-pcard__link{color:var(--q-color-on-brand)}\
+[data-q-surface=\"gradient\"] .q-pcard__link{color:var(--q-color-on-brand)}\
 .q-pcard__link:hover .q-arr{transform:translateX(3px)}\
 /* ---- why / features ---- */\
 .q-feats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr));gap:var(--q-space-4)}\
-.q-feat{height:100%;padding:var(--q-space-5);border-radius:var(--q-radius-lg);background:var(--q-color-surface);\
-border:1px solid var(--q-color-border);transition:transform var(--q-duration-base) var(--q-ease-out),border-color var(--q-duration-base) var(--q-ease-out)}\
-.q-feat:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--q-color-brand) 45%,var(--q-color-border))}\
+.q-feat{height:100%;padding:var(--q-space-5);border-radius:var(--q-radius-lg);\
+background:var(--q-surf-bg,var(--q-color-surface));color:var(--q-surf-fg,var(--q-color-fg));\
+border:1px solid var(--q-surf-border,var(--q-color-border));box-shadow:var(--q-surf-shadow,none);\
+-webkit-backdrop-filter:blur(var(--q-surf-blur,0px));backdrop-filter:blur(var(--q-surf-blur,0px));\
+transition:transform var(--q-duration-base) var(--q-ease-out),box-shadow var(--q-duration-base) var(--q-ease-out),background var(--q-duration-base) var(--q-ease-out),border-color var(--q-duration-base) var(--q-ease-out),color var(--q-duration-base) var(--q-ease-out)}\
+.q-feat:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--q-color-brand) 45%,var(--q-surf-border,var(--q-color-border)))}\
 .q-feat__icon{display:inline-flex;align-items:center;justify-content:center;width:2.75rem;height:2.75rem;margin:0 0 var(--q-space-3);\
 border-radius:var(--q-radius-md);color:var(--q-color-brand);background:color-mix(in srgb,var(--q-color-brand) 12%,transparent)}\
 .q-feat__title{margin:0 0 var(--q-space-2);font-size:1.05rem;font-weight:var(--q-font-weight-bold);letter-spacing:-.01em}\

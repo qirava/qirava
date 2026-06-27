@@ -340,14 +340,17 @@ p{max-width:62ch}\
 /// mode collapses the effect tokens at the theme layer.
 fn surface_css() -> &'static str {
     "\
+/* ---- surface = CASCADING vars: each mode re-points --q-surf-* so the choice \
+   flows from <html> (where the control sets it) down to every consuming \
+   element. The bare [data-q-surface] is just shared geometry. ---- */\
 [data-q-surface]{border-radius:var(--q-radius-lg);transition:box-shadow var(--q-duration-base) var(--q-ease-out),background var(--q-duration-base) var(--q-ease-out),border-color var(--q-duration-base) var(--q-ease-out)}\
-[data-q-surface=\"glass\"]{background:var(--q-effect-glass-surface);-webkit-backdrop-filter:blur(var(--q-effect-glass-blur));backdrop-filter:blur(var(--q-effect-glass-blur));border:1px solid var(--q-effect-glass-border);box-shadow:var(--q-shadow-md)}\
-[data-q-surface=\"neu\"]{background:var(--q-color-surface);border:1px solid transparent;box-shadow:var(--q-effect-neu-raised)}\
-[data-q-surface=\"neu\"]:active,[data-q-surface=\"neu\"][data-pressed=\"true\"]{box-shadow:var(--q-effect-neu-inset)}\
-[data-q-surface=\"gradient\"]{background:var(--q-effect-gradient-brand);color:var(--q-color-on-brand);border:1px solid transparent;box-shadow:var(--q-shadow-lg)}\
+:root,[data-q-surface=\"flat\"]{--q-surf-bg:var(--q-color-surface);--q-surf-border:var(--q-color-border);--q-surf-shadow:none;--q-surf-blur:0px;--q-surf-fg:var(--q-color-fg)}\
+[data-q-surface=\"glass\"]{--q-surf-bg:var(--q-effect-glass-surface);--q-surf-border:var(--q-effect-glass-border);--q-surf-shadow:var(--q-shadow-md);--q-surf-blur:var(--q-effect-glass-blur);--q-surf-fg:var(--q-color-fg)}\
+[data-q-surface=\"neu\"]{--q-surf-bg:var(--q-color-surface);--q-surf-border:transparent;--q-surf-shadow:var(--q-effect-neu-raised);--q-surf-blur:0px;--q-surf-fg:var(--q-color-fg)}\
+[data-q-surface=\"neu\"]:active,[data-q-surface=\"neu\"][data-pressed=\"true\"]{--q-surf-shadow:var(--q-effect-neu-inset)}\
+[data-q-surface=\"gradient\"]{--q-surf-bg:var(--q-effect-gradient-brand);--q-surf-border:transparent;--q-surf-shadow:var(--q-shadow-lg);--q-surf-blur:0px;--q-surf-fg:var(--q-color-on-brand)}\
 [data-q-surface=\"gradient\"] .q-muted{color:color-mix(in srgb,var(--q-color-on-brand) 80%,transparent)}\
-[data-q-surface=\"flat\"]{background:var(--q-color-surface);border:1px solid var(--q-color-border);box-shadow:none}\
-@supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){[data-q-surface=\"glass\"]{background:var(--q-color-surface)}}"
+@supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){[data-q-surface=\"glass\"]{--q-surf-bg:var(--q-color-surface)}}"
 }
 
 /// Density + radius scales — `[data-q-size]` and `[data-q-radius]`.
@@ -398,7 +401,7 @@ fn motion_css() -> &'static str {
 @keyframes q-rise{to{opacity:1;transform:none}}\
 .q-pillars{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.75rem 0 0}\
 @media (max-width:640px){.q-pillars{grid-template-columns:1fr}}\
-.q-pillar{border:1px solid var(--q-color-border);border-radius:var(--q-radius-lg);padding:1.1rem 1.25rem;background:var(--q-color-surface)}\
+.q-pillar{border-radius:var(--q-radius-lg);padding:1.1rem 1.25rem;background:var(--q-surf-bg,var(--q-color-surface));color:var(--q-surf-fg,var(--q-color-fg));border:1px solid var(--q-surf-border,var(--q-color-border));box-shadow:var(--q-surf-shadow,none);-webkit-backdrop-filter:blur(var(--q-surf-blur,0px));backdrop-filter:blur(var(--q-surf-blur,0px));transition:box-shadow var(--q-duration-base) var(--q-ease-out),background var(--q-duration-base) var(--q-ease-out),border-color var(--q-duration-base) var(--q-ease-out),color var(--q-duration-base) var(--q-ease-out)}\
 .q-pillar h3{margin:.1rem 0 .35rem;font-size:1.05rem}\
 .q-pillar p{margin:0;color:var(--q-color-muted);font-size:.95rem}\
 .q-pillar__k{font-family:var(--q-font-mono);font-size:.78rem;color:var(--q-color-brand)}\
@@ -406,7 +409,7 @@ fn motion_css() -> &'static str {
 .q-grid .qq-card{transition:transform var(--q-duration-base) var(--q-ease-out),box-shadow var(--q-duration-base) var(--q-ease-out),border-color var(--q-duration-base) var(--q-ease-out)}\
 .q-grid .qq-card:hover{transform:translateY(-4px);box-shadow:0 14px 40px -18px color-mix(in srgb,var(--q-color-brand) 55%,transparent);border-color:color-mix(in srgb,var(--q-color-brand) 45%,var(--q-color-border))}\
 /* ---- live teaser ---- */\
-.q-teaser{border:1px solid var(--q-color-border);border-radius:var(--q-radius-xl);background:var(--q-color-surface);padding:1.25rem;margin-top:1.5rem}\
+.q-teaser{border-radius:var(--q-radius-xl);background:var(--q-surf-bg,var(--q-color-surface));color:var(--q-surf-fg,var(--q-color-fg));border:1px solid var(--q-surf-border,var(--q-color-border));box-shadow:var(--q-surf-shadow,none);-webkit-backdrop-filter:blur(var(--q-surf-blur,0px));backdrop-filter:blur(var(--q-surf-blur,0px));padding:1.25rem;margin-top:1.5rem;transition:box-shadow var(--q-duration-base) var(--q-ease-out),background var(--q-duration-base) var(--q-ease-out),border-color var(--q-duration-base) var(--q-ease-out),color var(--q-duration-base) var(--q-ease-out)}\
 .q-teaser__chrome{display:flex;gap:.4rem;margin:0 0 1rem}\
 .q-teaser__chrome span{width:11px;height:11px;border-radius:var(--q-radius-full);background:var(--q-color-border)}\
 /* ---- docs layout ---- */\
@@ -436,7 +439,7 @@ fn motion_css() -> &'static str {
 .q-copy[data-copied=\"true\"]{color:var(--q-color-brand);opacity:1}\
 /* ---- component showcase index ---- */\
 .q-comp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:1rem;margin-top:1.5rem}\
-.q-comp-card{display:block;border:1px solid var(--q-color-border);border-radius:var(--q-radius-lg);padding:1.1rem 1.25rem;background:var(--q-color-surface);transition:transform var(--q-duration-base) var(--q-ease-out),border-color var(--q-duration-base) var(--q-ease-out)}\
+.q-comp-card{display:block;border-radius:var(--q-radius-lg);padding:1.1rem 1.25rem;background:var(--q-surf-bg,var(--q-color-surface));color:var(--q-surf-fg,var(--q-color-fg));border:1px solid var(--q-surf-border,var(--q-color-border));box-shadow:var(--q-surf-shadow,none);-webkit-backdrop-filter:blur(var(--q-surf-blur,0px));backdrop-filter:blur(var(--q-surf-blur,0px));transition:transform var(--q-duration-base) var(--q-ease-out),box-shadow var(--q-duration-base) var(--q-ease-out),background var(--q-duration-base) var(--q-ease-out),border-color var(--q-duration-base) var(--q-ease-out),color var(--q-duration-base) var(--q-ease-out)}\
 .q-comp-card:hover{transform:translateY(-3px);border-color:var(--q-color-brand);text-decoration:none}\
 .q-comp-card h3{margin:0 0 .25rem;color:var(--q-color-fg);font-size:1.05rem}\
 .q-comp-card p{margin:0;color:var(--q-color-muted);font-size:.9rem}\
