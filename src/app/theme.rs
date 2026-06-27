@@ -397,7 +397,7 @@ fn scale_css() -> &'static str {
 /* ---- radius: [data-q-radius=sharp|rounded|pill] (full/none invariant) ---- */\
 :root,[data-q-radius=\"rounded\"]{--q-radius-sm:4px;--q-radius-md:8px;--q-radius-lg:12px;--q-radius-xl:20px}\
 [data-q-radius=\"sharp\"]{--q-radius-sm:0;--q-radius-md:0;--q-radius-lg:2px;--q-radius-xl:4px}\
-[data-q-radius=\"pill\"]{--q-radius-sm:6px;--q-radius-md:10px;--q-radius-lg:9999px;--q-radius-xl:9999px}"
+[data-q-radius=\"pill\"]{--q-radius-sm:9999px;--q-radius-md:9999px;--q-radius-lg:20px;--q-radius-xl:26px}"
 }
 
 /// Motion, scroll-reveal, the animated hero, card hover depth, the docs layout,

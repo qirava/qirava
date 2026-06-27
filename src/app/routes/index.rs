@@ -428,7 +428,7 @@ border-radius:var(--q-radius-md);color:var(--q-color-brand);background:color-mix
 .q-teaser__panel{padding:var(--q-space-3) 0 0}\
 .q-teaser__h{margin:0 0 var(--q-space-2);font-size:1.15rem;font-weight:var(--q-font-weight-bold)}\
 /* ---- closing CTA band ---- */\
-.q-cta-band{text-align:center;padding:calc(var(--q-space-8) * var(--q-density,1)) var(--q-space-5);border-radius:var(--q-radius-xl)}\
+.q-cta-band{text-align:center;padding:calc(var(--q-space-8) * var(--q-density,1)) var(--q-space-5);border-radius:var(--q-radius-xl);background:var(--q-surf-bg,var(--q-effect-gradient-brand));color:var(--q-surf-fg,var(--q-color-on-brand));border:1px solid var(--q-surf-border,transparent);box-shadow:var(--q-surf-shadow,var(--q-shadow-lg))}\
 .q-cta-band__h{margin:0 auto var(--q-space-3);max-width:18ch}\
 .q-cta-band__p{margin:0 auto var(--q-space-6);max-width:52ch;color:color-mix(in srgb,var(--q-color-on-brand) 85%,transparent);font-size:1.05rem;line-height:1.6}\
 .q-cta-band__row{justify-content:center;margin:0}\
