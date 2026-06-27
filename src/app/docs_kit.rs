@@ -21,6 +21,170 @@
 
 use qquill_view::{el, text, Node};
 
+// ===========================================================================
+// Data-driven docs content: a `Page` is a lead + ordered sections, each a
+// heading + content `Block`s. One `render_doc_body` turns that data into the
+// docs `<article>` body + the on-page TOC, so a page is *content data*, not a
+// bespoke render function — which is what makes ~70 pages tractable and lets
+// authoring agents contribute content (not Rust). Content lives in
+// `routes::docs_content`; this module owns the model + the renderer + the
+// shared content primitives (ascii / table / callout / defs / example).
+// ===========================================================================
+
+/// One content block on a docs page.
+pub enum Block {
+    /// A paragraph of prose.
+    Prose(String),
+    /// A fenced code sample (the language label is decorative).
+    Code { lang: String, code: String },
+    /// A worked example: the request/call, its response, and (optionally) the
+    /// distinct rendered output.
+    Example { request: String, response: String, output: String },
+    /// An ASCII diagram with a caption (flows, architecture).
+    Ascii { caption: String, diagram: String },
+    /// A simple table.
+    Table { headers: Vec<String>, rows: Vec<Vec<String>> },
+    /// A callout: `warn` picks the warning accent, else the note accent.
+    Callout { warn: bool, label: String, body: String },
+    /// A definition list (term → description).
+    Defs(Vec<(String, String)>),
+    /// An ordered or unordered list.
+    List { ordered: bool, items: Vec<String> },
+}
+
+/// A section: an H2 heading (captured in the TOC) + its blocks.
+pub struct Section {
+    pub heading: String,
+    pub blocks: Vec<Block>,
+}
+
+/// A full docs page's content: the lead paragraph + ordered sections.
+pub struct Page {
+    pub lead: String,
+    pub sections: Vec<Section>,
+}
+
+/// Render one [`Block`] to a node.
+pub fn render_block(b: &Block) -> Node {
+    match b {
+        Block::Prose(t) => p(t),
+        Block::Code { code, .. } => el("pre")
+            .class("q-code")
+            .child(el("code").child(text(code.clone()))),
+        Block::Example { request, response, output } => example(request, response, output),
+        Block::Ascii { caption, diagram } => ascii(caption, diagram),
+        Block::Table { headers, rows } => {
+            let h: Vec<&str> = headers.iter().map(|s| s.as_str()).collect();
+            let r: Vec<Vec<&str>> = rows.iter().map(|row| row.iter().map(|c| c.as_str()).collect()).collect();
+            let rr: Vec<&[&str]> = r.iter().map(|row| row.as_slice()).collect();
+            table(&h, &rr)
+        }
+        Block::Callout { warn, label, body } => {
+            callout(if *warn { "warn" } else { "note" }, label, body)
+        }
+        Block::Defs(rows) => {
+            let r: Vec<(&str, &str)> = rows.iter().map(|(t, d)| (t.as_str(), d.as_str())).collect();
+            defs(&r)
+        }
+        Block::List { ordered, items } => {
+            let tag = if *ordered { "ol" } else { "ul" };
+            let mut list = el(tag).class("q-doc-list");
+            for it in items {
+                list = list.child(el("li").child(text(it.clone())));
+            }
+            list
+        }
+    }
+}
+
+/// Build the docs `<article>` body + the on-page TOC from a [`Page`]'s content.
+/// Each section heading becomes an H2 in the TOC; blocks render in order.
+pub fn render_doc_body(page: &Page) -> (Node, Toc) {
+    let mut toc = Toc::new();
+    let mut body = el("div").class("q-doc-body");
+    for s in &page.sections {
+        body = body.child(toc.h2(&s.heading));
+        for b in &s.blocks {
+            body = body.child(render_block(b));
+        }
+    }
+    (body, toc)
+}
+
+// --- shared content primitives (used by render_block and by hub/landing pages) ---
+
+/// A paragraph of body prose.
+pub fn p(s: &str) -> Node {
+    el("p").class("q-doc-p").child(text(s.to_string()))
+}
+
+/// A worked example: labelled Request / Response / Output panes (panes with
+/// empty content are omitted).
+pub fn example(request: &str, response: &str, output: &str) -> Node {
+    let pane = |label: &str, body: &str| -> Option<Node> {
+        if body.trim().is_empty() {
+            return None;
+        }
+        Some(
+            el("div")
+                .class("q-eg__pane")
+                .child(el("p").class("q-eg__label").child(text(label.to_string())))
+                .child(el("pre").class("q-eg__pre").child(el("code").child(text(body.to_string())))),
+        )
+    };
+    let mut fig = el("div").class("q-eg");
+    for n in [pane("Request", request), pane("Response", response), pane("Output", output)].into_iter().flatten() {
+        fig = fig.child(n);
+    }
+    fig
+}
+
+/// An ASCII diagram: a monospace `<pre>` that scrolls rather than wraps.
+pub fn ascii(caption: &str, diagram: &str) -> Node {
+    el("figure")
+        .class("q-ascii-wrap")
+        .child(el("pre").class("q-ascii").child(el("code").child(text(diagram.to_string()))))
+        .child(el("figcaption").class("q-ascii-cap").child(text(caption.to_string())))
+}
+
+/// A simple themed table from `headers` + `rows` (escaped cells, scrolls on narrow).
+pub fn table(headers: &[&str], rows: &[&[&str]]) -> Node {
+    let mut head = el("tr");
+    for h in headers {
+        head = head.child(el("th").child(text((*h).to_string())));
+    }
+    let mut tbody = el("tbody");
+    for row in rows {
+        let mut tr = el("tr");
+        for cell in *row {
+            tr = tr.child(el("td").child(text((*cell).to_string())));
+        }
+        tbody = tbody.child(tr);
+    }
+    el("div").class("q-table-wrap").child(
+        el("table").class("q-table").child(el("thead").child(head)).child(tbody),
+    )
+}
+
+/// A keyed callout. `kind` is `note` | `warn`.
+pub fn callout(kind: &str, label: &str, body: &str) -> Node {
+    el("aside")
+        .class(format!("q-callout q-callout--{kind}"))
+        .child(el("span").class("q-callout__label").child(text(label.to_string())))
+        .child(el("p").class("q-callout__body").child(text(body.to_string())))
+}
+
+/// A definition list (term → description).
+pub fn defs(rows: &[(&str, &str)]) -> Node {
+    let mut dl = el("dl").class("q-defs");
+    for (term, desc) in rows {
+        dl = dl
+            .child(el("dt").child(text((*term).to_string())))
+            .child(el("dd").child(text((*desc).to_string())));
+    }
+    dl
+}
+
 /// The four documentation products. Each owns an isolated sidebar + pager scope
 /// and a landing page at `/docs/<slug>`.
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -277,4 +441,45 @@ pub fn pager_css() -> &'static str {
 .q-pager--next{text-align:right;margin-left:auto}\
 .q-pager__dir{font-size:.78rem;color:var(--q-color-muted)}\
 .q-pager__title{color:var(--q-color-fg);font-weight:var(--q-font-weight-medium)}"
+}
+
+/// CSS for the data-driven content blocks (prose, example panes, ascii, tables,
+/// callouts, defs, lists). Theme-token only, so it flips with light/dark and
+/// restyles on any size/radius switch. Pushed once per docs page, deduped.
+pub fn docs_extras_css() -> &'static str {
+    "\
+.q-doc-body{min-width:0}\
+.q-doc-p{color:var(--q-color-fg);line-height:1.7;margin:0 0 1.1rem}\
+.q-doc-body h2{scroll-margin-top:5rem}\
+.q-doc-list{margin:0 0 1.1rem;padding-left:1.2rem;color:var(--q-color-fg);line-height:1.7}\
+.q-doc-list li{margin:.3rem 0}\
+/* ---- worked example (request / response / output) ---- */\
+.q-eg{display:grid;gap:.75rem;margin:1.5rem 0}\
+.q-eg__pane{border:1px solid var(--q-color-border);border-radius:var(--q-radius-lg);overflow:hidden;background:var(--q-color-surface)}\
+.q-eg__label{margin:0;padding:.45rem .85rem;font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;font-weight:var(--q-font-weight-bold);color:var(--q-color-brand);background:color-mix(in srgb,var(--q-color-brand) 7%,transparent);border-bottom:1px solid var(--q-color-border)}\
+.q-eg__pre{margin:0;padding:.85rem;overflow-x:auto;background:var(--q-color-bg);font-family:var(--q-font-mono,monospace);font-size:.82rem;line-height:1.55;color:var(--q-color-fg)}\
+.q-eg__pre code{font:inherit;white-space:pre}\
+/* ---- ascii diagrams ---- */\
+.q-ascii-wrap{margin:1.5rem 0;border:1px solid var(--q-color-border);border-radius:var(--q-radius-lg);background:var(--q-color-surface);overflow:hidden}\
+.q-ascii{margin:0;padding:1rem 1.1rem;overflow-x:auto;background:var(--q-color-bg);font-family:var(--q-font-mono,monospace);font-size:.74rem;line-height:1.5;color:var(--q-color-fg)}\
+.q-ascii code{font:inherit;white-space:pre;display:block;min-width:max-content}\
+.q-ascii-cap{padding:.6rem 1.1rem;font-size:.82rem;color:var(--q-color-muted);border-top:1px solid var(--q-color-border)}\
+/* ---- tables ---- */\
+.q-table-wrap{margin:1.5rem 0;overflow-x:auto;border:1px solid var(--q-color-border);border-radius:var(--q-radius-lg)}\
+.q-table{border-collapse:collapse;width:100%;font-size:.9rem;min-width:34rem}\
+.q-table th,.q-table td{text-align:left;padding:.6rem .85rem;border-bottom:1px solid var(--q-color-border);vertical-align:top}\
+.q-table th{background:var(--q-color-surface);color:var(--q-color-fg);font-weight:var(--q-font-weight-bold);font-size:.78rem;text-transform:uppercase;letter-spacing:.04em}\
+.q-table tbody tr:last-child td{border-bottom:0}\
+.q-table td:first-child{font-weight:var(--q-font-weight-medium);color:var(--q-color-fg)}\
+/* ---- callouts ---- */\
+.q-callout{display:flex;flex-direction:column;gap:.3rem;margin:1.5rem 0;padding:1rem 1.15rem;border:1px solid var(--q-color-border);border-left:3px solid var(--q-color-brand);border-radius:var(--q-radius-md);background:var(--q-color-surface)}\
+.q-callout--warn{border-left-color:color-mix(in srgb,var(--q-color-fg) 45%,var(--q-color-brand))}\
+.q-callout__label{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;font-weight:var(--q-font-weight-bold);color:var(--q-color-brand)}\
+.q-callout--warn .q-callout__label{color:var(--q-color-fg)}\
+.q-callout__body{margin:0;color:var(--q-color-muted);line-height:1.6;font-size:.92rem}\
+/* ---- definition lists ---- */\
+.q-defs{display:grid;grid-template-columns:auto 1fr;gap:.5rem 1.1rem;margin:1.25rem 0;align-items:baseline}\
+@media (max-width:560px){.q-defs{grid-template-columns:1fr;gap:.15rem 0}}\
+.q-defs dt{font-weight:var(--q-font-weight-bold);color:var(--q-color-fg);font-size:.92rem}\
+.q-defs dd{margin:0;color:var(--q-color-muted);line-height:1.6;font-size:.92rem}"
 }
