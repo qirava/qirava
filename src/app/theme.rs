@@ -435,6 +435,13 @@ fn motion_css() -> &'static str {
 /* ---- product cards hover depth ---- */\
 .q-grid .qq-card{transition:transform var(--q-duration-base) var(--q-ease-out),box-shadow var(--q-duration-base) var(--q-ease-out),border-color var(--q-duration-base) var(--q-ease-out)}\
 .q-grid .qq-card:hover{transform:translateY(-4px);box-shadow:0 14px 40px -18px color-mix(in srgb,var(--q-color-brand) 55%,transparent);border-color:color-mix(in srgb,var(--q-color-brand) 45%,var(--q-color-border))}\
+/* ---- 3D tilt (the `tilt` island; flat with JS off / reduced-motion / touch) ---- */\
+[data-q-tilt]{position:relative;transform:perspective(900px) rotateX(var(--q-tilt-rx,0deg)) rotateY(var(--q-tilt-ry,0deg));transform-style:preserve-3d;transition:transform .45s var(--q-ease-out),box-shadow var(--q-duration-base) var(--q-ease-out),border-color var(--q-duration-base) var(--q-ease-out)}\
+[data-q-tilt][data-tilting=\"true\"]{transition:box-shadow var(--q-duration-base) var(--q-ease-out),border-color var(--q-duration-base) var(--q-ease-out)}\
+[data-q-tilt]>*{position:relative;z-index:1}\
+[data-q-tilt]::after{content:\"\";position:absolute;inset:0;z-index:0;border-radius:inherit;background:radial-gradient(45% 45% at var(--q-tilt-mx,50%) var(--q-tilt-my,50%),color-mix(in srgb,var(--q-color-brand) 18%,transparent),transparent 70%);opacity:0;transition:opacity .35s var(--q-ease-out);pointer-events:none}\
+[data-q-tilt][data-tilting=\"true\"]::after{opacity:1}\
+@media (prefers-reduced-motion:reduce){[data-q-tilt]{transform:none;transition:none}[data-q-tilt]::after{display:none}}\
 /* ---- live teaser ---- */\
 .q-teaser{border-radius:var(--q-radius-xl);background:var(--q-surf-bg,var(--q-color-surface));color:var(--q-surf-fg,var(--q-color-fg));border:1px solid var(--q-surf-border,var(--q-color-border));box-shadow:var(--q-surf-shadow,none);-webkit-backdrop-filter:blur(var(--q-surf-blur,0px));backdrop-filter:blur(var(--q-surf-blur,0px));padding:1.25rem;margin-top:1.5rem;transition:box-shadow var(--q-duration-base) var(--q-ease-out),background var(--q-duration-base) var(--q-ease-out),border-color var(--q-duration-base) var(--q-ease-out),color var(--q-duration-base) var(--q-ease-out)}\
 .q-teaser__chrome{display:flex;gap:.4rem;margin:0 0 1rem}\

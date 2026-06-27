@@ -37,6 +37,14 @@ pub fn reveal(instance_id: &'static str, content: Node) -> Node {
     island(instance_id, "reveal", Trigger::Load, "{}", content)
 }
 
+/// Wrap content in a `tilt` island so its `[data-q-tilt]` descendants tilt in 3D
+/// toward the pointer on hover (with a brand glare that follows the cursor).
+/// `instance_id` must be unique per page. With JS off — or under reduced-motion
+/// or on a touch device — the elements sit flat, fully functional.
+pub fn tilt(instance_id: &'static str, content: Node) -> Node {
+    island(instance_id, "tilt", Trigger::Load, "{}", content)
+}
+
 /// A copy-enabled code block: a `copy` island wrapping a `<pre data-q-part=code>`
 /// and a "Copy" button. `lines` build the `<pre>` (escaped); the button copies
 /// the rendered text on click. Static and correct with JS off (button hidden).

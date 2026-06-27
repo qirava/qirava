@@ -15,7 +15,7 @@ use qexec::FunctionResponse;
 use qquill_design::{Size, Stat, Tabs};
 use qquill_view::{el, raw, text, Node};
 
-use crate::app::routes::{reveal, Status};
+use crate::app::routes::{reveal, tilt, Status};
 use crate::app::shell::page;
 use crate::app::{Css, Meta};
 
@@ -122,6 +122,7 @@ fn product_card(
 
     el("article")
         .class("q-pcard")
+        .attr("data-q-tilt", "")
         .child(head)
         .child(el("p").class("q-pcard__blurb").child(text(blurb.to_string())))
         .child(
@@ -181,7 +182,7 @@ fn products() -> Node {
     el("section")
         .class("q-section")
         .child(reveal("reveal-head", head))
-        .child(reveal("reveal-products", grid))
+        .child(tilt("tilt-products", reveal("reveal-products", grid)))
 }
 
 // ---------------------------------------------------------------------------
@@ -192,6 +193,7 @@ fn products() -> Node {
 fn feature(delay: usize, icon: &str, title: &str, body: &str) -> Node {
     let tile = el("div")
         .class("q-feat")
+        .attr("data-q-tilt", "")
         .child(el("div").class("q-feat__icon").attr("aria-hidden", "true").child(raw(icon.to_string())))
         .child(el("h3").class("q-feat__title").child(text(title.to_string())))
         .child(el("p").class("q-feat__body q-muted").child(text(body.to_string())));
@@ -237,7 +239,7 @@ fn why() -> Node {
     el("section")
         .class("q-section")
         .child(reveal("reveal-why-head", head))
-        .child(reveal("reveal-why", grid))
+        .child(tilt("tilt-why", reveal("reveal-why", grid)))
 }
 
 // ---------------------------------------------------------------------------
@@ -387,7 +389,7 @@ background:var(--q-surf-bg,var(--q-color-surface));color:var(--q-surf-fg,var(--q
 border:1px solid var(--q-surf-border,var(--q-color-border));box-shadow:var(--q-surf-shadow,none);\
 -webkit-backdrop-filter:blur(var(--q-surf-blur,0px));backdrop-filter:blur(var(--q-surf-blur,0px));\
 transition:transform var(--q-duration-base) var(--q-ease-out),box-shadow var(--q-duration-base) var(--q-ease-out),background var(--q-duration-base) var(--q-ease-out),border-color var(--q-duration-base) var(--q-ease-out),color var(--q-duration-base) var(--q-ease-out)}\
-.q-pcard:hover{transform:translateY(-4px);box-shadow:0 18px 48px -20px color-mix(in srgb,var(--q-color-brand) 55%,transparent)}\
+.q-pcard:hover{box-shadow:0 22px 54px -22px color-mix(in srgb,var(--q-color-brand) 60%,transparent)}\
 .q-pcard:hover{border-color:color-mix(in srgb,var(--q-color-brand) 50%,var(--q-surf-border,var(--q-color-border)))}\
 .q-pcard__head{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--q-space-3)}\
 .q-pcard__id{display:flex;flex-direction:column;gap:.15rem}\
@@ -414,7 +416,7 @@ background:var(--q-surf-bg,var(--q-color-surface));color:var(--q-surf-fg,var(--q
 border:1px solid var(--q-surf-border,var(--q-color-border));box-shadow:var(--q-surf-shadow,none);\
 -webkit-backdrop-filter:blur(var(--q-surf-blur,0px));backdrop-filter:blur(var(--q-surf-blur,0px));\
 transition:transform var(--q-duration-base) var(--q-ease-out),box-shadow var(--q-duration-base) var(--q-ease-out),background var(--q-duration-base) var(--q-ease-out),border-color var(--q-duration-base) var(--q-ease-out),color var(--q-duration-base) var(--q-ease-out)}\
-.q-feat:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--q-color-brand) 45%,var(--q-surf-border,var(--q-color-border)))}\
+.q-feat:hover{border-color:color-mix(in srgb,var(--q-color-brand) 45%,var(--q-surf-border,var(--q-color-border)));box-shadow:0 18px 44px -22px color-mix(in srgb,var(--q-color-brand) 50%,transparent)}\
 .q-feat__icon{display:inline-flex;align-items:center;justify-content:center;width:2.75rem;height:2.75rem;margin:0 0 var(--q-space-3);\
 border-radius:var(--q-radius-md);color:var(--q-color-brand);background:color-mix(in srgb,var(--q-color-brand) 12%,transparent)}\
 .q-feat__title{margin:0 0 var(--q-space-2);font-size:1.05rem;font-weight:var(--q-font-weight-bold);letter-spacing:-.01em}\
