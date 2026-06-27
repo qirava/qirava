@@ -16,6 +16,7 @@
 //! the head. The [`Css`] accumulator below is that collector; pages push each
 //! component's `.style().to_css()` into it as they build their tree.
 
+pub mod design;
 pub mod docs_kit;
 pub mod routes;
 pub mod shell;
@@ -91,8 +92,8 @@ pub fn document(meta: &Meta, head_css: String, body: Node) -> Node {
     let mut css = themes.to_css();
     // The Qirava brand palette (Ink + Azure) re-points the theme's default tokens
     // immediately after the theme block, so every `var(--q-color-*)` downstream
-    // resolves to the brand identity.
-    css.push_str(theme::brand_palette_css());
+    // resolves to the brand identity. Generated from the single config in `design`.
+    css.push_str(&design::palette_css());
     css.push_str(&theme::layout_css());
     css.push_str(&head_css);
     css.push_str(&qquill_design::reduced_motion_css());
