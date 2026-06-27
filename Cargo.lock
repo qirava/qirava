@@ -36,6 +36,7 @@ name = "qdms"
 version = "0.1.0"
 dependencies = [
  "qarray",
+ "qbrand",
  "qconvert",
  "qcrypto",
  "qencoding",
