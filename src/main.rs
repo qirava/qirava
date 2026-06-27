@@ -138,6 +138,23 @@ const PAGES: &[Page] = &[
     Page { id: "api", path: "/api", handler: app::routes::api::respond },
 ];
 
+/// Write a **theme-aware favicon** to `dir/favicon.svg`, overwriting the flat one
+/// `qbrand::write_assets` emits. It is the brand mark with an embedded
+/// `prefers-color-scheme` media query: the fill follows the OS/browser theme —
+/// ink (`#0c1e3c`) on light, near-white (`#f8fafc`) on dark — so the mark stays
+/// visible in dark browser chrome instead of disappearing. A CSS `[fill]` rule
+/// overrides the inline presentation attribute on the mark's `<g>`.
+fn write_smart_favicon(dir: &std::path::Path) -> std::io::Result<()> {
+    const STYLE: &str = "<style>:root{--qf:#0c1e3c}@media (prefers-color-scheme:dark){:root{--qf:#f8fafc}}[fill]{fill:var(--qf)}</style>";
+    let icon = qbrand::ICON_SVG;
+    let smart = match icon.find('>') {
+        // Insert the style block right after the opening `<svg …>` tag.
+        Some(i) => format!("{}{}{}", &icon[..=i], STYLE, &icon[i + 1..]),
+        None => icon.to_string(),
+    };
+    std::fs::write(dir.join("favicon.svg"), smart)
+}
+
 fn main() -> std::io::Result<()> {
     // args[0] is the binary; `build [outdir]` exports a static site, anything
     // else (incl. no args) serves.
@@ -166,6 +183,7 @@ fn cmd_build(out_dir: Option<&str>) -> std::io::Result<()> {
     // hand-copied SVG. Write the canonical icon/logo lockups + favicon.svg into
     // `public/` so the export (which copies `public/`) ships them verbatim.
     qbrand::write_assets(std::path::Path::new(PUBLIC_DIR))?;
+    write_smart_favicon(std::path::Path::new(PUBLIC_DIR))?;
 
     // Render each page exactly as the server would, then unframe to raw HTML.
     let mut pages = Vec::with_capacity(PAGES.len());
@@ -213,6 +231,7 @@ fn cmd_serve() -> std::io::Result<()> {
     // Brand assets from qbrand (the single source) into `public/` so the served
     // favicon + lockups match the exported site exactly.
     qbrand::write_assets(std::path::Path::new(PUBLIC_DIR))?;
+    write_smart_favicon(std::path::Path::new(PUBLIC_DIR))?;
 
     // 1. Open an in-memory database and ensure the framework's system tables
     //    (`_sys_routes`, `_sys_pages`, `_sys_assets`, ...).
