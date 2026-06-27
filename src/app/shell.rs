@@ -150,6 +150,93 @@ const CHEVRON_SVG: &str = "<svg class=\"q-chev\" viewBox=\"0 0 24 24\" width=\"1
 const EXTERNAL_SVG: &str = "<svg class=\"q-ext\" viewBox=\"0 0 24 24\" width=\"13\" height=\"13\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M7 17 17 7M9 7h8v8\"/></svg>";
 const SUN_SVG: &str = "<svg class=\"q-ico-sun\" viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 2v2M12 20v2M5 5l1.5 1.5M17.5 17.5 19 19M2 12h2M20 12h2M5 19l1.5-1.5M17.5 6.5 19 5\"/></svg>";
 const MOON_SVG: &str = "<svg class=\"q-ico-moon\" viewBox=\"0 0 24 24\" width=\"17\" height=\"17\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z\"/></svg>";
+const SLIDERS_SVG: &str = "<svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6\"/></svg>";
+
+/// The appearance menu: density / radius / surface segmented controls, shipped as
+/// a `theme-control` island inside a `menu` island. Each button sets a
+/// `data-q-*` attribute on `<html>` (the behavior persists the choice); the token
+/// layers re-point so the whole UI restyles with no reflow. The quick Light/Dark
+/// toggle ([`theme_toggle`]) sits next to it for the most common switch.
+fn theme_panel() -> Node {
+    let axis = "data-q-axis";
+    let value = "data-q-value";
+
+    let group = |legend: &'static str,
+                 ax: &'static str,
+                 opts: &[(&'static str, &'static str)],
+                 default: &'static str| {
+        let g = el("div")
+            .class("q-tc__group")
+            .attr("role", "group")
+            .attr("aria-label", legend)
+            .child(el("span").class("q-tc__legend").child(text(legend)));
+        let mut seg = el("div").class("q-tc__seg");
+        for (label, val) in opts {
+            let mut b = el("button")
+                .class("q-tc__opt")
+                .attr("type", "button")
+                .attr(axis, ax)
+                .attr(value, *val)
+                .child(text(*label));
+            b = if *val == default {
+                b.attr("aria-pressed", "true")
+            } else {
+                b.attr("aria-pressed", "false")
+            };
+            seg = seg.child(b);
+        }
+        g.child(seg)
+    };
+
+    let panel = el("div")
+        .class("q-tc__panel")
+        .attr("role", "menu")
+        .attr("aria-label", "Appearance settings")
+        .child(group(
+            "Density",
+            "size",
+            &[("Compact", "compact"), ("Cozy", "cozy"), ("Comfortable", "comfortable")],
+            "cozy",
+        ))
+        .child(group(
+            "Radius",
+            "radius",
+            &[("Sharp", "sharp"), ("Rounded", "rounded"), ("Pill", "pill")],
+            "rounded",
+        ))
+        .child(group(
+            "Surface",
+            "surface",
+            &[("Flat", "flat"), ("Glass", "glass"), ("Neu", "neu"), ("Gradient", "gradient")],
+            "flat",
+        ));
+
+    let trigger = el("button")
+        .class("q-tc__trigger")
+        .attr("type", "button")
+        .attr("data-q-part", "trigger")
+        .attr("aria-haspopup", "menu")
+        .attr("aria-expanded", "false")
+        .attr("aria-label", "Appearance settings")
+        .attr("title", "Appearance")
+        .child(raw(SLIDERS_SVG));
+
+    let surface = el("div")
+        .class("q-menu__surface q-tc__surface")
+        .attr("data-q-part", "surface")
+        .attr("role", "menu")
+        .attr("hidden", "")
+        .attr("aria-hidden", "true")
+        .child(island("theme-control", "theme-control", Trigger::Load, "{}", panel));
+
+    let menu_fallback = el("div")
+        .class("q-menu q-tc")
+        .attr("data-q-hover", "true")
+        .child(trigger)
+        .child(surface);
+
+    island("theme-menu", "menu", Trigger::Load, "{}", menu_fallback)
+}
 
 /// Build the header: brand lockup left, nav (Home + dropdowns + GitHub) and the
 /// appearance control right. `active_path` marks the current top-level section.
@@ -185,7 +272,8 @@ fn header(active_path: &str) -> Node {
                 el("div")
                     .class("q-nav-wrap")
                     .child(nav)
-                    .child(theme_toggle()),
+                    .child(theme_toggle())
+                    .child(theme_panel()),
             ),
     )
 }
@@ -301,6 +389,21 @@ fn chrome_css() -> &'static str {
 .q-theme-toggle .q-ico-sun{display:block}\
 :root[data-q-theme=\"light\"] .q-theme-toggle .q-ico-sun{display:none}\
 :root[data-q-theme=\"light\"] .q-theme-toggle .q-ico-moon{display:block}\
+/* ---- appearance menu (density / radius / surface) ---- */\
+.q-tc__trigger{display:inline-flex;align-items:center;justify-content:center;width:var(--q-control-h,2.5rem);height:var(--q-control-h,2.5rem);border-radius:var(--q-radius-md);border:1px solid var(--q-color-border);background:var(--q-color-surface);color:var(--q-color-fg);cursor:pointer;transition:border-color var(--q-duration-fast) var(--q-ease-out),color var(--q-duration-fast) var(--q-ease-out)}\
+.q-tc__trigger:hover{border-color:var(--q-color-brand);color:var(--q-color-brand)}\
+.q-tc__trigger:focus-visible{outline:2px solid var(--q-color-brand);outline-offset:2px}\
+.q-tc__trigger[aria-expanded=\"true\"]{border-color:var(--q-color-brand);color:var(--q-color-brand)}\
+.q-tc__surface{left:auto;right:0;min-width:16rem;transform-origin:top right}\
+.q-tc__panel{display:flex;flex-direction:column;gap:1rem;padding:1rem}\
+.q-tc__group{display:flex;flex-direction:column;gap:.4rem}\
+.q-tc__legend{font-size:var(--q-font-size-xs);text-transform:uppercase;letter-spacing:var(--q-tracking-wide);color:var(--q-color-muted);font-weight:var(--q-font-weight-bold)}\
+.q-tc__seg{display:flex;flex-wrap:wrap;border:1px solid var(--q-color-border);border-radius:var(--q-radius-md);overflow:hidden}\
+.q-tc__opt{flex:1 1 auto;appearance:none;border:0;background:transparent;color:var(--q-color-muted);font:inherit;font-size:.82rem;padding:.4rem .6rem;cursor:pointer;white-space:nowrap;transition:background-color var(--q-duration-fast) var(--q-ease-out),color var(--q-duration-fast) var(--q-ease-out)}\
+.q-tc__opt+.q-tc__opt{border-left:1px solid var(--q-color-border)}\
+.q-tc__opt:hover{color:var(--q-color-fg)}\
+.q-tc__opt[aria-pressed=\"true\"]{background:var(--q-color-brand);color:var(--q-color-on-brand)}\
+.q-tc__opt:focus-visible{outline:2px solid var(--q-color-brand);outline-offset:-2px}\
 /* ---- mobile: collapse the text nav, keep brand + appearance ---- */\
 @media (max-width:820px){.q-nav{display:none}}\
 /* ---- footer ---- */\
