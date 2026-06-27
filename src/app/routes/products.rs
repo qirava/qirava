@@ -2,8 +2,9 @@
 
 use qexec::FunctionResponse;
 use qquill_design::{Card, Effect, Radius, Tone};
-use qquill_view::{el, text, Node};
+use qquill_view::{el, raw, text, Node};
 
+use crate::app::routes::product_page::ARROW_SVG;
 use crate::app::routes::{inline_code, status_badge, Status};
 use crate::app::shell::page;
 use crate::app::{Css, Meta};
@@ -23,6 +24,7 @@ fn product(
     status: Status,
     summary: &str,
     points: &[&str],
+    learn_more: &str,
 ) -> Node {
     let eyebrow = el("div")
         .class("q-card-eyebrow")
@@ -38,9 +40,16 @@ fn product(
         list = list.child(el("li").child(text((*p).to_string())));
     }
 
+    let learn = el("a")
+        .class("q-prod-learn")
+        .attr("href", learn_more.to_string())
+        .child(text(format!("Learn more about {name} ")))
+        .child(raw(ARROW_SVG));
+
     let body = el("div")
         .child(el("p").child(text(summary.to_string())))
-        .child(list);
+        .child(list)
+        .child(learn);
 
     let card = Card::new(id)
         .article()
@@ -52,7 +61,17 @@ fn product(
     css.node(card.render())
 }
 
+/// Index-only CSS: the per-card "Learn more →" link. Token-driven; deduped.
+fn index_css() -> &'static str {
+    "\
+.q-prod-learn{display:inline-flex;align-items:center;gap:.35rem;margin-top:1rem;font-weight:var(--q-font-weight-medium);font-size:.92rem;color:var(--q-color-brand)}\
+.q-prod-learn:hover{text-decoration:none}\
+.q-prod-learn .q-arr{transition:transform var(--q-duration-fast) var(--q-ease-out)}\
+.q-prod-learn:hover .q-arr{transform:translateX(3px)}"
+}
+
 fn body(css: &mut Css) -> Node {
+    css.push(index_css().to_string());
     let intro = el("div")
         .child(el("p").class("q-eyebrow").child(text("Products")))
         .child(el("h1").class("q-h1").child(text("One ecosystem, all first-party")))
@@ -78,6 +97,7 @@ fn body(css: &mut Css) -> Node {
             "RBAC hierarchy custodian > admin > user > guest, with custodian-gated single-use invites.",
             "Qirava Studio — the default admin app — is itself a DMS client; config is data in _sys_* tables.",
         ],
+        "/products/dms",
     );
 
     let quill = product(
@@ -94,6 +114,7 @@ fn body(css: &mut Css) -> Node {
             "quill new myapp → cargo run to serve → cargo run -- build for a static export.",
             "This very site is a Quill app: it dogfoods the framework end to end.",
         ],
+        "/products/quill",
     );
 
     let stdlib = product(
@@ -110,6 +131,7 @@ fn body(css: &mut Css) -> Node {
             "Utilities: array, object, string, math, number, convert, crypto, encoding, regex, time, uuid.",
             "Products depend on q*; q* never depends on the products — the dependency arrow points one way.",
         ],
+        "/products/stdlib",
     );
 
     let cloud = product(
@@ -124,6 +146,7 @@ fn body(css: &mut Css) -> Node {
             "Metering + billing, OS-level resource caps, and per-tenant sandboxing.",
             "The open-core managed-cloud offering atop the Apache-2.0 core.",
         ],
+        "/products/cloud",
     );
 
     let grid = el("div")

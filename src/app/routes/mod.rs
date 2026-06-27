@@ -7,6 +7,11 @@ pub mod architecture;
 pub mod components;
 pub mod docs;
 pub mod index;
+pub mod product_cloud;
+pub mod product_dms;
+pub mod product_page;
+pub mod product_quill;
+pub mod product_stdlib;
 pub mod products;
 pub mod roadmap;
 

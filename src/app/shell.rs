@@ -31,9 +31,10 @@ const MENUS: &[Menu] = &[
         label: "Products",
         id: "products",
         items: &[
-            ("Qirava DMS", "AI-native, zero-dependency data system", "/products"),
-            ("Quill UI", "Rust-native UI + app framework", "/components"),
-            ("Architecture", "How the pieces fit together", "/architecture"),
+            ("Qirava DMS", "AI-native, zero-dependency data system", "/products/dms"),
+            ("Quill", "Rust-native UI + app framework", "/products/quill"),
+            ("The q* stdlib", "13 zero-dependency shared crates", "/products/stdlib"),
+            ("Qirava Cloud", "Managed DMS service (planned)", "/products/cloud"),
         ],
     },
     Menu {

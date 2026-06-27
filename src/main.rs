@@ -58,6 +58,11 @@ struct Page {
 const PAGES: &[Page] = &[
     Page { id: "index", path: "/", handler: app::routes::index::respond },
     Page { id: "products", path: "/products", handler: app::routes::products::respond },
+    // Per-product detail pages.
+    Page { id: "products-dms", path: "/products/dms", handler: app::routes::product_dms::respond },
+    Page { id: "products-quill", path: "/products/quill", handler: app::routes::product_quill::respond },
+    Page { id: "products-stdlib", path: "/products/stdlib", handler: app::routes::product_stdlib::respond },
+    Page { id: "products-cloud", path: "/products/cloud", handler: app::routes::product_cloud::respond },
     Page { id: "architecture", path: "/architecture", handler: app::routes::architecture::respond },
     Page { id: "roadmap", path: "/roadmap", handler: app::routes::roadmap::respond },
     // Docs framework (left sidebar -> pages, on-page TOC, prev/next, copy).
