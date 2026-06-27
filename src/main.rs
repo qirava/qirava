@@ -63,7 +63,13 @@ const PAGES: &[Page] = &[
     Page { id: "products-quill", path: "/products/quill", handler: app::routes::product_quill::respond },
     Page { id: "products-stdlib", path: "/products/stdlib", handler: app::routes::product_stdlib::respond },
     Page { id: "products-cloud", path: "/products/cloud", handler: app::routes::product_cloud::respond },
+    // Architecture section: an overview hub + four deep dives, in the shared
+    // docs reading layout. The single source of truth for the system design.
     Page { id: "architecture", path: "/architecture", handler: app::routes::architecture::respond },
+    Page { id: "architecture-security", path: "/architecture/security", handler: app::routes::arch_security::respond },
+    Page { id: "architecture-cloud", path: "/architecture/cloud", handler: app::routes::arch_cloud::respond },
+    Page { id: "architecture-cluster", path: "/architecture/cluster", handler: app::routes::arch_cluster::respond },
+    Page { id: "architecture-embed", path: "/architecture/embed", handler: app::routes::arch_embed::respond },
     // Per-product roadmap: /roadmap is a hub; each product owns a BUILT /
     // PARTIAL / PLANNED status board (mirrors the /docs hub).
     Page { id: "roadmap", path: "/roadmap", handler: app::routes::roadmap::respond },

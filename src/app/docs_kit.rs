@@ -143,7 +143,9 @@ impl Toc {
         qquill_docs::heading(2, title)
     }
 
-    fn render(&self) -> Node {
+    /// Render the captured headings into the right-rail TOC nav. Public so the
+    /// architecture section (`arch_kit`) can reuse the same TOC widget.
+    pub fn render(&self) -> Node {
         let mut nav = el("nav").class("q-docs__toc").attr("aria-label", "On this page");
         nav = nav.child(el("p").class("q-docs__toc-label").child(text("On this page")));
         for (slug, title) in &self.entries {

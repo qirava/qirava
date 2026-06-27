@@ -38,6 +38,17 @@ const MENUS: &[Menu] = &[
         ],
     },
     Menu {
+        label: "Architecture",
+        id: "architecture",
+        items: &[
+            ("Overview", "Access checkpoints + the module map", "/architecture"),
+            ("Security & governance", "Custodian M-of-N, seed, recovery, posture", "/architecture/security"),
+            ("Cloud control plane", "Signup, billing, delegation, control channel", "/architecture/cloud"),
+            ("Scaling & upgrades", "Live migration + zero-downtime rollouts", "/architecture/cluster"),
+            ("Embedded & sync", "In-process engine + dual WebSocket sync", "/architecture/embed"),
+        ],
+    },
+    Menu {
         label: "Developer Docs",
         id: "docs",
         items: &[

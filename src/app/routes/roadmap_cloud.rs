@@ -1,11 +1,11 @@
 //! `GET /roadmap/cloud` — the Qirava Cloud roadmap.
 //!
-//! The managed-DMS control plane is PLANNED end to end: provisioning, placement,
-//! metering, per-resource billing, OS-level caps + tenant sandboxing, autoscale/
-//! rebalance, and the standalone↔cluster switch (per docs/CLOUD_MULTITENANT.md).
-//! The single-tenant DMS primitives the control plane will orchestrate — resource
-//! governance, RBAC, config-as-data, replication, the worker/function model — are
-//! already BUILT in the OSS core. No dates promised — only state.
+//! Control plane v1 is BUILT: the `_cp_*` catalogs, the `cloud.*` functions (with
+//! the infra effect simulated + badged), and the RBAC-gated Cloud Console. The
+//! live infra — the node agent, real DMS spawning + cgroup caps, the FIFO-hold
+//! cutover trio, public signup, delegation, domain automation, and metered
+//! payment — is PLANNED. Sourced from the Architecture section (the SSOT). No
+//! dates promised — only state.
 
 use qexec::FunctionResponse;
 use qquill_view::{el, text, Node};
@@ -16,34 +16,38 @@ use crate::app::routes::Status;
 use crate::app::shell::page;
 use crate::app::{Css, Meta};
 
-const TITLE: &str = "Qirava Cloud roadmap — planned managed control plane";
+const TITLE: &str = "Qirava Cloud roadmap — built, in progress, planned";
 const DESCRIPTION: &str = "An honest status board for Qirava Cloud, the managed multi-tenant \
-control plane. The whole control plane — provisioning, metering, billing, OS caps, scaling, and \
-the standalone↔cluster switch — is PLANNED; the single-tenant DMS primitives it orchestrates are \
-already built in the open-source core.";
+control plane. Control plane v1 — the _cp_* catalogs, the cloud.* functions, and the RBAC-gated \
+Cloud Console — is built with the infra effect simulated; the live infra, public signup, the \
+FIFO-hold cutover, delegation, and metered payment are planned.";
 
-// The OSS-core primitives the control plane will orchestrate — these exist today
-// in the DMS, which is why the cloud is "the missing top layer," not a rewrite.
+// Built: control plane v1 + the OSS-core primitives it orchestrates.
 const BUILT: &[Item] = &[
-    Item { title: "Resource governance (the executor)", detail: "The bounded executor already caps memory and work per call — the per-tenant cap mechanism the control plane will set and meter." },
-    Item { title: "RBAC + two authority domains", detail: "The custodian > admin > user > guest hierarchy and the L1→L2→L3 gate are the same boundary that keeps a tenant's domain separate from the control plane's." },
-    Item { title: "Config-as-data (_sys_*)", detail: "Every tenant DMS is configured as data; the control plane's _cp_* catalogs follow the identical data-driven pattern." },
-    Item { title: "Single-leader replication", detail: "The replication seam the control plane will flip a tenant from standalone to cluster mode through is built (single-direction today)." },
-    Item { title: "The worker / function model", detail: "The cloud is itself a DMS running a cloud app — it reuses the worker pipeline, execute(), and Quill; only the cloud.* functions are new." },
+    Item { title: "Control plane v1 — the _cp_* catalogs", detail: "Tenants, nodes, plans, subscriptions, usage, invoices, and an audit log are modeled as data in the control plane's own DMS — the same config-as-data pattern as _sys_*." },
+    Item { title: "cloud.* functions", detail: "provision, scale_vertical, scale_horizontal, switch_mode, suspend, resume, terminate, and generate_invoice make real _cp_* writes today; the infra effect is simulated and badged PLANNED in the UI." },
+    Item { title: "The Cloud Console (a Quill app)", detail: "An RBAC-gated console — Overview, Tenants, Plans, Nodes, Billing, Governance (custodian > admin) — built as a Quill app, the way Studio is the DMS's admin app." },
+    Item { title: "Resource governance (the executor)", detail: "The bounded executor caps memory and work per call — the per-DMS cap mechanism the control plane sets and meters." },
+    Item { title: "Single-leader replication + change-stream", detail: "The replication seam every cutover reuses — committed op-frames stream master → follower (single-direction today)." },
+    Item { title: "The cloud is itself a DMS", detail: "The control plane runs as a DMS hosting a cloud app, reusing the worker pipeline, execute(), and Quill — only the cloud.* functions are new, not a forked engine." },
 ];
 
+// In progress: the seams that exist but whose real effect is not yet wired.
 const PARTIAL: &[Item] = &[
-    Item { title: "Confidential-VM attestation seam", detail: "A tenant DMS must attest from inside a SEV-SNP / TDX VM before receiving its seed; the SEV-SNP setup runbook exists, the in-DMS attestation handshake is being designed." },
+    Item { title: "Live infra effect", detail: "cloud.* writes the catalogs, but the actual DMS spawn / scale / move is simulated and badged PLANNED — the node agent that performs it is the next build." },
+    Item { title: "Confidential-VM attestation seam", detail: "A tenant DMS should attest from inside a SEV-SNP / TDX VM before receiving its seed; the setup runbook exists, the in-DMS attestation handshake is being designed." },
 ];
 
+// Planned: the real managed-cloud layer.
 const PLANNED: &[Item] = &[
-    Item { title: "Provisioning + placement", detail: "cloud.provision / place — spin up an isolated tenant DMS process (its own WAL, _sys_*, seed, custodian) and place it on a node." },
-    Item { title: "Metering + per-resource billing", detail: "Meter CPU-thread, memory-GB, storage-GB, and bandwidth-GB per tenant and bill dynamically per unit — no fixed plans, a live pricing slider." },
-    Item { title: "OS-level caps + tenant sandbox", detail: "cgroups / namespaces enforce each tenant's CPU/memory/storage/bandwidth cap; tenant-installed cargo modules execute inside that sandbox and cannot reach a sibling." },
-    Item { title: "Autoscale + rebalance", detail: "Grow storage with usage, scale a tenant vertically, and admit/rebalance tenants across nodes as bare-metal is added — isolation invariants preserved across every move." },
-    Item { title: "Standalone ↔ cluster switch", detail: "A tenant flips between a single node and a replicated cluster on demand, driven by the control plane through the replication seam." },
-    Item { title: "The Cloud Console (a Quill app)", detail: "The control-plane UI — subscriptions, billing, node + tenant management — built as a Quill app, the way Studio is the DMS's admin app." },
-    Item { title: "The qcloud submodule", detail: "Created when the first phase is built (no hollow skeleton in the public tree); the commercial open-core layer atop the Apache-2.0 engine." },
+    Item { title: "Node agent + DMS control socket", detail: "The cloud's per-node hands — spawn/stop, cgroup caps, routing — driving a narrow, envelope-only lifecycle socket on each DMS that never reads tenant data." },
+    Item { title: "Real DMS spawning + dense packing", detail: "Spawn isolated, hard-capped DMS processes and bin-pack many per node, so one account can run many isolated DMSes and nodes are not wasted." },
+    Item { title: "FIFO-hold cutover trio", detail: "Write-forwarding + epoch-fencing + location repoint — the primitive that makes vertical/horizontal scale, live migration, and upgrades silent (no restart)." },
+    Item { title: "Public signup + self-serve", detail: "Open email signup, purchase a resource pool, and self-serve create DMS instances, databases, and worker apps." },
+    Item { title: "Email-scoped delegation", detail: "Grant another email a scope to manage one of your DMSes — cross-account delegation bridged into the DMS's own RBAC." },
+    Item { title: "Metering → billing → payment", detail: "Meter thread / RAM-GB / storage-GB per DMS and bill per unit on an hourly / monthly / yearly cycle, with real payment." },
+    Item { title: "Domain automation", detail: "A default id.qirava.in subdomain per DMS plus custom domains via a cloudflared tunnel and CF Zero Trust." },
+    Item { title: "Signed-release CI/CD + rolling updates", detail: "M-of-N-signed, transparency-logged releases rolled out node-by-node with proper drain and health-gated rollback." },
 ];
 
 fn body(css: &mut Css) -> Node {
@@ -52,35 +56,34 @@ fn body(css: &mut Css) -> Node {
 
     let hero = hero(
         css,
-        "Cloud roadmap — planned",
+        "Cloud roadmap",
         "qcloud",
         "The managed control plane, ",
-        "planned",
+        "honestly tracked",
         ".",
         "Qirava Cloud is the managed, multi-tenant control plane — a DMS that manages other DMSes, \
-         billed per resource. It is forward-looking by design: the whole control plane is PLANNED. \
-         What is already built is the single-tenant DMS the control plane will orchestrate — \
-         resource governance, RBAC, config-as-data, replication, and the worker model. No dates \
-         promised — only state.",
+         billed per resource. Control plane v1 is built: the _cp_* catalogs, the cloud.* functions \
+         (infra effect simulated), and the RBAC-gated Cloud Console. The live infra, public signup, \
+         the FIFO-hold cutover, delegation, and metered payment are planned. No dates — only state.",
         &[
-            Cta { label: "Explore Qirava Cloud", href: "/products/cloud", solid: true },
-            Cta { label: "Read the docs", href: "/docs/cloud", solid: false },
+            Cta { label: "Read the architecture", href: "/architecture/cloud", solid: true },
+            Cta { label: "Explore Qirava Cloud", href: "/products/cloud", solid: false },
         ],
         &[
-            HeroStat { value: "PLANNED", label: "control plane status" },
-            HeroStat { value: "5", label: "OSS primitives ready" },
-            HeroStat { value: "7", label: "control-plane items planned" },
+            HeroStat { value: "v1", label: "control plane built" },
+            HeroStat { value: "6", label: "building blocks shipping" },
+            HeroStat { value: "8", label: "infra items planned" },
             HeroStat { value: "0", label: "third-party deps" },
         ],
     );
 
     let mut board_section = board(
         "Status board",
-        "Built foundation, planned control plane",
-        "Three lanes, no dates. The BUILT lane is the open-source DMS the control plane reuses; the \
-         PLANNED lane is the managed-cloud layer itself — provisioning, metering, billing, OS caps, \
-         scaling, and the standalone↔cluster switch. The control plane is the missing top layer, \
-         not a forked engine.",
+        "Built control plane, planned infra",
+        "Three lanes, no dates. The BUILT lane is control plane v1 plus the OSS-core primitives it \
+         reuses; PARTIAL is the seams whose real effect is not yet wired; PLANNED is the live \
+         managed-cloud layer — the node agent, real spawning, the silent cutover, signup, \
+         delegation, billing, and domains.",
         ["rm-cloud-built", "rm-cloud-partial", "rm-cloud-planned"],
         [
             Lane { status: Status::Built, items: BUILT },
@@ -89,11 +92,13 @@ fn body(css: &mut Css) -> Node {
         ],
     );
     board_section = board_section.child(legend()).child(note(vec![
-        text("Sourced from the repo's cloud + multi-tenant design doc. The managed-cloud layer is the \
-              commercial open-core offering atop the Apache-2.0 core; see "
+        text("Sourced from the ".to_string()),
+        el("a").attr("href", "/architecture/cloud").child(text("Cloud control plane")),
+        text(" and ".to_string()),
+        el("a").attr("href", "/architecture/cluster").child(text("Scaling & upgrades")),
+        text(" architecture pages — the single source of truth. The managed-cloud layer is the \
+              commercial open-core offering atop the Apache-2.0 core."
             .to_string()),
-        el("a").attr("href", "/products/cloud").child(text("the product page")),
-        text(" for the open-core boundary.".to_string()),
     ]));
 
     main_wrap(vec![hero, board_section])

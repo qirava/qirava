@@ -3,6 +3,10 @@
 //! module here and listing it in `PAGES` in `main.rs`.
 
 pub mod api;
+pub mod arch_cloud;
+pub mod arch_cluster;
+pub mod arch_embed;
+pub mod arch_security;
 pub mod architecture;
 pub mod components;
 pub mod docs;
