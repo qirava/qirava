@@ -75,7 +75,7 @@ pub struct Meta<'a> {
 const CACHE_CONTROL: &str = "public, max-age=300";
 
 /// The canonical origin used to build absolute canonical + Open Graph URLs.
-const SITE_ORIGIN: &str = "https://qirava.dev";
+const SITE_ORIGIN: &str = "https://qirava.in";
 
 /// Wrap a page's `<body>` content in a full HTML document.
 ///
