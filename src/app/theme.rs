@@ -280,9 +280,94 @@ pub fn layout_css() -> String {
             "width": "100%";
         }
     };
+    // Order matters (CSS cascade, equal specificity): the layout block first,
+    // then the token/type-scale layer so its base element styles win over the
+    // older inline rules, then surfaces, then the density/radius re-points.
     let mut out = block.to_css();
+    out.push_str(tokens_css());
+    out.push_str(surface_css());
+    out.push_str(scale_css());
     out.push_str(motion_css());
     out
+}
+
+/// Site-level design tokens layered on top of `qquill-theme`'s base set.
+///
+/// This does NOT fork the theme: it overrides the font *stacks* (so there is no
+/// Inter/CDN dependency — refined system stack only) and ADDS the type-scale,
+/// leading, and tracking handles the spec calls for, plus the density / control
+/// tokens that `[data-q-size]` re-points. Everything still resolves to `--q-*`
+/// custom properties so a theme/size/radius switch is a single attribute flip.
+fn tokens_css() -> &'static str {
+    "\
+:root{\
+--q-font-sans:ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",Roboto,Helvetica,Arial,\"Apple Color Emoji\",\"Segoe UI Emoji\";\
+--q-font-mono:ui-monospace,SFMono-Regular,\"SF Mono\",Menlo,Consolas,\"Liberation Mono\",monospace;\
+--q-font-size-display:clamp(2.75rem,6vw,4.5rem);\
+--q-font-size-xs:0.75rem;\
+--q-leading-tight:1.1;\
+--q-leading-snug:1.3;\
+--q-leading-relaxed:1.65;\
+--q-tracking-tight:-0.025em;\
+--q-tracking-wide:0.12em\
+}\
+/* ---- font stacks + antialiasing on the system stack (no CDN) ---- */\
+body{font-family:var(--q-font-sans);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;font-feature-settings:\"cv05\" 1,\"ss01\" 0}\
+code,pre,kbd,samp,.q-code,.q-inline{font-family:var(--q-font-mono)}\
+/* ---- type scale (base element styles) ---- */\
+.q-display{font-size:var(--q-font-size-display);font-weight:var(--q-font-weight-bold);line-height:1.04;letter-spacing:-0.03em;margin:0 0 var(--q-space-4)}\
+h1,.q-h1{font-size:clamp(2.25rem,5vw,3.25rem);font-weight:var(--q-font-weight-bold);line-height:var(--q-leading-tight);letter-spacing:var(--q-tracking-tight)}\
+h2,.q-h2{font-size:clamp(1.5rem,3vw,2rem);font-weight:var(--q-font-weight-bold);line-height:1.15;letter-spacing:-0.02em}\
+h3,.q-h3{font-size:1.25rem;font-weight:var(--q-font-weight-medium);line-height:var(--q-leading-snug);letter-spacing:-0.01em}\
+.q-lead,.q-body-lg{font-size:clamp(1.05rem,2vw,1.25rem);font-weight:var(--q-font-weight-normal);line-height:1.6}\
+body,.q-body{font-size:var(--q-font-size-md);line-height:var(--q-leading-relaxed)}\
+small,.q-small{font-size:var(--q-font-size-sm);line-height:1.5}\
+.q-eyebrow{font-size:var(--q-font-size-xs);font-weight:var(--q-font-weight-bold);line-height:1;letter-spacing:var(--q-tracking-wide);text-transform:uppercase}\
+.q-code,code.q-inline{font-size:0.9rem;line-height:1.7}\
+/* ---- vertical rhythm in space-token multiples ---- */\
+h1,.q-h1,h2,.q-h2{margin-top:var(--q-space-8);margin-bottom:var(--q-space-3)}\
+h3,.q-h3{margin-top:var(--q-space-6);margin-bottom:var(--q-space-3)}\
+p{max-width:62ch}\
+.q-prose p,.q-prose li{max-width:68ch}\
+.q-section{margin-top:calc(var(--q-space-10) * var(--q-density,1))}"
+}
+
+/// Surface styles — `[data-q-surface=glass|neu|gradient|flat]`.
+///
+/// A surface attribute drops onto any element (card, header, panel) and maps
+/// straight onto the existing per-mode effect tokens, so light/dark/contrast
+/// values flow automatically with the theme. No colors are hardcoded; contrast
+/// mode collapses the effect tokens at the theme layer.
+fn surface_css() -> &'static str {
+    "\
+[data-q-surface]{border-radius:var(--q-radius-lg);transition:box-shadow var(--q-duration-base) var(--q-ease-out),background var(--q-duration-base) var(--q-ease-out),border-color var(--q-duration-base) var(--q-ease-out)}\
+[data-q-surface=\"glass\"]{background:var(--q-effect-glass-surface);-webkit-backdrop-filter:blur(var(--q-effect-glass-blur));backdrop-filter:blur(var(--q-effect-glass-blur));border:1px solid var(--q-effect-glass-border);box-shadow:var(--q-shadow-md)}\
+[data-q-surface=\"neu\"]{background:var(--q-color-surface);border:1px solid transparent;box-shadow:var(--q-effect-neu-raised)}\
+[data-q-surface=\"neu\"]:active,[data-q-surface=\"neu\"][data-pressed=\"true\"]{box-shadow:var(--q-effect-neu-inset)}\
+[data-q-surface=\"gradient\"]{background:var(--q-effect-gradient-brand);color:var(--q-color-on-brand);border:1px solid transparent;box-shadow:var(--q-shadow-lg)}\
+[data-q-surface=\"gradient\"] .q-muted{color:color-mix(in srgb,var(--q-color-on-brand) 80%,transparent)}\
+[data-q-surface=\"flat\"]{background:var(--q-color-surface);border:1px solid var(--q-color-border);box-shadow:none}\
+@supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){[data-q-surface=\"glass\"]{background:var(--q-color-surface)}}"
+}
+
+/// Density + radius scales — `[data-q-size]` and `[data-q-radius]`.
+///
+/// Both re-point existing `--q-*` tokens from a single attribute (set on
+/// `<html>` or any subtree), the same mechanism as `data-q-theme`. `cozy` /
+/// `rounded` are the current defaults; the others restyle the whole UI.
+/// Density-sensitive controls read the new `--q-control-*` handles so the stable
+/// `--q-space-*` scale is never mutated.
+fn scale_css() -> &'static str {
+    "\
+/* ---- density: [data-q-size=compact|cozy|comfortable] ---- */\
+:root,[data-q-size=\"cozy\"]{--q-density:1;--q-control-h:2.5rem;--q-control-pad-x:1.1rem;--q-field-gap:var(--q-space-4)}\
+[data-q-size=\"compact\"]{--q-density:.85;--q-control-h:2.1rem;--q-control-pad-x:.85rem;--q-field-gap:var(--q-space-3)}\
+[data-q-size=\"comfortable\"]{--q-density:1.15;--q-control-h:2.9rem;--q-control-pad-x:1.35rem;--q-field-gap:var(--q-space-5)}\
+.q-btn{min-height:var(--q-control-h);padding-inline:var(--q-control-pad-x)}\
+/* ---- radius: [data-q-radius=sharp|rounded|pill] (full/none invariant) ---- */\
+:root,[data-q-radius=\"rounded\"]{--q-radius-sm:4px;--q-radius-md:8px;--q-radius-lg:12px;--q-radius-xl:20px}\
+[data-q-radius=\"sharp\"]{--q-radius-sm:0;--q-radius-md:0;--q-radius-lg:2px;--q-radius-xl:4px}\
+[data-q-radius=\"pill\"]{--q-radius-sm:6px;--q-radius-md:10px;--q-radius-lg:9999px;--q-radius-xl:9999px}"
 }
 
 /// Motion, scroll-reveal, the animated hero, card hover depth, the docs layout,

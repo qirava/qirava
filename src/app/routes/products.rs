@@ -10,7 +10,7 @@ use crate::app::{Css, Meta};
 
 const TITLE: &str = "Products — Qirava";
 const DESCRIPTION: &str = "The Qirava products: the DMS (qdms), the Quill UI framework (qquill), \
-the tq* stdlib (qpkgs), and the planned managed cloud (qcloud).";
+the q* stdlib (qpkgs), and the planned managed cloud (qcloud).";
 
 /// A product section: a card carrying name + crate + status, a description, and
 /// a bullet list of the concrete capabilities.
@@ -59,7 +59,7 @@ fn body(css: &mut Css) -> Node {
         .child(el("p").class("q-lead").child(text(
             "Three shipping products plus one in design. Every product is \
              zero-dependency — std and sibling Qirava crates only — and shares the \
-             same tq* substrate.",
+             same q* substrate.",
         )));
 
     let dms = product(
@@ -99,7 +99,7 @@ fn body(css: &mut Css) -> Node {
     let stdlib = product(
         css,
         "prod-stdlib",
-        "The tq* stdlib",
+        "The q* stdlib",
         "qpkgs",
         Status::Built,
         "13 zero-dependency crates shared across every product. The substrate is qexec \
@@ -108,7 +108,7 @@ fn body(css: &mut Css) -> Node {
         &[
             "Substrate: qexec (bounded executor) + qvalue (value model + ABI).",
             "Utilities: array, object, string, math, number, convert, crypto, encoding, regex, time, uuid.",
-            "Products depend on tq*; tq* never depends on the products — the dependency arrow points one way.",
+            "Products depend on q*; q* never depends on the products — the dependency arrow points one way.",
         ],
     );
 

@@ -13,8 +13,8 @@
 //! Content is accurate to `AGENTS.md` and `docs/ARCHITECTURE_OVERVIEW.md`: the
 //! one entry point (`execute`, only through a worker), auth as a before-function
 //! writing identity into the shared context, the planner as the single
-//! read/mutate door, and the one-way dependency arrow (products depend on tq*;
-//! tq* never depends on a product; Quill does not depend on tq*).
+//! read/mutate door, and the one-way dependency arrow (products depend on q*;
+//! q* never depends on a product; Quill does not depend on q*).
 
 use qexec::FunctionResponse;
 use qquill_view::{el, text, Node};
@@ -152,7 +152,7 @@ const MODULES: &[Module] = &[
         crate_name: "qpkgs",
         name: "Stdlib",
         kind: "shared packages",
-        blurb: "The zero-dependency tq* stdlib — qexec (the bounded executor) and qvalue (the \
+        blurb: "The zero-dependency q* stdlib — qexec (the bounded executor) and qvalue (the \
                 value model) plus focused utility crates. Products depend on it; it depends on \
                 no product.",
         state: "built",
@@ -163,7 +163,7 @@ const MODULES: &[Module] = &[
         kind: "UI framework",
         blurb: "The Rust-native UI/app framework: styled components over headless state machines, \
                 native SSR + islands + SSG. Its own repo, a sibling to the DMS — and it does not \
-                depend on tq*.",
+                depend on q*.",
         state: "built",
     },
     Module {
@@ -233,8 +233,8 @@ fn submodules(css: &mut Css) -> Node {
         .attr("data-q-reveal", "")
         .children([
             el("span").class("q-arch-rule__arrow").attr("aria-hidden", "true").child(text("→")),
-            text(" Direction rule: products (DMS, Quill) depend on tq*; tq* never depends on a \
-                   product, and Quill does not depend on tq*. The dependency arrow points one way."
+            text(" Direction rule: products (DMS, Quill) depend on q*; q* never depends on a \
+                   product, and Quill does not depend on q*. The dependency arrow points one way."
                 .to_string()),
         ]);
 
@@ -268,7 +268,7 @@ pub fn respond(_input: &[u8]) -> FunctionResponse {
         Some("The codebase"),
         "Five submodules, one ecosystem",
         "qroot composes five products plus the brand crate. Each is its own repo; products share \
-         the tq* substrate, and the dependency arrow only ever points toward it.",
+         the q* substrate, and the dependency arrow only ever points toward it.",
         submodules(&mut css),
     );
 
