@@ -164,6 +164,9 @@ pub fn document(meta: &Meta, head_css: String, body: Node) -> Node {
 
     el("html")
         .attr("lang", "en")
+        // Opt into the Quill client router: same-origin links navigate by swapping
+        // #main (+ title + inlined CSS) instead of a full page reload.
+        .attr("data-q-router", "")
         .child(head)
         .child(el("body").child(body))
 }
@@ -178,20 +181,20 @@ pub fn respond_html(tree: &Node) -> qexec::FunctionResponse {
     let mut html = String::from("<!doctype html>");
     render_into(tree, &mut html);
 
-    // The island rule: only pages that actually use islands ship a runtime.
-    if qquill_view::page_has_islands(tree) {
-        let kinds = qquill_view::collect_island_kinds(tree);
-        let kind_refs: Vec<&str> = kinds.iter().map(|s| s.as_str()).collect();
-        let mut payload = String::new();
-        qquill_view::collect_island_sidecars_into(tree, &mut payload);
-        payload.push_str("<script>");
-        payload.push_str(&qquill_runtime::runtime_bundle_for(&kind_refs));
-        payload.push_str("</script>");
-        if let Some(pos) = html.rfind("</body>") {
-            html.insert_str(pos, &payload);
-        } else {
-            html.push_str(&payload);
-        }
+    // Ship the runtime on EVERY page: the client router must be present
+    // everywhere, and after a navigation any incoming page's islands must be able
+    // to hydrate — so we ship the full bundle rather than per-page subsets. (This
+    // site opts into smooth navigation; the per-page zero-JS path still exists in
+    // the framework for apps that don't.)
+    let mut payload = String::new();
+    qquill_view::collect_island_sidecars_into(tree, &mut payload);
+    payload.push_str("<script>");
+    payload.push_str(&qquill_runtime::runtime_bundle());
+    payload.push_str("</script>");
+    if let Some(pos) = html.rfind("</body>") {
+        html.insert_str(pos, &payload);
+    } else {
+        html.push_str(&payload);
     }
 
     let headers = vec![("Cache-Control".to_string(), CACHE_CONTROL.to_string())];
