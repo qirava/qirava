@@ -93,12 +93,18 @@ fn body(css: &mut Css) -> Node {
     );
     board_section = board_section.child(legend()).child(note(vec![
         text("Sourced from the ".to_string()),
-        el("a").attr("href", "/docs/cloud/architecture").child(text("Cloud control plane")),
+        el("a")
+            .attr("href", "/docs/cloud/architecture")
+            .child(text("Cloud control plane")),
         text(" and ".to_string()),
-        el("a").attr("href", "/docs/cloud/scaling-architecture").child(text("Scaling & upgrades")),
-        text(" architecture pages — the single source of truth. The managed-cloud layer is the \
+        el("a")
+            .attr("href", "/docs/cloud/scaling-architecture")
+            .child(text("Scaling & upgrades")),
+        text(
+            " architecture pages — the single source of truth. The managed-cloud layer is the \
               commercial open-core offering atop the Apache-2.0 core."
-            .to_string()),
+                .to_string(),
+        ),
     ]));
 
     main_wrap(vec![hero, board_section])
@@ -107,6 +113,10 @@ fn body(css: &mut Css) -> Node {
 pub fn respond(_input: &[u8]) -> FunctionResponse {
     let mut css = Css::new();
     let content = body(&mut css);
-    let meta = Meta { title: TITLE, description: DESCRIPTION, path: "/roadmap/cloud" };
+    let meta = Meta {
+        title: TITLE,
+        description: DESCRIPTION,
+        path: "/roadmap/cloud",
+    };
     page(&meta, css, content)
 }

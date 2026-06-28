@@ -21,10 +21,7 @@ pub mod roadmap_page;
 pub mod roadmap_quill;
 pub mod roadmap_stdlib;
 
-use qquill_design::{Badge, Size, Tone, Variant};
 use qquill_view::{el, island, text, Node, Trigger};
-
-use crate::app::Css;
 
 /// Wrap arbitrary content in a `reveal` island so its `[data-q-reveal]` children
 /// fade/slide in on scroll. `instance_id` must be unique per page. The SSR
@@ -42,49 +39,12 @@ pub fn tilt(instance_id: &'static str, content: Node) -> Node {
     island(instance_id, "tilt", Trigger::Load, "{}", content)
 }
 
-/// A status pill, used across pages for the BUILT / PARTIAL / PLANNED legend.
-/// Tone maps: built -> brand, partial -> neutral, planned -> neutral (outline).
+/// Shared product status enum for BUILT / PARTIAL / PLANNED boards.
 #[derive(Clone, Copy)]
 pub enum Status {
     Built,
     Partial,
     Planned,
-}
-
-impl Status {
-    fn label(self) -> &'static str {
-        match self {
-            Status::Built => "BUILT",
-            Status::Partial => "PARTIAL",
-            Status::Planned => "PLANNED",
-        }
-    }
-
-    fn tone(self) -> Tone {
-        match self {
-            Status::Built => Tone::Brand,
-            Status::Partial => Tone::Neutral,
-            Status::Planned => Tone::Neutral,
-        }
-    }
-
-    fn variant(self) -> Variant {
-        match self {
-            // Solid-ish "done", soft "in progress", outline "not yet".
-            Status::Built => Variant::Soft,
-            Status::Partial => Variant::Soft,
-            Status::Planned => Variant::Outline,
-        }
-    }
-}
-
-/// Render a status badge into `css`, returning its node.
-pub fn status_badge(css: &mut Css, status: Status) -> Node {
-    let badge = Badge::badge(status.label())
-        .tone(status.tone())
-        .variant(status.variant())
-        .size(Size::Sm);
-    css.node(badge.render())
 }
 
 /// A page section with an `<h2>` heading + a lead paragraph + arbitrary body.
@@ -97,10 +57,7 @@ pub fn section(eyebrow: Option<&str>, heading: &str, lead: &str, body: Node) -> 
         .child(el("h2").class("q-h2").child(text(heading.to_string())))
         .child(el("p").class("q-lead").child(text(lead.to_string())));
 
-    el("section")
-        .class("q-section")
-        .child(head)
-        .child(body)
+    el("section").class("q-section").child(head).child(body)
 }
 
 /// An inline `<code>` snippet.

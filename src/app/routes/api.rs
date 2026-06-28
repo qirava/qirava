@@ -80,7 +80,9 @@ struct Reader<'a> {
 
 impl<'a> Reader<'a> {
     fn new(s: &'a str) -> Self {
-        Reader { chars: s.chars().peekable() }
+        Reader {
+            chars: s.chars().peekable(),
+        }
     }
 
     fn skip_ws(&mut self) {
@@ -201,7 +203,8 @@ impl<'a> Reader<'a> {
 
     fn number(&mut self) -> Json {
         let mut num = String::new();
-        while matches!(self.chars.peek(), Some(c) if c.is_ascii_digit() || *c == '-' || *c == '+' || *c == '.' || *c == 'e' || *c == 'E') {
+        while matches!(self.chars.peek(), Some(c) if c.is_ascii_digit() || *c == '-' || *c == '+' || *c == '.' || *c == 'e' || *c == 'E')
+        {
             num.push(self.chars.next().unwrap());
         }
         Json::Num(num.parse().unwrap_or(0.0))
@@ -230,14 +233,35 @@ fn h2(title: &str) -> Node {
 /// A friendly title + one-line blurb for each catalog category id.
 fn category_meta(id: &str) -> (&'static str, &'static str) {
     match id {
-        "planner" => ("Planner", "Parse and plan a QQL statement — the only door to a read or mutate."),
-        "read" => ("Read", "Key, filter, sort, limit, join, and aggregate read paths."),
-        "write" => ("Write", "Insert, update, upsert, delete, schema upgrade, and shard move. All FIFO-ordered."),
+        "planner" => (
+            "Planner",
+            "Parse and plan a QQL statement — the only door to a read or mutate.",
+        ),
+        "read" => (
+            "Read",
+            "Key, filter, sort, limit, join, and aggregate read paths.",
+        ),
+        "write" => (
+            "Write",
+            "Insert, update, upsert, delete, schema upgrade, and shard move. All FIFO-ordered.",
+        ),
         "search" => ("Search", "Full-text scoring, with an optional post-filter."),
-        "graph" => ("Graph", "Resolve a node, traverse edges, and resolve a path between nodes."),
-        "vector" => ("Vector", "Approximate nearest-neighbor search, optionally filtered."),
-        "inline" => ("Inline", "Composed, concurrent fan-outs that span several access paths in one call."),
-        "auth" => ("Auth & governance", "Sessions, signed keys, API keys, and the deny-by-default RBAC before-chain."),
+        "graph" => (
+            "Graph",
+            "Resolve a node, traverse edges, and resolve a path between nodes.",
+        ),
+        "vector" => (
+            "Vector",
+            "Approximate nearest-neighbor search, optionally filtered.",
+        ),
+        "inline" => (
+            "Inline",
+            "Composed, concurrent fan-outs that span several access paths in one call.",
+        ),
+        "auth" => (
+            "Auth & governance",
+            "Sessions, signed keys, API keys, and the deny-by-default RBAC before-chain.",
+        ),
         other => (Box::leak(other.to_string().into_boxed_str()), ""),
     }
 }
@@ -257,14 +281,22 @@ fn field_table(label: &str, fields: &[Json]) -> Node {
         };
         rows = rows.child(
             el("tr")
-                .child(el("td").child(el("code").class("q-inline").child(text(f.get("name").map(|v| v.as_str()).unwrap_or("").to_string()))))
-                .child(el("td").child(el("code").class("q-inline").child(text(f.get("type").map(|v| v.as_str()).unwrap_or("").to_string()))))
+                .child(el("td").child(el("code").class("q-inline").child(text(
+                    f.get("name").map(|v| v.as_str()).unwrap_or("").to_string(),
+                ))))
+                .child(el("td").child(el("code").class("q-inline").child(text(
+                    f.get("type").map(|v| v.as_str()).unwrap_or("").to_string(),
+                ))))
                 .child(el("td").class("q-api-req").child(text(req.to_string()))),
         );
     }
     el("div")
         .class("q-api-fields")
-        .child(el("p").class("q-api-fields__label").child(text(label.to_string())))
+        .child(
+            el("p")
+                .class("q-api-fields__label")
+                .child(text(label.to_string())),
+        )
         .child(
             el("table")
                 .class("q-api-table")
@@ -297,35 +329,57 @@ fn function_card(f: &Json) -> Node {
     let summary = f.get("summary").map(|v| v.as_str()).unwrap_or("");
     let description = f.get("description").map(|v| v.as_str()).unwrap_or("");
 
-    let mut chips = el("span").class("q-api-chips").child(chip("scope", scope)).child(chip("origin", origin));
+    let mut chips = el("span")
+        .class("q-api-chips")
+        .child(chip("scope", scope))
+        .child(chip("origin", origin));
     if fifo {
         chips = chips.child(chip("fifo", "fifo"));
     }
 
     let head = el("summary")
         .class("q-api-card__sum")
-        .child(el("code").class("q-api-card__key").child(text(key.to_string())))
-        .child(el("span").class("q-api-card__summary").child(text(summary.to_string())))
+        .child(
+            el("code")
+                .class("q-api-card__key")
+                .child(text(key.to_string())),
+        )
+        .child(
+            el("span")
+                .class("q-api-card__summary")
+                .child(text(summary.to_string())),
+        )
         .child(chips);
 
     // Error-code badges from the function's documented subset.
     let mut codes = el("div").class("q-api-codes");
-    codes = codes.child(el("span").class("q-api-codes__label").child(text("Errors:".to_string())));
+    codes = codes.child(
+        el("span")
+            .class("q-api-codes__label")
+            .child(text("Errors:".to_string())),
+    );
     for c in f.get("error_codes").map(|v| v.as_arr()).unwrap_or(&[]) {
-        codes = codes.child(el("code").class("q-inline q-api-code-pill").child(text(c.as_str().to_string())));
+        codes = codes.child(
+            el("code")
+                .class("q-inline q-api-code-pill")
+                .child(text(c.as_str().to_string())),
+        );
     }
 
-    el("details")
-        .class("q-api-card")
-        .child(head)
-        .child(
-            el("div")
-                .class("q-api-card__body")
-                .child(p(description))
-                .child(field_table("Input", f.get("input").map(|v| v.as_arr()).unwrap_or(&[])))
-                .child(field_table("Output", f.get("output").map(|v| v.as_arr()).unwrap_or(&[])))
-                .child(codes),
-        )
+    el("details").class("q-api-card").child(head).child(
+        el("div")
+            .class("q-api-card__body")
+            .child(p(description))
+            .child(field_table(
+                "Input",
+                f.get("input").map(|v| v.as_arr()).unwrap_or(&[]),
+            ))
+            .child(field_table(
+                "Output",
+                f.get("output").map(|v| v.as_arr()).unwrap_or(&[]),
+            ))
+            .child(codes),
+    )
 }
 
 /// Render the error-code table from the catalog's `error_codes` array.
@@ -381,7 +435,10 @@ fn scalar(v: &Json) -> String {
         Json::Bool(b) => b.to_string(),
         Json::Null => "null".to_string(),
         Json::Obj(fields) => {
-            let inner: Vec<String> = fields.iter().map(|(k, val)| format!("\"{k}\": {}", scalar(val))).collect();
+            let inner: Vec<String> = fields
+                .iter()
+                .map(|(k, val)| format!("\"{k}\": {}", scalar(val)))
+                .collect();
             format!("{{ {} }}", inner.join(", "))
         }
         Json::Arr(items) => {
@@ -415,11 +472,22 @@ pub fn respond(_input: &[u8]) -> FunctionResponse {
     let spec_json = qdms::functions::api::build_catalog(&rt);
     let catalog = parse(&spec_json);
 
-    let version = catalog.get("qirava_api_version").map(|v| v.as_str()).unwrap_or("1");
+    let version = catalog
+        .get("qirava_api_version")
+        .map(|v| v.as_str())
+        .unwrap_or("1");
 
     let intro = el("div")
-        .child(el("p").class("q-eyebrow").child(text("Reference".to_string())))
-        .child(el("h1").class("q-h1").child(text("Products API".to_string())))
+        .child(
+            el("p")
+                .class("q-eyebrow")
+                .child(text("Reference".to_string())),
+        )
+        .child(
+            el("h1")
+                .class("q-h1")
+                .child(text("Products API".to_string())),
+        )
         .child(el("p").class("q-lead").child(text(LEAD.to_string())));
 
     // --- The HTTP surface ---
@@ -460,13 +528,18 @@ pub fn respond(_input: &[u8]) -> FunctionResponse {
     );
 
     // --- The error codes ---
-    let codes = catalog.get("error_codes").map(|v| v.as_arr()).unwrap_or(&[]);
+    let codes = catalog
+        .get("error_codes")
+        .map(|v| v.as_arr())
+        .unwrap_or(&[]);
     let errors_section = section(
         Some("Contract"),
         "Stable error codes",
         "There are eight stable error codes, each mapped to one HTTP status. They are the single \
          source of truth for failure handling — every function documents the subset it can return.",
-        el("div").class("q-api-table-wrap").child(error_code_table(codes)),
+        el("div")
+            .class("q-api-table-wrap")
+            .child(error_code_table(codes)),
     );
 
     // --- The catalog of functions, by category ---
@@ -539,7 +612,8 @@ pub fn respond(_input: &[u8]) -> FunctionResponse {
 
     let meta = Meta {
         title: "Products API — Qirava",
-        description: "The Qirava products API reference, generated from the live /api/spec catalog: \
+        description:
+            "The Qirava products API reference, generated from the live /api/spec catalog: \
                       every function with its scope, inputs, outputs, and error codes, plus the \
                       response envelope and the eight stable error codes.",
         path: "/api",
@@ -559,7 +633,7 @@ fn api_css() -> &'static str {
 .q-api-cats{display:flex;flex-direction:column;gap:2.5rem}\
 .q-api-cat>p{color:var(--q-color-muted);margin:.25rem 0 1rem}\
 .q-api-cardlist{display:flex;flex-direction:column;gap:.6rem}\
-.q-api-card{border:1px solid var(--q-color-border);border-radius:var(--q-radius-lg);background:var(--q-color-surface);overflow:hidden}\
+.q-api-card{border:1px solid var(--q-surface-border,var(--q-color-border));border-radius:var(--q-radius-lg);background:var(--q-surface-bg,var(--q-color-surface));box-shadow:var(--q-surface-shadow,none);-webkit-backdrop-filter:var(--q-surface-filter,none);backdrop-filter:var(--q-surface-filter,none);overflow:hidden}\
 .q-api-card[open]{border-color:color-mix(in srgb,var(--q-color-brand) 40%,var(--q-color-border))}\
 .q-api-card__sum{display:flex;align-items:center;flex-wrap:wrap;gap:.6rem;padding:.8rem 1rem;cursor:pointer;list-style:none}\
 .q-api-card__sum::-webkit-details-marker{display:none}\

@@ -1,466 +1,265 @@
-//! `GET /` — the landing page.
+//! `GET /` — the clean Qirava landing page.
 //!
-//! A stunning, modern, animated home: a display-type hero (brand gradient +
-//! ambient drift, rises in on load), an animated products overview using the
-//! `data-q-surface` treatments (glass / neu / gradient / flat) with hover depth
-//! and scroll-reveal, a concise why/features grid, a live islands teaser, and
-//! clear CTAs to Products + Developer Docs.
-//!
-//! Everything is server-rendered and correct with JS off. The only JavaScript is
-//! Quill islands (`reveal`, `tabs`); all motion is token-based and neutralized by
-//! `prefers-reduced-motion`. Type/spacing/color come from the `--q-*` scale; the
-//! page adds only home-specific layout CSS, all referencing those tokens.
+//! The page is intentionally content-first: what Qirava is, which products exist,
+//! how a human starts, and where the SSOT roadmap lives. Repeated UI comes from
+//! `app::site_ui`; this route owns only content and order.
 
 use qexec::FunctionResponse;
-use qquill_design::{Size, Stat, Tabs};
-use qquill_view::{el, raw, text, Node};
+use qquill_view::{el, text, Node};
 
-use crate::app::routes::{reveal, tilt, Status};
+use crate::app::routes::{reveal, tilt};
 use crate::app::shell::page;
+use crate::app::site_ui;
 use crate::app::{Css, Meta};
 
-const TITLE: &str = "Qirava — an AI-native, zero-dependency data system";
-const DESCRIPTION: &str = "Qirava is an AI-native, zero-dependency data system with a Rust-native \
-UI framework to build on it. Apache-2.0, security- and performance-first.";
+const TITLE: &str = "Qirava — zero-dependency data system and UI framework";
+const DESCRIPTION: &str = "Qirava is an AI-native, zero-dependency data system with Quill, a Rust-native UI framework, plus first-party docs and roadmap SSOT.";
 
-/// A small inline arrow used on link CTAs (decorative, inherits currentColor).
-const ARROW_SVG: &str = "<svg class=\"q-arr\" viewBox=\"0 0 24 24\" width=\"15\" height=\"15\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14M13 6l6 6-6 6\"/></svg>";
-
-// ---------------------------------------------------------------------------
-// HERO
-// ---------------------------------------------------------------------------
-
-/// The hero: an eyebrow, a display-scale headline (the brand gradient on the key
-/// phrase), a lead paragraph, two clear CTAs, and a metrics bar — each part rises
-/// in, staggered. A decorative `q-home-glow` drifts behind everything.
-fn hero(css: &mut Css) -> Node {
-    let cta = el("div")
-        .class("q-cta-row q-rise d4")
+fn hero_panel() -> Node {
+    el("aside")
+        .class("q-hero-panel")
+        .attr("aria-label", "How a Qirava request stays safe")
+        .child(el("p").class("q-hero-panel__label").child(text("One safe request path")))
         .child(
-            el("a")
-                .class("q-btn q-btn--solid")
-                .attr("href", "/products")
-                .child(text("Explore the products"))
-                .child(raw(ARROW_SVG)),
-        )
-        .child(
-            el("a")
-                .class("q-btn q-btn--ghost")
-                .attr("href", "/docs")
-                .child(text("Read the developer docs")),
-        );
-
-    let stats = el("div")
-        .class("q-home-stats q-rise d4")
-        .child(css.node(Stat::new("s-crates", "stdlib crates", "13").size(Size::Lg).render()))
-        .child(css.node(Stat::new("s-deps", "third-party deps", "0").size(Size::Lg).render()))
-        .child(css.node(Stat::new("s-checks", "auth checkpoints", "3").size(Size::Lg).render()))
-        .child(css.node(Stat::new("s-port", "one port: HTTP·WS·SSR", "7179").size(Size::Lg).render()));
-
-    el("section")
-        .class("q-home-hero")
-        .child(el("div").class("q-home-glow").attr("aria-hidden", "true"))
-        .child(
-            el("p")
-                .class("q-eyebrow q-rise d1")
-                .child(text("Data system + UI framework")),
-        )
-        .child(
-            el("h1").class("q-display q-home-title").children([
-                el("span").class("q-rise d2").child(text("An AI-native, zero-dependency ")),
-                el("span").class("q-rise d2 q-grad").child(text("data system")),
-                el("span").class("q-rise d3").child(text(" — and a Rust-native UI framework to build on it.")),
-            ]),
-        )
-        .child(
-            el("p").class("q-body-lg q-muted q-home-lead q-rise d3").child(text(
-                "Qirava DMS fuses governance, KMS, database, jobs, and replication behind one \
-                 bounded executor, served over HTTP, WS, and native SSR on a single port. Quill is \
-                 the zero-dependency UI framework you build the front end with. Security- and \
-                 performance-first. Apache-2.0.",
-            )),
-        )
-        .child(cta)
-        .child(stats)
-}
-
-// ---------------------------------------------------------------------------
-// PRODUCTS OVERVIEW
-// ---------------------------------------------------------------------------
-
-/// One product card, hand-built so it carries the home hover-depth. Renders
-/// eyebrow (name + crate), blurb, a status chip, and a "Learn more" link. The
-/// surface treatment is NOT pinned per-card: cards consume the cascading
-/// `--q-surf-*` vars set by the header's global surface control.
-fn product_card(
-    name: &str,
-    crate_name: &str,
-    blurb: &str,
-    status: Status,
-    cta: &str,
-    href: &str,
-) -> Node {
-    let (status_label, status_mod) = match status {
-        Status::Built => ("Built", "is-built"),
-        Status::Partial => ("Partial", "is-partial"),
-        Status::Planned => ("Planned", "is-planned"),
-    };
-
-    let head = el("div")
-        .class("q-pcard__head")
-        .child(
-            el("div")
-                .class("q-pcard__id")
-                .child(el("span").class("q-pcard__name").child(text(name.to_string())))
-                .child(el("code").class("q-pcard__crate").child(text(crate_name.to_string()))),
-        )
-        .child(
-            el("span")
-                .class(format!("q-pcard__status {status_mod}"))
-                .child(text(status_label.to_string())),
-        );
-
-    el("article")
-        .class("q-pcard")
-        .attr("data-q-tilt", "")
-        .child(head)
-        .child(el("p").class("q-pcard__blurb").child(text(blurb.to_string())))
-        .child(
-            el("a")
-                .class("q-pcard__link")
-                .attr("href", href.to_string())
-                .child(text(cta.to_string()))
-                .child(raw(ARROW_SVG)),
-        )
-}
-
-/// The products overview: four cards, each a different surface treatment, each
-/// a staggered `[data-q-reveal]` child, wrapped in one scroll-reveal island.
-fn products() -> Node {
-    let cards = [
-        ("Qirava DMS", "qdms",
-         "One AI-native, zero-dep data system: a single execute primitive and one function \
-          registry. Governance, KMS, database, jobs, and replication are functions; a worker \
-          layer serves HTTP, WS, and native SSR/SSG/ISR on one port.",
-         Status::Built, "Explore the DMS", "/products"),
-        ("Quill", "qquill",
-         "A Rust-native, zero-dependency UI framework: shadcn-like components, Next.js-like \
-          authoring — native SSR, islands, and SSG/ISR — behind a hand-written ~4 KB runtime. \
-          This very site is built with it.",
-         Status::Built, "Browse components", "/docs/quill/components"),
-        ("The q* stdlib", "qpkgs",
-         "13 zero-dependency crates: the substrate qexec (bounded executor) and qvalue \
-          (value/ABI), plus array, object, string, math, number, convert, crypto, encoding, \
-          regex, time, and uuid — shared across every product.",
-         Status::Built, "Read the concepts", "/docs/dms/concepts"),
-        ("Qirava Cloud", "—",
-         "A managed control plane for the DMS — confidential compute (SEV-SNP), custodian-gated \
-          key management, and single-leader replication, operated for you. Open-core; the engine \
-          stays Apache-2.0.",
-         Status::Planned, "See the roadmap", "/roadmap"),
-    ];
-
-    let mut grid = el("div").class("q-pcards");
-    for (i, (name, cr, blurb, status, cta, href)) in cards.iter().enumerate() {
-        grid = grid.child(
-            el("div")
-                .attr("data-q-reveal", "")
-                .attr("data-reveal-delay", ((i % 3) + 1).to_string())
-                .child(product_card(name, cr, blurb, *status, cta, href)),
-        );
-    }
-
-    let head = el("div")
-        .class("q-home-head")
-        .child(el("p").class("q-eyebrow").child(text("What's here")))
-        .child(el("h2").class("q-h2").child(text("Three products, one substrate")))
-        .child(el("p").class("q-lead").child(text(
-            "Everything is first-party and zero-dependency. Products depend on the q* stdlib; \
-             the stdlib never depends on the products.",
-        )));
-
-    el("section")
-        .class("q-section")
-        .child(reveal("reveal-head", head))
-        .child(tilt("tilt-products", reveal("reveal-products", grid)))
-}
-
-// ---------------------------------------------------------------------------
-// WHY / FEATURES
-// ---------------------------------------------------------------------------
-
-/// One feature tile (icon + title + copy). Reveals on scroll.
-fn feature(delay: usize, icon: &str, title: &str, body: &str) -> Node {
-    let tile = el("div")
-        .class("q-feat")
-        .attr("data-q-tilt", "")
-        .child(el("div").class("q-feat__icon").attr("aria-hidden", "true").child(raw(icon.to_string())))
-        .child(el("h3").class("q-feat__title").child(text(title.to_string())))
-        .child(el("p").class("q-feat__body q-muted").child(text(body.to_string())));
-
-    el("div")
-        .attr("data-q-reveal", "")
-        .attr("data-reveal-delay", (((delay) % 3) + 1).to_string())
-        .child(tile)
-}
-
-/// The why/features section: a concise grid of the project's defining traits.
-fn why() -> Node {
-    // Small, hand-drawn stroke icons (decorative, inherit currentColor).
-    const SHIELD: &str = "<svg viewBox=\"0 0 24 24\" width=\"22\" height=\"22\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z\"/><path d=\"m9 12 2 2 4-4\"/></svg>";
-    const BOLT: &str = "<svg viewBox=\"0 0 24 24\" width=\"22\" height=\"22\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M13 2 4 14h7l-1 8 9-12h-7l1-8Z\"/></svg>";
-    const CUBE: &str = "<svg viewBox=\"0 0 24 24\" width=\"22\" height=\"22\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m21 16-9 5-9-5V8l9-5 9 5v8Z\"/><path d=\"m3 8 9 5 9-5M12 13v8\"/></svg>";
-    const LAYERS: &str = "<svg viewBox=\"0 0 24 24\" width=\"22\" height=\"22\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m12 2 9 5-9 5-9-5 9-5Z\"/><path d=\"m3 12 9 5 9-5M3 17l9 5 9-5\"/></svg>";
-
-    let grid = el("div")
-        .class("q-feats")
-        .child(feature(0, SHIELD, "Authorized by construction",
-            "Every read and mutate flows through three ordered checkpoints. The planner is the \
-             only door to data — no path skips it."))
-        .child(feature(1, BOLT, "Performance-first",
-            "One bounded executor governs all work, so a hot path is never quietly regressed. \
-             Benchmarks gate the engine."))
-        .child(feature(2, CUBE, "Zero third-party deps",
-            "std and first-party crates only — even the fonts are a refined system stack. The \
-             one exception is crypto, kept behind a trait."))
-        .child(feature(0, LAYERS, "One substrate, two products",
-            "A single execute primitive and function registry power the DMS; Quill renders the \
-             front end. Both dogfood the same q* stdlib."));
-
-    let head = el("div")
-        .class("q-home-head q-home-head--center")
-        .child(el("p").class("q-eyebrow").child(text("Why Qirava")))
-        .child(el("h2").class("q-h2").child(text("Built on two pillars")))
-        .child(el("p").class("q-lead").child(text(
-            "Security and performance are not features bolted on — they are the shape of the \
-             system. Everything else follows from staying small and first-party.",
-        )));
-
-    el("section")
-        .class("q-section")
-        .child(reveal("reveal-why-head", head))
-        .child(tilt("tilt-why", reveal("reveal-why", grid)))
-}
-
-// ---------------------------------------------------------------------------
-// LIVE TEASER
-// ---------------------------------------------------------------------------
-
-/// A live, interactive teaser: a real `Tabs` island, proving the islands runtime
-/// renders and hydrates on the landing page itself.
-fn teaser(css: &mut Css) -> Node {
-    let tab_panel = |title: &str, body: &str| -> Node {
-        el("div")
-            .class("q-teaser__panel")
-            .child(el("h3").class("q-teaser__h").child(text(title.to_string())))
-            .child(el("p").class("q-muted").child(text(body.to_string())))
-    };
-
-    let tabs = Tabs::new(
-        "teaser-tabs",
-        0,
-        vec![
-            ("Server-first".to_string(), tab_panel(
-                "Server-rendered by default",
-                "Every page renders to HTML on the server. Zero JavaScript ships unless a page \
-                 actually uses an island.",
-            )),
-            ("Islands".to_string(), tab_panel(
-                "Interactive where it matters",
-                "Islands hydrate in place on their trigger — load, visible, interaction, or idle — \
-                 carrying only the behaviors a page uses.",
-            )),
-            ("Themed".to_string(), tab_panel(
-                "One token system, light & dark",
-                "Every color is a --q-* token. Flip data-q-theme and the whole UI restyles with no \
-                 reflow — try the appearance control in the header.",
-            )),
-        ],
-    );
-
-    let chrome = el("div")
-        .class("q-teaser__chrome")
-        .attr("aria-hidden", "true")
-        .child(el("span"))
-        .child(el("span"))
-        .child(el("span"));
-
-    let frame = el("div")
-        .class("q-teaser")
-        .attr("data-q-surface", "glass")
-        .child(chrome)
-        .child(css.node(tabs.island("teaser-tabs-island")));
-
-    let head = el("div")
-        .class("q-home-head")
-        .child(el("p").class("q-eyebrow").child(text("Live, not a screenshot")))
-        .child(el("h2").class("q-h2").child(text("Interactive, server-first, hydrated in place")))
-        .child(el("p").class("q-lead").child(text(
-            "This tab strip is a real Quill island on this page — click it. The showcase has a \
-             full interactive playground for every component.",
-        )));
-
-    el("section")
-        .class("q-section")
-        .child(reveal("reveal-teaser-head", head))
-        .child(reveal("reveal-teaser", frame))
-}
-
-// ---------------------------------------------------------------------------
-// CLOSING CTA
-// ---------------------------------------------------------------------------
-
-/// A closing call-to-action band on a brand-gradient surface.
-fn closing() -> Node {
-    let band = el("div")
-        .class("q-cta-band")
-        .attr("data-q-surface", "gradient")
-        .child(el("h2").class("q-h2 q-cta-band__h").child(text("Start building on Qirava")))
-        .child(el("p").class("q-cta-band__p").child(text(
-            "Read the getting-started guide, browse the component catalog, or dive into the \
-             architecture behind the two pillars.",
-        )))
-        .child(
-            el("div")
-                .class("q-cta-row q-cta-band__row")
+            el("ol")
+                .class("q-hero-flow")
                 .child(
-                    el("a")
-                        .class("q-btn q-btn--invert")
-                        .attr("href", "/docs/dms/quick-start")
-                        .child(text("Get started"))
-                        .child(raw(ARROW_SVG)),
+                    el("li")
+                        .child(el("code").child(text("L1")))
+                        .child(
+                            el("div")
+                                .child(el("strong").child(text("Worker before-auth")))
+                                .child(el("span").child(text("Authenticate session or HMAC key and write identity into shared context."))),
+                        ),
                 )
                 .child(
-                    el("a")
-                        .class("q-btn q-btn--on-grad")
-                        .attr("href", "/docs/dms/architecture-overview")
-                        .child(text("Read the architecture")),
+                    el("li")
+                        .child(el("code").child(text("L2")))
+                        .child(
+                            el("div")
+                                .child(el("strong").child(text("execute() scope")))
+                                .child(el("span").child(text("Check public / all-apps / system-only / owner before the function runs."))),
+                        ),
+                )
+                .child(
+                    el("li")
+                        .child(el("code").child(text("L3")))
+                        .child(
+                            el("div")
+                                .child(el("strong").child(text("Planner RBAC")))
+                                .child(el("span").child(text("The only door to read or mutate data: app-scope ∩ principal-grant."))),
+                        ),
                 ),
-        );
-
-    el("section").class("q-section").child(reveal("reveal-closing", band))
+        )
 }
 
-// ---------------------------------------------------------------------------
-// PAGE
-// ---------------------------------------------------------------------------
-
-/// Home-only layout CSS. Every value references a `--q-*` token so it restyles
-/// on any theme/size/radius switch with no reflow; all motion is wrapped so the
-/// `prefers-reduced-motion` reset can neutralize it.
-fn home_css() -> &'static str {
-    "\
-/* ---- entrance motion (runs once on load) ---- */\
-.q-rise{opacity:0;transform:translateY(14px);animation:q-rise .7s var(--q-ease-out) forwards}\
-.q-rise.d1{animation-delay:.05s}.q-rise.d2{animation-delay:.13s}.q-rise.d3{animation-delay:.21s}.q-rise.d4{animation-delay:.30s}\
-@keyframes q-rise{to{opacity:1;transform:none}}\
-/* ---- hero ---- */\
-.q-home-hero{position:relative;padding:calc(var(--q-space-8) * var(--q-density,1)) 0 var(--q-space-6);overflow:hidden}\
-.q-home-hero>*{position:relative;z-index:1}\
-.q-home-glow{position:absolute;inset:-45% -15% auto -15%;height:640px;z-index:0;pointer-events:none;\
-background:radial-gradient(55% 60% at 26% 16%,color-mix(in srgb,var(--q-color-brand) 44%,transparent),transparent 70%),\
-radial-gradient(46% 56% at 82% 6%,color-mix(in srgb,var(--q-color-accent,var(--q-color-brand)) 36%,transparent),transparent 70%),\
-radial-gradient(40% 50% at 60% 32%,color-mix(in srgb,var(--q-color-brand) 18%,transparent),transparent 72%);\
-filter:blur(10px);animation:q-drift 22s var(--q-ease-in-out) infinite alternate}\
-@keyframes q-drift{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(4%,2%,0) scale(1.12)}}\
-.q-home-title{max-width:22ch;margin:0 0 var(--q-space-5)}\
-.q-grad{background:linear-gradient(100deg,var(--q-color-brand),var(--q-color-accent));\
--webkit-background-clip:text;background-clip:text;color:transparent}\
-.q-home-lead{max-width:62ch;margin:0 0 var(--q-space-6)}\
-.q-arr{transition:transform var(--q-duration-fast) var(--q-ease-out)}\
-.q-btn:hover .q-arr{transform:translateX(3px)}\
-/* ---- hero stats ---- */\
-.q-home-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--q-space-5);margin:var(--q-space-6) 0 0;\
-padding:var(--q-space-5) 0 0;border-top:1px solid var(--q-color-border)}\
-.q-home-stats .qq-stat__value{color:var(--q-color-brand)}\
-@media (max-width:720px){.q-home-stats{grid-template-columns:1fr 1fr;gap:var(--q-space-4)}}\
-/* ---- section heads ---- */\
-.q-home-head{max-width:60ch;margin:0 0 var(--q-space-6)}\
-.q-home-head--center{margin-left:auto;margin-right:auto;text-align:center}\
-.q-home-head--center .q-lead{margin-left:auto;margin-right:auto}\
-.q-home-head .q-h2{margin-top:var(--q-space-2)}\
-.q-home-head .q-lead{margin-bottom:0}\
-/* ---- products overview ---- */\
-.q-pcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,19rem),1fr));gap:var(--q-space-4)}\
-.q-pcards>*{height:100%}\
-.q-pcard{display:flex;flex-direction:column;gap:var(--q-space-3);height:100%;padding:var(--q-space-5);\
-border-radius:var(--q-radius-lg);\
-background:var(--q-surf-bg,var(--q-color-surface));color:var(--q-surf-fg,var(--q-color-fg));\
-border:1px solid var(--q-surf-border,var(--q-color-border));box-shadow:var(--q-surf-shadow,none);\
--webkit-backdrop-filter:blur(var(--q-surf-blur,0px));backdrop-filter:blur(var(--q-surf-blur,0px));\
-transition:transform var(--q-duration-base) var(--q-ease-out),box-shadow var(--q-duration-base) var(--q-ease-out),background var(--q-duration-base) var(--q-ease-out),border-color var(--q-duration-base) var(--q-ease-out),color var(--q-duration-base) var(--q-ease-out)}\
-.q-pcard:hover{box-shadow:0 22px 54px -22px color-mix(in srgb,var(--q-color-brand) 60%,transparent)}\
-.q-pcard:hover{border-color:color-mix(in srgb,var(--q-color-brand) 50%,var(--q-surf-border,var(--q-color-border)))}\
-.q-pcard__head{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--q-space-3)}\
-.q-pcard__id{display:flex;flex-direction:column;gap:.15rem}\
-.q-pcard__name{font-weight:var(--q-font-weight-bold);font-size:1.15rem;line-height:1.2;letter-spacing:-.01em}\
-.q-pcard__crate{font-family:var(--q-font-mono);font-size:.78rem;color:var(--q-color-muted)}\
-[data-q-surface=\"gradient\"] .q-pcard__crate{color:color-mix(in srgb,var(--q-color-on-brand) 75%,transparent)}\
-.q-pcard__status{flex:0 0 auto;font-size:.68rem;font-weight:var(--q-font-weight-bold);letter-spacing:.08em;text-transform:uppercase;\
-padding:.2rem .5rem;border-radius:var(--q-radius-full);border:1px solid var(--q-color-border);color:var(--q-color-muted)}\
-.q-pcard__status.is-built{color:var(--q-color-brand);border-color:color-mix(in srgb,var(--q-color-brand) 45%,transparent);\
-background:color-mix(in srgb,var(--q-color-brand) 12%,transparent)}\
-[data-q-surface=\"gradient\"] .q-pcard__status.is-built{color:var(--q-color-on-brand);\
-border-color:color-mix(in srgb,var(--q-color-on-brand) 45%,transparent);background:color-mix(in srgb,var(--q-color-on-brand) 16%,transparent)}\
-.q-pcard__blurb{margin:0;font-size:.95rem;line-height:1.65;color:var(--q-color-muted);flex:1 1 auto}\
-[data-q-surface=\"gradient\"] .q-pcard__blurb{color:color-mix(in srgb,var(--q-color-on-brand) 85%,transparent)}\
-.q-pcard__link{display:inline-flex;align-items:center;gap:.35rem;font-weight:var(--q-font-weight-medium);font-size:.92rem;\
-color:var(--q-color-brand)}\
-.q-pcard__link:hover{text-decoration:none}\
-[data-q-surface=\"gradient\"] .q-pcard__link{color:var(--q-color-on-brand)}\
-.q-pcard__link:hover .q-arr{transform:translateX(3px)}\
-/* ---- why / features ---- */\
-.q-feats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr));gap:var(--q-space-4)}\
-.q-feat{height:100%;padding:var(--q-space-5);border-radius:var(--q-radius-lg);\
-background:var(--q-surf-bg,var(--q-color-surface));color:var(--q-surf-fg,var(--q-color-fg));\
-border:1px solid var(--q-surf-border,var(--q-color-border));box-shadow:var(--q-surf-shadow,none);\
--webkit-backdrop-filter:blur(var(--q-surf-blur,0px));backdrop-filter:blur(var(--q-surf-blur,0px));\
-transition:transform var(--q-duration-base) var(--q-ease-out),box-shadow var(--q-duration-base) var(--q-ease-out),background var(--q-duration-base) var(--q-ease-out),border-color var(--q-duration-base) var(--q-ease-out),color var(--q-duration-base) var(--q-ease-out)}\
-.q-feat:hover{border-color:color-mix(in srgb,var(--q-color-brand) 45%,var(--q-surf-border,var(--q-color-border)));box-shadow:0 18px 44px -22px color-mix(in srgb,var(--q-color-brand) 50%,transparent)}\
-.q-feat__icon{display:inline-flex;align-items:center;justify-content:center;width:2.75rem;height:2.75rem;margin:0 0 var(--q-space-3);\
-border-radius:var(--q-radius-md);color:var(--q-color-brand);background:color-mix(in srgb,var(--q-color-brand) 12%,transparent)}\
-.q-feat__title{margin:0 0 var(--q-space-2);font-size:1.05rem;font-weight:var(--q-font-weight-bold);letter-spacing:-.01em}\
-.q-feat__body{margin:0;font-size:.93rem;line-height:1.6}\
-/* ---- live teaser ---- */\
-.q-teaser{padding:var(--q-space-5);border-radius:var(--q-radius-xl)}\
-.q-teaser__chrome{display:flex;gap:.4rem;margin:0 0 var(--q-space-4)}\
-.q-teaser__chrome span{width:11px;height:11px;border-radius:var(--q-radius-full);background:var(--q-color-border)}\
-.q-teaser__panel{padding:var(--q-space-3) 0 0}\
-.q-teaser__h{margin:0 0 var(--q-space-2);font-size:1.15rem;font-weight:var(--q-font-weight-bold)}\
-/* ---- closing CTA band ---- */\
-.q-cta-band{text-align:center;padding:calc(var(--q-space-8) * var(--q-density,1)) var(--q-space-5);border-radius:var(--q-radius-xl);background:var(--q-surf-bg,var(--q-effect-gradient-brand));color:var(--q-surf-fg,var(--q-color-on-brand));border:1px solid var(--q-surf-border,transparent);box-shadow:var(--q-surf-shadow,var(--q-shadow-lg))}\
-.q-cta-band__h{margin:0 auto var(--q-space-3);max-width:18ch}\
-.q-cta-band__p{margin:0 auto var(--q-space-6);max-width:52ch;color:color-mix(in srgb,var(--q-color-on-brand) 85%,transparent);font-size:1.05rem;line-height:1.6}\
-.q-cta-band__row{justify-content:center;margin:0}\
-.q-btn--invert{background:var(--q-color-on-brand);color:var(--q-color-brand)}\
-.q-btn--invert:hover{filter:brightness(.96);text-decoration:none}\
-.q-btn--on-grad{color:var(--q-color-on-brand);border-color:color-mix(in srgb,var(--q-color-on-brand) 45%,transparent)}\
-.q-btn--on-grad:hover{background:color-mix(in srgb,var(--q-color-on-brand) 14%,transparent);text-decoration:none}\
-/* ---- reduced motion: straight to shown, no drift/rise ---- */\
-@media (prefers-reduced-motion:reduce){\
-.q-rise{opacity:1;transform:none;animation:none}\
-.q-home-glow{animation:none}\
-.q-pcard:hover,.q-feat:hover{transform:none}\
-}"
+fn hero() -> Node {
+    el("section")
+        .class("q-hero2")
+        .child(
+            el("div")
+                .class("q-hero2__copy")
+                .child(el("p").class("q-eyebrow").child(text("DMS + UI framework + docs SSOT")))
+                .child(
+                    el("h1")
+                        .class("q-hero2__title")
+                        .child(text("Build data products "))
+                        .child(el("span").class("q-hero2__accent").child(text("without dependency sprawl"))),
+                )
+                .child(el("p").class("q-hero2__lead").child(text(
+                    "Qirava is one first-party ecosystem: Qirava DMS stores and governs data, Quill renders the product UI in Rust, the q* stdlib keeps the substrate small, and this website is the source of truth for docs, architecture, and roadmap status.",
+                )))
+                .child(
+                    el("div")
+                        .class("q-cta-row")
+                        .child(site_ui::action_link("Explore products", "/products", "primary"))
+                        .child(site_ui::action_link("Start with docs", "/docs", "ghost"))
+                        .child(site_ui::action_link("Check roadmap", "/roadmap", "plain")),
+                ),
+        )
+        .child(hero_panel())
 }
 
-/// The page body.
-fn body(css: &mut Css) -> Node {
-    css.push(home_css().to_string());
-    el("main")
-        .class("q-main")
-        .id("main")
-        .child(hero(css))
+fn metrics() -> Node {
+    el("section")
+        .class("q-section q-section--tight")
+        .attr("aria-label", "Project metrics")
+        .child(
+            el("div")
+                .class("q-ui-grid q-ui-grid--4")
+                .child(site_ui::metric(
+                    "0",
+                    "third-party dependencies in shipped JS and first-party crates",
+                ))
+                .child(site_ui::metric(
+                    "3",
+                    "ordered authorization checkpoints before data access",
+                ))
+                .child(site_ui::metric(
+                    "4",
+                    "product areas: DMS, Quill, q* stdlib, Cloud",
+                ))
+                .child(site_ui::metric(
+                    "SSOT",
+                    "architecture, docs, and roadmap live on this site",
+                )),
+        )
+}
+
+fn what_is_qirava() -> Node {
+    let head = site_ui::section_head(
+        "Plain English",
+        "What is Qirava?",
+        "A small, security-first stack for building data-backed products without assembling a database, auth layer, UI framework, and documentation system from unrelated packages.",
+        false,
+    );
+
+    let grid = el("div")
+        .class("q-ui-grid q-ui-grid--3")
+        .child(site_ui::feature_card(
+            "DMS",
+            "Store and govern data",
+            "The DMS is the product engine: QQL, tables, WAL, jobs, API catalog, Studio seams, and RBAC all behind one execute() path.",
+        ))
+        .child(site_ui::feature_card(
+            "Quill",
+            "Render the product UI",
+            "Quill renders Rust-authored pages on the server and hydrates only the interactive components as small islands.",
+        ))
+        .child(site_ui::feature_card(
+            "SSOT",
+            "Understand what is real",
+            "The qirava website explains products, docs, architecture, and built/partial/planned status in one place so readers do not guess.",
+        ));
+
+    el("section")
+        .class("q-section")
+        .child(reveal("home-what-head", head))
+        .child(tilt("home-what-grid", reveal("home-what", grid)))
+}
+
+fn products() -> Node {
+    let head = site_ui::section_head(
+        "Products",
+        "One ecosystem, clear boundaries",
+        "Products are distinct repos with one-way dependencies: products may depend on q* packages; q* packages never depend on product code.",
+        false,
+    );
+
+    let grid = el("div")
+        .class("q-ui-grid q-ui-grid--2")
+        .child(site_ui::product_card(
+            "Qirava DMS",
+            "qdms",
+            "built",
+            "The data system: one execute primitive and one function registry for governance, KMS, database, jobs, replication, and workers.",
+            &["HTTP + WebSocket + native SSR on one port", "Every DB read/mutate reaches the planner", "Studio is a normal DMS client, not a bypass"],
+            "/products/dms",
+            "Understand the DMS",
+        ))
+        .child(site_ui::product_card(
+            "Quill",
+            "qquill",
+            "built",
+            "The UI/app framework: Rust view authoring, native SSR, islands, component docs, and static export with a hand-written runtime.",
+            &["Theme/density/radius tokens", "Scoped component demos for glass/neu/gradient", "This site dogfoods the framework"],
+            "/products/quill",
+            "See Quill",
+        ))
+        .child(site_ui::product_card(
+            "The q* stdlib",
+            "qpkgs",
+            "built",
+            "Shared zero-dependency crates: qexec, qvalue, and focused utility crates used by products without pulling product code back in.",
+            &["Executor and value substrate", "First-party utility crates", "One-way dependency rule"],
+            "/products/stdlib",
+            "Read stdlib role",
+        ))
+        .child(site_ui::product_card(
+            "Qirava Cloud",
+            "qcloud",
+            "planned",
+            "The managed-cloud control plane for DMS deployments. The open-source single-tenant primitives exist; managed operations are planned.",
+            &["Provisioning, placement, metering, billing", "Built on the DMS", "No promised dates until shipping"],
+            "/products/cloud",
+            "Check cloud plan",
+        ));
+
+    el("section")
+        .class("q-section")
+        .child(reveal("home-products-head", head))
+        .child(tilt("home-products-tilt", reveal("home-products", grid)))
+}
+
+fn path() -> Node {
+    let head = site_ui::section_head(
+        "How to use it",
+        "A human path from first visit to shipped app",
+        "The site now teaches the system in the order a person needs: pick the product, run the DMS, learn the access model, build the UI, then check status.",
+        false,
+    );
+
+    let steps = el("ol")
+        .class("q-path")
+        .child(site_ui::path_step("01", "Pick the product", "DMS stores and governs data. Quill builds the UI. q* crates are the substrate. Cloud is planned managed operation.", "/products", "Compare products"))
+        .child(site_ui::path_step("02", "Run the DMS", "Start the server, capture bootstrap credentials, and confirm the QQL routes before building anything on top.", "/docs/dms/quick-start", "DMS quick start"))
+        .child(site_ui::path_step("03", "Learn safe data access", "Understand L1 worker auth, L2 execute scope, and L3 planner RBAC before writing app data.", "/docs/dms/access-model-overview", "Access model"))
+        .child(site_ui::path_step("04", "Build the UI", "Use Quill components, server rendering, islands, and theme tokens. Surface effects stay in demos, not reading pages.", "/docs/quill/components", "Browse components"))
+        .child(site_ui::path_step("05", "Check what is real", "Use the roadmap SSOT to separate completed, partial, and planned work before depending on a capability.", "/roadmap", "Open roadmap"));
+
+    el("section")
+        .class("q-section")
+        .child(reveal("home-path-head", head))
+        .child(reveal("home-path", steps))
+}
+
+fn status() -> Node {
+    let head = site_ui::section_head(
+        "Roadmap SSOT",
+        "Built, partial, and planned are visible from the front page",
+        "No reader should have to reverse-engineer repository state. Open the product roadmap for the full board; this summary keeps the landing page honest.",
+        false,
+    );
+
+    let grid = el("div")
+        .class("q-ui-grid q-ui-grid--2")
+        .child(site_ui::status_card("Qirava DMS", "Engine, workers, execute registry, QQL/DDL, RBAC, governance, WAL, jobs, and Studio seams.", "Cluster hardening, standalone KMS packaging, and deeper managed operations.", "/docs/dms", "/roadmap/dms"))
+        .child(site_ui::status_card("Quill", "Rust view authoring, SSR, islands, component library, theme tokens, static export, and CLI scaffold.", "More components, route discovery, dev server/watch flow, and richer animation presets.", "/docs/quill", "/roadmap/quill"))
+        .child(site_ui::status_card("q* stdlib", "Zero-dependency substrate crates used by products: qexec, qvalue, and utility crates.", "Additional crypto primitives behind the provider trait and broader stdlib coverage.", "/docs/stdlib", "/roadmap/stdlib"))
+        .child(site_ui::status_card("Qirava Cloud", "Open-source single-tenant primitives and the managed-control-plane shape.", "Provisioning, placement, billing/metering, scale modes, audit trails, and managed operations.", "/docs/cloud", "/roadmap/cloud"));
+
+    el("section")
+        .class("q-section")
+        .child(reveal("home-status-head", head))
+        .child(tilt("home-status-tilt", reveal("home-status", grid)))
+}
+
+fn closing() -> Node {
+    site_ui::cta_band(
+        "Start with the docs, not guesswork",
+        "If you want to build, follow the docs path. If you want to evaluate, use the roadmap SSOT. If you want UI details, the Quill component docs show theme, density, radius, and scoped surfaces in one place.",
+        ("Read developer docs", "/docs"),
+        ("View roadmap", "/roadmap"),
+    )
+}
+
+fn body() -> Node {
+    site_ui::page_frame("q-home")
+        .child(hero())
+        .child(metrics())
+        .child(what_is_qirava())
         .child(products())
-        .child(why())
-        .child(teaser(css))
+        .child(path())
+        .child(status())
         .child(closing())
 }
 
-/// The route handler.
 pub fn respond(_input: &[u8]) -> FunctionResponse {
-    let mut css = Css::new();
-    let content = body(&mut css);
-    let meta = Meta { title: TITLE, description: DESCRIPTION, path: "/" };
-    page(&meta, css, content)
+    let css = Css::new();
+    let meta = Meta {
+        title: TITLE,
+        description: DESCRIPTION,
+        path: "/",
+    };
+    page(&meta, css, body())
 }

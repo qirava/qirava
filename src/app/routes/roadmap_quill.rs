@@ -29,6 +29,7 @@ const BUILT: &[Item] = &[
     Item { title: "Styled component library", detail: "Navbar, Card, Button, Badge, Stat, Table, Tabs, Alert, List, Divider, Breadcrumb and more over headless state machines, theme-token driven." },
     Item { title: "Interactive island components", detail: "Dialog, menu, tooltip, checkbox, switch, accordion, copy-code, reveal, theme-control, and playground hydrate on demand." },
     Item { title: "Theme + design tokens", detail: "qquill-theme's typed --q-* tokens with a no-flicker boot and light/dark/contrast plus density/radius/surface axes — every switch is one attribute flip." },
+    Item { title: "Motion + 3D interaction axis", detail: "Motion::Press, Motion::Lift, and Motion::Tilt3d are built into qquill-design and hydrate through the generic motion behavior; Card docs now prove the runtime path." },
     Item { title: "The quill CLI: new + build", detail: "quill new <name> scaffolds a real Quill app; quill build exports a static dist/ — the same render path the server uses." },
 ];
 
@@ -55,39 +56,72 @@ fn body(css: &mut Css) -> Node {
         "honestly tracked",
         ".",
         "The view layer, native SSR, islands, per-page bundling, static export, the styled + \
-         interactive component library, theming, and the quill CLI are shipping. Folder-route \
+         interactive component library, theming, motion/3D interactions, and the quill CLI are shipping. Folder-route \
          auto-discovery, a quill dev watch server, and more components are planned. This very \
          site is a Quill app — it dogfoods the framework end to end.",
         &[
-            Cta { label: "Explore Quill", href: "/products/quill", solid: true },
-            Cta { label: "Read the docs", href: "/docs/quill", solid: false },
+            Cta {
+                label: "Explore Quill",
+                href: "/products/quill",
+                solid: true,
+            },
+            Cta {
+                label: "Read the docs",
+                href: "/docs/quill",
+                solid: false,
+            },
         ],
         &[
-            HeroStat { value: "10", label: "capabilities shipping" },
-            HeroStat { value: "11", label: "qquill-* crates" },
-            HeroStat { value: "3", label: "planned" },
-            HeroStat { value: "0", label: "third-party deps" },
+            HeroStat {
+                value: "11",
+                label: "capabilities shipping",
+            },
+            HeroStat {
+                value: "11",
+                label: "qquill-* crates",
+            },
+            HeroStat {
+                value: "3",
+                label: "planned",
+            },
+            HeroStat {
+                value: "0",
+                label: "third-party deps",
+            },
         ],
     );
 
     let mut board_section = board(
         "Status board",
         "Built, in progress, and planned",
-        "Three lanes, no dates. The view layer, SSR, islands, SSG, the component library, and the \
+        "Three lanes, no dates. The view layer, SSR, islands, SSG, the component library, motion axis, and the \
          CLI are present and usable now; folder-route auto-discovery and component breadth have a \
          working seam; a quill dev server and the richer catalog are planned.",
         ["rm-quill-built", "rm-quill-partial", "rm-quill-planned"],
         [
-            Lane { status: Status::Built, items: BUILT },
-            Lane { status: Status::Partial, items: PARTIAL },
-            Lane { status: Status::Planned, items: PLANNED },
+            Lane {
+                status: Status::Built,
+                items: BUILT,
+            },
+            Lane {
+                status: Status::Partial,
+                items: PARTIAL,
+            },
+            Lane {
+                status: Status::Planned,
+                items: PLANNED,
+            },
         ],
     );
     board_section = board_section.child(legend()).child(note(vec![
         text("Read the ".to_string()),
-        el("a").attr("href", "/docs/quill").child(text("Quill docs")),
+        el("a")
+            .attr("href", "/docs/quill")
+            .child(text("Quill docs")),
         text(" or browse the ".to_string()),
-        el("a").attr("href", "/docs/quill/components").child(text("component showcase")),
+        el("a")
+            .attr("href", "/docs/quill/components")
+            .child(text("component showcase")),
         text(" — every component on this site is a live Quill component.".to_string()),
     ]));
 
@@ -97,6 +131,10 @@ fn body(css: &mut Css) -> Node {
 pub fn respond(_input: &[u8]) -> FunctionResponse {
     let mut css = Css::new();
     let content = body(&mut css);
-    let meta = Meta { title: TITLE, description: DESCRIPTION, path: "/roadmap/quill" };
+    let meta = Meta {
+        title: TITLE,
+        description: DESCRIPTION,
+        path: "/roadmap/quill",
+    };
     page(&meta, css, content)
 }

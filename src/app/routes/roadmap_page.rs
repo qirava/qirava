@@ -71,8 +71,16 @@ fn lane(id: &'static str, lane: &Lane) -> Node {
                 .class(format!("q-rm-lane__chip {chip_mod}"))
                 .child(text(chip_label.to_string())),
         )
-        .child(el("h3").class("q-rm-lane__title").child(text(lane.status.lane_heading().to_string())))
-        .child(el("p").class("q-rm-lane__lead").child(text(lane.status.lane_lead().to_string())));
+        .child(
+            el("h3")
+                .class("q-rm-lane__title")
+                .child(text(lane.status.lane_heading().to_string())),
+        )
+        .child(
+            el("p")
+                .class("q-rm-lane__lead")
+                .child(text(lane.status.lane_lead().to_string())),
+        );
 
     let mut track = el("ol").class("q-rm-track").attr("role", "list");
     for (i, item) in lane.items.iter().enumerate() {
@@ -81,12 +89,24 @@ fn lane(id: &'static str, lane: &Lane) -> Node {
                 .class("q-rm-item")
                 .attr("data-q-reveal", "")
                 .attr("data-reveal-delay", ((i % 3) + 1).to_string())
-                .child(el("span").class(format!("q-rm-item__dot {chip_mod}")).attr("aria-hidden", "true"))
+                .child(
+                    el("span")
+                        .class(format!("q-rm-item__dot {chip_mod}"))
+                        .attr("aria-hidden", "true"),
+                )
                 .child(
                     el("div")
                         .class("q-rm-item__body")
-                        .child(el("span").class("q-rm-item__title").child(text(item.title.to_string())))
-                        .child(el("span").class("q-rm-item__detail").child(text(item.detail.to_string()))),
+                        .child(
+                            el("span")
+                                .class("q-rm-item__title")
+                                .child(text(item.title.to_string())),
+                        )
+                        .child(
+                            el("span")
+                                .class("q-rm-item__detail")
+                                .child(text(item.detail.to_string())),
+                        ),
                 ),
         );
     }
@@ -134,15 +154,31 @@ pub fn legend() -> Node {
         let (_, chip_mod) = status.chip();
         el("div")
             .class("q-rm-legend__item")
-            .child(el("span").class(format!("q-rm-legend__chip {chip_mod}")).child(text(label.to_string())))
-            .child(el("span").class("q-rm-legend__desc").child(text(desc.to_string())))
+            .child(
+                el("span")
+                    .class(format!("q-rm-legend__chip {chip_mod}"))
+                    .child(text(label.to_string())),
+            )
+            .child(
+                el("span")
+                    .class("q-rm-legend__desc")
+                    .child(text(desc.to_string())),
+            )
     };
 
     el("div")
         .class("q-rm-legend")
         .child(item(Status::Built, "Built", "shipping and usable today"))
-        .child(item(Status::Partial, "Partial", "a working seam; the rest is designed"))
-        .child(item(Status::Planned, "Planned", "designed but not yet built"))
+        .child(item(
+            Status::Partial,
+            "Partial",
+            "a working seam; the rest is designed",
+        ))
+        .child(item(
+            Status::Planned,
+            "Planned",
+            "designed but not yet built",
+        ))
 }
 
 /// A small note row, used to point at the source of truth (the architecture
@@ -167,7 +203,7 @@ pub fn roadmap_css() -> &'static str {
 /* ---- the three-lane board ---- */\
 .q-rm-board{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--q-space-4);align-items:start}\
 @media (max-width:900px){.q-rm-board{grid-template-columns:1fr}}\
-.q-rm-lane{display:flex;flex-direction:column;gap:var(--q-space-4);height:100%;padding:var(--q-space-5);border:1px solid var(--q-color-border);border-radius:var(--q-radius-lg);background:var(--q-color-surface)}\
+.q-rm-lane{display:flex;flex-direction:column;gap:var(--q-space-4);height:100%;padding:var(--q-space-5);border:1px solid var(--q-surface-border,var(--q-color-border));border-radius:var(--q-radius-lg);background:var(--q-surface-bg,var(--q-color-surface));box-shadow:var(--q-surface-shadow,none);-webkit-backdrop-filter:var(--q-surface-filter,none);backdrop-filter:var(--q-surface-filter,none)}\
 .q-rm-lane.is-built{border-color:color-mix(in srgb,var(--q-color-brand) 40%,var(--q-color-border))}\
 .q-rm-lane__head{display:flex;flex-direction:column;gap:var(--q-space-2)}\
 .q-rm-lane__chip{align-self:flex-start;font-size:.66rem;font-weight:var(--q-font-weight-bold);letter-spacing:.08em;text-transform:uppercase;padding:.2rem .5rem;border-radius:var(--q-radius-full);border:1px solid var(--q-color-border);color:var(--q-color-muted)}\
@@ -179,14 +215,14 @@ pub fn roadmap_css() -> &'static str {
 .q-rm-track{list-style:none;margin:0;padding:0;position:relative;display:flex;flex-direction:column;gap:var(--q-space-4)}\
 .q-rm-track::before{content:\"\";position:absolute;left:.34rem;top:.4rem;bottom:.4rem;width:2px;background:linear-gradient(var(--q-color-border),transparent);border-radius:2px}\
 .q-rm-item{position:relative;display:flex;gap:var(--q-space-3);padding-left:.1rem}\
-.q-rm-item__dot{flex:0 0 auto;width:.75rem;height:.75rem;margin-top:.35rem;border-radius:var(--q-radius-full);background:var(--q-color-bg);border:2px solid var(--q-color-muted);box-shadow:0 0 0 3px var(--q-color-surface);z-index:1}\
+.q-rm-item__dot{flex:0 0 auto;width:.75rem;height:.75rem;margin-top:.35rem;border-radius:var(--q-radius-full);background:var(--q-surface-ring,var(--q-color-bg));border:2px solid var(--q-color-muted);box-shadow:0 0 0 3px var(--q-surface-ring,var(--q-color-surface));z-index:1}\
 .q-rm-item__dot.is-built{border-color:var(--q-color-brand);background:var(--q-color-brand)}\
 .q-rm-item__dot.is-partial{border-color:var(--q-color-fg)}\
 .q-rm-item__body{display:flex;flex-direction:column;gap:.1rem;min-width:0}\
 .q-rm-item__title{font-weight:var(--q-font-weight-bold);font-size:.96rem;letter-spacing:-.01em}\
 .q-rm-item__detail{font-size:.88rem;line-height:1.55;color:var(--q-color-muted)}\
 /* ---- legend ---- */\
-.q-rm-legend{display:flex;flex-wrap:wrap;gap:var(--q-space-3) var(--q-space-5);margin:var(--q-space-5) 0 0;padding:var(--q-space-4) var(--q-space-5);border:1px solid var(--q-color-border);border-radius:var(--q-radius-lg);background:var(--q-color-surface)}\
+.q-rm-legend{display:flex;flex-wrap:wrap;gap:var(--q-space-3) var(--q-space-5);margin:var(--q-space-5) 0 0;padding:var(--q-space-4) var(--q-space-5);border:1px solid var(--q-surface-border,var(--q-color-border));border-radius:var(--q-radius-lg);background:var(--q-surface-bg,var(--q-color-surface));box-shadow:var(--q-surface-shadow,none);-webkit-backdrop-filter:var(--q-surface-filter,none);backdrop-filter:var(--q-surface-filter,none)}\
 .q-rm-legend__item{display:flex;align-items:center;gap:.5rem}\
 .q-rm-legend__chip{font-size:.66rem;font-weight:var(--q-font-weight-bold);letter-spacing:.08em;text-transform:uppercase;padding:.2rem .5rem;border-radius:var(--q-radius-full);border:1px solid var(--q-color-border);color:var(--q-color-muted)}\
 .q-rm-legend__chip.is-built{color:var(--q-color-brand);border-color:color-mix(in srgb,var(--q-color-brand) 45%,transparent);background:color-mix(in srgb,var(--q-color-brand) 12%,transparent)}\

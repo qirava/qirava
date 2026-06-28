@@ -107,6 +107,10 @@ fn body(css: &mut Css) -> Node {
 pub fn respond(_input: &[u8]) -> FunctionResponse {
     let mut css = Css::new();
     let content = body(&mut css);
-    let meta = Meta { title: TITLE, description: DESCRIPTION, path: "/roadmap/dms" };
+    let meta = Meta {
+        title: TITLE,
+        description: DESCRIPTION,
+        path: "/roadmap/dms",
+    };
     page(&meta, css, content)
 }

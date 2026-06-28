@@ -58,14 +58,34 @@ fn body(css: &mut Css) -> Node {
          the hash/KDF family, ChaCha20-Poly1305, Shamir, Ed25519, and ML-KEM/ML-DSA. No dates \
          promised — only state.",
         &[
-            Cta { label: "Explore the stdlib", href: "/products/stdlib", solid: true },
-            Cta { label: "Read the docs", href: "/docs/stdlib", solid: false },
+            Cta {
+                label: "Explore the stdlib",
+                href: "/products/stdlib",
+                solid: true,
+            },
+            Cta {
+                label: "Read the docs",
+                href: "/docs/stdlib",
+                solid: false,
+            },
         ],
         &[
-            HeroStat { value: "13", label: "crates shipping" },
-            HeroStat { value: "5", label: "crypto families planned" },
-            HeroStat { value: "1", label: "Crypto provider trait" },
-            HeroStat { value: "0", label: "third-party deps" },
+            HeroStat {
+                value: "13",
+                label: "crates shipping",
+            },
+            HeroStat {
+                value: "5",
+                label: "crypto families planned",
+            },
+            HeroStat {
+                value: "1",
+                label: "Crypto provider trait",
+            },
+            HeroStat {
+                value: "0",
+                label: "third-party deps",
+            },
         ],
     );
 
@@ -85,9 +105,13 @@ fn body(css: &mut Css) -> Node {
     );
     board_section = board_section.child(legend()).child(note(vec![
         text("The crypto order is sourced from the repo's PENDING list and ".to_string()),
-        el("a").attr("href", "/docs/dms/architecture-overview").child(text("the architecture")),
-        text("; the dependency arrow points one way — products depend on q*, never the reverse."
-            .to_string()),
+        el("a")
+            .attr("href", "/docs/dms/architecture-overview")
+            .child(text("the architecture")),
+        text(
+            "; the dependency arrow points one way — products depend on q*, never the reverse."
+                .to_string(),
+        ),
     ]));
 
     main_wrap(vec![hero, board_section])
@@ -96,6 +120,10 @@ fn body(css: &mut Css) -> Node {
 pub fn respond(_input: &[u8]) -> FunctionResponse {
     let mut css = Css::new();
     let content = body(&mut css);
-    let meta = Meta { title: TITLE, description: DESCRIPTION, path: "/roadmap/stdlib" };
+    let meta = Meta {
+        title: TITLE,
+        description: DESCRIPTION,
+        path: "/roadmap/stdlib",
+    };
     page(&meta, css, content)
 }

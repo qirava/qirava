@@ -3,8 +3,8 @@
 //!
 //! Each product page has the same shape — a strong display hero (eyebrow +
 //! `.q-display` title with a brand-gradient accent + lead + CTA row + a stat
-//! strip), one or more feature grids with a `data-q-surface` treatment that
-//! scroll-reveal in, a "what's built" status block, and a closing CTA band — so
+//! strip), one or more solid feature grids that follow the shared theme/density/radius
+//! tokens, a "what's built" status block, and a closing CTA band — so
 //! the layout, motion, and CSS live here once and every page just supplies the
 //! accurate content. Everything is server-rendered and correct with JS off; the
 //! only JavaScript is the shared `reveal` island. Every value references a
@@ -65,8 +65,15 @@ pub fn hero(
 ) -> Node {
     let mut cta_row = el("div").class("q-cta-row q-rise d4");
     for c in ctas {
-        let class = if c.solid { "q-btn q-btn--solid" } else { "q-btn q-btn--ghost" };
-        let mut a = el("a").class(class).attr("href", c.href).child(text(c.label.to_string()));
+        let class = if c.solid {
+            "q-btn q-btn--solid"
+        } else {
+            "q-btn q-btn--ghost"
+        };
+        let mut a = el("a")
+            .class(class)
+            .attr("href", c.href)
+            .child(text(c.label.to_string()));
         if c.solid {
             a = a.child(raw(ARROW_SVG));
         }
@@ -74,10 +81,22 @@ pub fn hero(
     }
 
     let mut title = el("h1").class("q-display q-pp-title");
-    title = title.child(el("span").class("q-rise d2").child(text(title_lead.to_string())));
-    title = title.child(el("span").class("q-rise d2 q-grad").child(text(title_accent.to_string())));
+    title = title.child(
+        el("span")
+            .class("q-rise d2")
+            .child(text(title_lead.to_string())),
+    );
+    title = title.child(
+        el("span")
+            .class("q-rise d2 q-grad")
+            .child(text(title_accent.to_string())),
+    );
     if !title_tail.is_empty() {
-        title = title.child(el("span").class("q-rise d3").child(text(title_tail.to_string())));
+        title = title.child(
+            el("span")
+                .class("q-rise d3")
+                .child(text(title_tail.to_string())),
+        );
     }
 
     let mut sec = el("section")
@@ -87,18 +106,30 @@ pub fn hero(
             el("p")
                 .class("q-eyebrow q-rise d1")
                 .child(text(eyebrow.to_string()))
-                .child(el("code").class("q-pp-crate").child(text(crate_name.to_string()))),
+                .child(
+                    el("code")
+                        .class("q-pp-crate")
+                        .child(text(crate_name.to_string())),
+                ),
         )
         .child(title)
-        .child(el("p").class("q-body-lg q-muted q-pp-lead q-rise d3").child(text(lead.to_string())))
+        .child(
+            el("p")
+                .class("q-body-lg q-muted q-pp-lead q-rise d3")
+                .child(text(lead.to_string())),
+        )
         .child(cta_row);
 
     if !stats.is_empty() {
         let mut strip = el("div").class("q-pp-stats q-rise d4");
         for (i, s) in stats.iter().enumerate() {
-            strip = strip.child(css.node(
-                Stat::new(format!("pp-stat-{i}"), s.label, s.value).size(Size::Lg).render(),
-            ));
+            strip = strip.child(
+                css.node(
+                    Stat::new(format!("pp-stat-{i}"), s.label, s.value)
+                        .size(Size::Lg)
+                        .render(),
+                ),
+            );
         }
         sec = sec.child(strip);
     }
@@ -113,11 +144,11 @@ pub struct Feature {
     pub body: &'static str,
 }
 
-/// A feature section: an eyebrow + heading + lead, then a grid of feature tiles
-/// on the given `data-q-surface`, all wrapped in one scroll-reveal island.
+/// A feature section: an eyebrow + heading + lead, then a grid of solid,
+/// readable feature tiles, all wrapped in one scroll-reveal island.
 pub fn feature_section(
     id: &'static str,
-    surface: &str,
+    _surface: &str,
     eyebrow: &str,
     heading: &str,
     lead: &str,
@@ -131,13 +162,25 @@ pub fn feature_section(
 
     let mut grid = el("div").class("q-pp-feats");
     for (i, f) in features.iter().enumerate() {
-        let mut tile = el("article").class("q-pp-feat").attr("data-q-surface", surface.to_string());
+        let mut tile = el("article").class("q-pp-feat");
         if !f.kicker.is_empty() {
-            tile = tile.child(el("span").class("q-pp-feat__kicker").child(text(f.kicker.to_string())));
+            tile = tile.child(
+                el("span")
+                    .class("q-pp-feat__kicker")
+                    .child(text(f.kicker.to_string())),
+            );
         }
         tile = tile
-            .child(el("h3").class("q-pp-feat__title").child(text(f.title.to_string())))
-            .child(el("p").class("q-pp-feat__body").child(text(f.body.to_string())));
+            .child(
+                el("h3")
+                    .class("q-pp-feat__title")
+                    .child(text(f.title.to_string())),
+            )
+            .child(
+                el("p")
+                    .class("q-pp-feat__body")
+                    .child(text(f.body.to_string())),
+            );
         grid = grid.child(
             el("div")
                 .attr("data-q-reveal", "")
@@ -176,7 +219,9 @@ pub fn status_section(
         };
         let mark: Node = match status {
             Status::Built => el("span").class("q-pp-status__mark").child(raw(CHECK_SVG)),
-            _ => el("span").class("q-pp-status__mark q-pp-status__mark--soon").attr("aria-hidden", "true"),
+            _ => el("span")
+                .class("q-pp-status__mark q-pp-status__mark--soon")
+                .attr("aria-hidden", "true"),
         };
         list = list.child(
             el("li")
@@ -187,8 +232,16 @@ pub fn status_section(
                 .child(
                     el("div")
                         .class("q-pp-status__text")
-                        .child(el("span").class("q-pp-status__label").child(text(label.to_string())))
-                        .child(el("span").class("q-pp-status__detail").child(text(detail.to_string()))),
+                        .child(
+                            el("span")
+                                .class("q-pp-status__label")
+                                .child(text(label.to_string())),
+                        )
+                        .child(
+                            el("span")
+                                .class("q-pp-status__detail")
+                                .child(text(detail.to_string())),
+                        ),
                 )
                 .child(
                     el("span")
@@ -206,17 +259,14 @@ pub fn status_section(
 
 /// The closing CTA band on a brand-gradient surface: a heading, a line, and two
 /// CTAs (the first inverted, the second outlined-on-gradient). Scroll-reveals.
-pub fn closing(
-    id: &'static str,
-    heading: &str,
-    body: &str,
-    primary: Cta,
-    secondary: Cta,
-) -> Node {
+pub fn closing(id: &'static str, heading: &str, body: &str, primary: Cta, secondary: Cta) -> Node {
     let band = el("div")
         .class("q-pp-cta")
-        .attr("data-q-surface", "gradient")
-        .child(el("h2").class("q-h2 q-pp-cta__h").child(text(heading.to_string())))
+        .child(
+            el("h2")
+                .class("q-h2 q-pp-cta__h")
+                .child(text(heading.to_string())),
+        )
         .child(el("p").class("q-pp-cta__p").child(text(body.to_string())))
         .child(
             el("div")
@@ -294,23 +344,34 @@ pub fn arch_anim(
 
     let mut track = el("div").class("q-arch__track").child(connector);
     for (i, n) in nodes.iter().enumerate() {
+        let delay = format!("{:.1}s", (i as f32) * 0.4);
         let mut chip = el("div")
             .class("q-arch__node")
-            .attr("style", format!("--q-arch-step:{i}"));
+            .attr("style", format!("--q-arch-delay:{delay}"));
         if !n.badge.is_empty() {
-            chip = chip.child(el("span").class("q-arch__badge").child(text(n.badge.to_string())));
+            chip = chip.child(
+                el("span")
+                    .class("q-arch__badge")
+                    .child(text(n.badge.to_string())),
+            );
         }
-        chip = chip
-            .child(el("span").class("q-arch__node-label").child(text(n.label.to_string())));
+        chip = chip.child(
+            el("span")
+                .class("q-arch__node-label")
+                .child(text(n.label.to_string())),
+        );
         if !n.sub.is_empty() {
-            chip = chip.child(el("span").class("q-arch__node-sub").child(text(n.sub.to_string())));
+            chip = chip.child(
+                el("span")
+                    .class("q-arch__node-sub")
+                    .child(text(n.sub.to_string())),
+            );
         }
         track = track.child(chip);
     }
 
     let diagram = el("div")
         .class("q-arch")
-        .attr("data-q-surface", "flat")
         .attr("role", "img")
         .attr("aria-label", format!("{heading}: {lead}"))
         .child(track);
@@ -327,13 +388,13 @@ pub fn arch_anim(
 #[allow(dead_code)] // reusable scaffolding; wired by the four product pages as they adopt it.
 pub fn arch_anim_css() -> &'static str {
     "\
-.q-arch{padding:var(--q-space-6) var(--q-space-5);border:1px solid var(--q-color-border);border-radius:var(--q-radius-xl);background:var(--q-color-surface);overflow:hidden}\
+.q-arch{padding:var(--q-space-6) var(--q-space-5);border:1px solid var(--q-surface-border,var(--q-color-border));border-radius:var(--q-radius-xl);background:var(--q-surface-bg,var(--q-color-surface));box-shadow:var(--q-surface-shadow,none);-webkit-backdrop-filter:var(--q-surface-filter,none);backdrop-filter:var(--q-surface-filter,none);overflow:hidden}\
 .q-arch__track{position:relative;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:var(--q-space-4);align-items:stretch}\
 @media (max-width:640px){.q-arch__track{grid-auto-flow:row;grid-auto-columns:auto}}\
 .q-arch__line{position:absolute;inset:50% 0 auto;width:100%;height:3px;transform:translateY(-50%);z-index:0;pointer-events:none}\
 .q-arch__line line{stroke:var(--q-color-border);stroke-width:2;stroke-dasharray:6 7;stroke-linecap:round;animation:q-arch-flow 2.4s linear infinite}\
 @media (max-width:640px){.q-arch__line{display:none}}\
-.q-arch__node{position:relative;z-index:1;display:flex;flex-direction:column;gap:.2rem;padding:var(--q-space-4) var(--q-space-4);border:1px solid var(--q-color-border);border-radius:var(--q-radius-lg);background:var(--q-color-bg);text-align:center;align-items:center;justify-content:center;animation:q-arch-pulse 3s var(--q-ease-in-out) infinite;animation-delay:calc(var(--q-arch-step,0) * .4s)}\
+.q-arch__node{position:relative;z-index:1;display:flex;flex-direction:column;gap:.2rem;padding:var(--q-space-4) var(--q-space-4);border:1px solid var(--q-surface-border,var(--q-color-border));border-radius:var(--q-radius-lg);background:var(--q-surface-bg,var(--q-color-surface));box-shadow:0 1px 0 color-mix(in srgb,var(--q-color-fg) 4%,transparent);text-align:center;align-items:center;justify-content:center;animation:q-arch-pulse 3s var(--q-ease-in-out) infinite;animation-delay:var(--q-arch-delay,0s)}\
 .q-arch__node-label{font-weight:var(--q-font-weight-bold);font-size:.96rem;letter-spacing:-.01em;color:var(--q-color-fg)}\
 .q-arch__node-sub{font-family:var(--q-font-mono);font-size:.74rem;line-height:1.4;color:var(--q-color-muted)}\
 .q-arch__badge{font-size:.6rem;font-weight:var(--q-font-weight-bold);letter-spacing:.08em;text-transform:uppercase;padding:.12rem .4rem;border-radius:var(--q-radius-full);color:var(--q-color-brand);border:1px solid color-mix(in srgb,var(--q-color-brand) 45%,transparent);background:color-mix(in srgb,var(--q-color-brand) 12%,transparent)}\
@@ -352,20 +413,21 @@ pub fn arch_anim_css() -> &'static str {
 pub fn product_css() -> &'static str {
     "\
 /* ---- entrance motion (runs once on load) ---- */\
-.q-rise{opacity:0;transform:translateY(14px);animation:q-rise .7s var(--q-ease-out) forwards}\
+.q-rise{transform:translateY(10px);animation:q-rise .45s var(--q-ease-out) both}\
 .q-rise.d1{animation-delay:.05s}.q-rise.d2{animation-delay:.13s}.q-rise.d3{animation-delay:.21s}.q-rise.d4{animation-delay:.30s}\
-@keyframes q-rise{to{opacity:1;transform:none}}\
+@keyframes q-rise{from{transform:translateY(10px)}to{transform:none}}\
 .q-arr{transition:transform var(--q-duration-fast) var(--q-ease-out)}\
 .q-btn:hover .q-arr{transform:translateX(3px)}\
 .q-grad{background:linear-gradient(100deg,var(--q-color-brand),color-mix(in srgb,var(--q-color-brand) 50%,var(--q-color-fg)));-webkit-background-clip:text;background-clip:text;color:transparent}\
-/* ---- hero ---- */\
-.q-pp-hero{position:relative;padding:calc(var(--q-space-8) * var(--q-density,1)) 0 var(--q-space-6);overflow:hidden}\
+/* ---- hero (shares the home q-hero2 visual language: a big display title, a\
+   soft radial glow blob, and a gradient accent — so every page's hero matches) ---- */\
+.q-pp-hero{position:relative;isolation:isolate;padding:var(--q-hero-pad,var(--q-space-8)) 0 var(--q-space-6);overflow:visible}\
 .q-pp-hero>*{position:relative;z-index:1}\
-.q-pp-glow{position:absolute;inset:-45% -15% auto -15%;height:600px;z-index:0;pointer-events:none;background:radial-gradient(55% 60% at 28% 18%,color-mix(in srgb,var(--q-color-brand) 30%,transparent),transparent 70%),radial-gradient(45% 55% at 82% 8%,color-mix(in srgb,var(--q-color-brand) 20%,transparent),transparent 70%);filter:blur(8px);animation:q-drift 20s var(--q-ease-in-out) infinite alternate}\
+.q-pp-glow{position:absolute;left:-7rem;top:-4rem;width:min(46rem,62vw);height:min(46rem,62vw);z-index:-1;pointer-events:none;border-radius:var(--q-radius-full);background:radial-gradient(circle at 34% 28%,color-mix(in srgb,var(--q-color-brand) 18%,transparent),transparent 58%),radial-gradient(circle at 68% 42%,color-mix(in srgb,var(--q-color-accent) 12%,transparent),transparent 64%);filter:blur(34px);opacity:.44;animation:q-drift 22s var(--q-ease-in-out) infinite alternate}\
 @keyframes q-drift{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(4%,2%,0) scale(1.1)}}\
 .q-eyebrow .q-pp-crate{margin-left:.6rem;font-family:var(--q-font-mono);font-size:.78rem;text-transform:none;letter-spacing:0;color:var(--q-color-muted);font-weight:var(--q-font-weight-normal)}\
-.q-pp-title{max-width:20ch;margin:0 0 var(--q-space-5)}\
-.q-pp-lead{max-width:62ch;margin:0 0 var(--q-space-6)}\
+.q-pp-title{font-size:clamp(2.6rem,7vw,5.2rem);line-height:.98;letter-spacing:-.055em;max-width:16ch;margin:0 0 var(--q-space-5)}\
+.q-pp-lead{max-width:60ch;margin:0 0 var(--q-space-6);font-size:clamp(1.05rem,2.1vw,1.28rem);line-height:1.65}\
 /* ---- hero stats ---- */\
 .q-pp-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,9rem),1fr));gap:var(--q-space-5);margin:var(--q-space-6) 0 0;padding:var(--q-space-5) 0 0;border-top:1px solid var(--q-color-border)}\
 .q-pp-stats .qq-stat__value{color:var(--q-color-brand)}\
@@ -378,15 +440,13 @@ pub fn product_css() -> &'static str {
 .q-pp-feats>*{height:100%}\
 .q-pp-feat{display:flex;flex-direction:column;gap:var(--q-space-2);height:100%;padding:var(--q-space-5);border-radius:var(--q-radius-lg);transition:transform var(--q-duration-base) var(--q-ease-out),box-shadow var(--q-duration-base) var(--q-ease-out),border-color var(--q-duration-base) var(--q-ease-out)}\
 .q-pp-feat:hover{transform:translateY(-4px);box-shadow:0 18px 48px -22px color-mix(in srgb,var(--q-color-brand) 55%,transparent)}\
-.q-pp-feat[data-q-surface=\"flat\"]:hover,.q-pp-feat[data-q-surface=\"neu\"]:hover{border-color:color-mix(in srgb,var(--q-color-brand) 50%,var(--q-color-border))}\
+.q-pp-feat:hover{border-color:color-mix(in srgb,var(--q-color-brand) 50%,var(--q-color-border))}\
 .q-pp-feat__kicker{font-family:var(--q-font-mono);font-size:.74rem;letter-spacing:.04em;color:var(--q-color-brand)}\
-.q-pp-feat[data-q-surface=\"gradient\"] .q-pp-feat__kicker{color:color-mix(in srgb,var(--q-color-on-brand) 80%,transparent)}\
 .q-pp-feat__title{margin:0;font-size:1.1rem;font-weight:var(--q-font-weight-bold);letter-spacing:-.01em}\
 .q-pp-feat__body{margin:0;font-size:.94rem;line-height:1.65;color:var(--q-color-muted)}\
-.q-pp-feat[data-q-surface=\"gradient\"] .q-pp-feat__body{color:color-mix(in srgb,var(--q-color-on-brand) 85%,transparent)}\
 /* ---- what's built status list ---- */\
 .q-pp-status{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--q-space-3)}\
-.q-pp-status__row{display:flex;align-items:flex-start;gap:var(--q-space-3);padding:var(--q-space-4) var(--q-space-5);border:1px solid var(--q-color-border);border-radius:var(--q-radius-lg);background:var(--q-color-surface)}\
+.q-pp-status__row{display:flex;align-items:flex-start;gap:var(--q-space-3);padding:var(--q-space-4) var(--q-space-5);border:1px solid var(--q-surface-border,var(--q-color-border));border-radius:var(--q-radius-lg);background:var(--q-surface-bg,var(--q-color-surface));box-shadow:var(--q-surface-shadow,none);-webkit-backdrop-filter:var(--q-surface-filter,none);backdrop-filter:var(--q-surface-filter,none)}\
 .q-pp-status__mark{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;width:1.7rem;height:1.7rem;border-radius:var(--q-radius-full);color:var(--q-color-on-brand);background:var(--q-color-brand)}\
 .q-pp-status__mark--soon{background:transparent;border:1.5px dashed var(--q-color-muted)}\
 .q-pp-status__text{display:flex;flex-direction:column;gap:.15rem;flex:1 1 auto;min-width:0}\
@@ -395,14 +455,16 @@ pub fn product_css() -> &'static str {
 .q-pp-status__chip{flex:0 0 auto;align-self:flex-start;font-size:.66rem;font-weight:var(--q-font-weight-bold);letter-spacing:.08em;text-transform:uppercase;padding:.2rem .5rem;border-radius:var(--q-radius-full);border:1px solid var(--q-color-border);color:var(--q-color-muted)}\
 .q-pp-status__chip.is-built{color:var(--q-color-brand);border-color:color-mix(in srgb,var(--q-color-brand) 45%,transparent);background:color-mix(in srgb,var(--q-color-brand) 12%,transparent)}\
 /* ---- closing CTA band ---- */\
-.q-pp-cta{text-align:center;padding:calc(var(--q-space-8) * var(--q-density,1)) var(--q-space-5);border-radius:var(--q-radius-xl)}\
+.q-pp-cta{position:relative;overflow:hidden;text-align:center;padding:var(--q-hero-pad,var(--q-space-8)) var(--q-space-5);border-radius:var(--q-radius-xl);background:var(--q-effect-gradient-brand);color:var(--q-color-on-brand);box-shadow:var(--q-shadow-lg)}\
+.q-pp-cta::after{content:\"\";position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(60% 120% at 15% 0%,color-mix(in srgb,#fff 22%,transparent),transparent 60%),radial-gradient(50% 120% at 90% 100%,color-mix(in srgb,#000 18%,transparent),transparent 60%)}\
+.q-pp-cta>*{position:relative;z-index:1}\
 .q-pp-cta__h{margin:0 auto var(--q-space-3);max-width:20ch}\
-.q-pp-cta__p{margin:0 auto var(--q-space-6);max-width:54ch;color:color-mix(in srgb,var(--q-color-on-brand) 85%,transparent);font-size:1.05rem;line-height:1.6}\
+.q-pp-cta__p{margin:0 auto var(--q-space-6);max-width:54ch;color:color-mix(in srgb,var(--q-color-on-brand) 86%,transparent);font-size:1.05rem;line-height:1.6}\
 .q-pp-cta__row{justify-content:center;margin:0}\
 .q-btn--invert{background:var(--q-color-on-brand);color:var(--q-color-brand)}\
 .q-btn--invert:hover{filter:brightness(.96);text-decoration:none}\
-.q-btn--on-grad{color:var(--q-color-on-brand);border-color:color-mix(in srgb,var(--q-color-on-brand) 45%,transparent)}\
-.q-btn--on-grad:hover{background:color-mix(in srgb,var(--q-color-on-brand) 14%,transparent);text-decoration:none}\
+.q-btn--on-grad{color:var(--q-color-on-brand);border-color:color-mix(in srgb,var(--q-color-on-brand) 50%,transparent)}\
+.q-btn--on-grad:hover{background:color-mix(in srgb,var(--q-color-on-brand) 16%,transparent);text-decoration:none}\
 /* ---- reduced motion ---- */\
 @media (prefers-reduced-motion:reduce){\
 .q-rise{opacity:1;transform:none;animation:none}\

@@ -39,13 +39,24 @@ pub enum Block {
     Code { lang: String, code: String },
     /// A worked example: the request/call, its response, and (optionally) the
     /// distinct rendered output.
-    Example { request: String, response: String, output: String },
+    Example {
+        request: String,
+        response: String,
+        output: String,
+    },
     /// An ASCII diagram with a caption (flows, architecture).
     Ascii { caption: String, diagram: String },
     /// A simple table.
-    Table { headers: Vec<String>, rows: Vec<Vec<String>> },
+    Table {
+        headers: Vec<String>,
+        rows: Vec<Vec<String>>,
+    },
     /// A callout: `warn` picks the warning accent, else the note accent.
-    Callout { warn: bool, label: String, body: String },
+    Callout {
+        warn: bool,
+        label: String,
+        body: String,
+    },
     /// A definition list (term → description).
     Defs(Vec<(String, String)>),
     /// An ordered or unordered list.
@@ -69,21 +80,34 @@ pub fn render_block(b: &Block) -> Node {
     match b {
         Block::Prose(t) => p(t),
         Block::Code { lang, code } => {
-            let pre = el("pre").class("q-code").child(el("code").child(text(code.clone())));
+            let pre = el("pre")
+                .class("q-code")
+                .child(el("code").child(text(code.clone())));
             if lang.trim().is_empty() {
                 pre
             } else {
                 el("figure")
                     .class("q-codeblock")
-                    .child(el("figcaption").class("q-codeblock__lang").child(text(lang.clone())))
+                    .child(
+                        el("figcaption")
+                            .class("q-codeblock__lang")
+                            .child(text(lang.clone())),
+                    )
                     .child(pre)
             }
         }
-        Block::Example { request, response, output } => example(request, response, output),
+        Block::Example {
+            request,
+            response,
+            output,
+        } => example(request, response, output),
         Block::Ascii { caption, diagram } => ascii(caption, diagram),
         Block::Table { headers, rows } => {
             let h: Vec<&str> = headers.iter().map(|s| s.as_str()).collect();
-            let r: Vec<Vec<&str>> = rows.iter().map(|row| row.iter().map(|c| c.as_str()).collect()).collect();
+            let r: Vec<Vec<&str>> = rows
+                .iter()
+                .map(|row| row.iter().map(|c| c.as_str()).collect())
+                .collect();
             let rr: Vec<&[&str]> = r.iter().map(|row| row.as_slice()).collect();
             table(&h, &rr)
         }
@@ -147,7 +171,11 @@ pub fn inline(s: &str) -> Vec<Node> {
                 if !plain.is_empty() {
                     out.push(text(std::mem::take(&mut plain)));
                 }
-                out.push(el("code").class("q-inline").child(text(rest[1..1 + end].to_string())));
+                out.push(
+                    el("code")
+                        .class("q-inline")
+                        .child(text(rest[1..1 + end].to_string())),
+                );
                 i += 1 + end + 1;
                 continue;
             }
@@ -178,11 +206,22 @@ pub fn example(request: &str, response: &str, output: &str) -> Node {
             el("div")
                 .class("q-eg__pane")
                 .child(el("p").class("q-eg__label").child(text(label.to_string())))
-                .child(el("pre").class("q-eg__pre").child(el("code").child(text(body.to_string())))),
+                .child(
+                    el("pre")
+                        .class("q-eg__pre")
+                        .child(el("code").child(text(body.to_string()))),
+                ),
         )
     };
     let mut fig = el("div").class("q-eg");
-    for n in [pane("Request", request), pane("Response", response), pane("Output", output)].into_iter().flatten() {
+    for n in [
+        pane("Request", request),
+        pane("Response", response),
+        pane("Output", output),
+    ]
+    .into_iter()
+    .flatten()
+    {
         fig = fig.child(n);
     }
     fig
@@ -192,8 +231,16 @@ pub fn example(request: &str, response: &str, output: &str) -> Node {
 pub fn ascii(caption: &str, diagram: &str) -> Node {
     el("figure")
         .class("q-ascii-wrap")
-        .child(el("pre").class("q-ascii").child(el("code").child(text(diagram.to_string()))))
-        .child(el("figcaption").class("q-ascii-cap").child(text(caption.to_string())))
+        .child(
+            el("pre")
+                .class("q-ascii")
+                .child(el("code").child(text(diagram.to_string()))),
+        )
+        .child(
+            el("figcaption")
+                .class("q-ascii-cap")
+                .child(text(caption.to_string())),
+        )
 }
 
 /// A simple themed table from `headers` + `rows` (escaped cells, scrolls on narrow).
@@ -211,7 +258,10 @@ pub fn table(headers: &[&str], rows: &[&[&str]]) -> Node {
         tbody = tbody.child(tr);
     }
     el("div").class("q-table-wrap").child(
-        el("table").class("q-table").child(el("thead").child(head)).child(tbody),
+        el("table")
+            .class("q-table")
+            .child(el("thead").child(head))
+            .child(tbody),
     )
 }
 
@@ -219,7 +269,11 @@ pub fn table(headers: &[&str], rows: &[&[&str]]) -> Node {
 pub fn callout(kind: &str, label: &str, body: &str) -> Node {
     el("aside")
         .class(format!("q-callout q-callout--{kind}"))
-        .child(el("span").class("q-callout__label").child(text(label.to_string())))
+        .child(
+            el("span")
+                .class("q-callout__label")
+                .child(text(label.to_string())),
+        )
         .child(el("p").class("q-callout__body").children(inline(body)))
 }
 
@@ -278,7 +332,12 @@ impl Product {
     }
 
     /// All four products, in switcher order.
-    pub const ALL: [Product; 4] = [Product::Dms, Product::Quill, Product::Stdlib, Product::Cloud];
+    pub const ALL: [Product; 4] = [
+        Product::Dms,
+        Product::Quill,
+        Product::Stdlib,
+        Product::Cloud,
+    ];
 }
 
 /// One page in the docs nav. Sidebar order = slice order within a product;
@@ -295,107 +354,612 @@ pub struct DocRef {
 /// automatically. Keep each product's pages contiguous for readability (the
 /// scoping does not require it, but the source reads better).
 pub const DOCS: &[DocRef] = &[
-    DocRef { path: "/docs/dms", title: "Overview", product: Product::Dms, section: "Start here" },
-    DocRef { path: "/docs/dms/install", title: "Installation & build", product: Product::Dms, section: "Get started" },
-    DocRef { path: "/docs/dms/quick-start", title: "Quick start: boot & first query", product: Product::Dms, section: "Get started" },
-    DocRef { path: "/docs/dms/configuration", title: "Configuration", product: Product::Dms, section: "Get started" },
-    DocRef { path: "/docs/dms/tuning", title: "Performance tuning", product: Product::Dms, section: "Get started" },
-    DocRef { path: "/docs/dms/concepts", title: "Core concepts", product: Product::Dms, section: "Core architecture" },
-    DocRef { path: "/docs/dms/access-model-overview", title: "Access model: three-tier authorization", product: Product::Dms, section: "Core architecture" },
-    DocRef { path: "/docs/dms/worker-pipeline", title: "Worker pipeline: before -> handle -> after", product: Product::Dms, section: "Core architecture" },
-    DocRef { path: "/docs/dms/execute-model", title: "The execute model & function scope", product: Product::Dms, section: "Core architecture" },
-    DocRef { path: "/docs/dms/architecture-overview", title: "Architecture overview", product: Product::Dms, section: "Core architecture" },
-    DocRef { path: "/docs/dms/architecture-security", title: "Security & governance architecture", product: Product::Dms, section: "Core architecture" },
-    DocRef { path: "/docs/dms/embedded-and-sync", title: "Embedded & sync", product: Product::Dms, section: "Core architecture" },
-    DocRef { path: "/docs/dms/qql-basics", title: "QQL fundamentals & core syntax", product: Product::Dms, section: "QQL" },
-    DocRef { path: "/docs/dms/qql-reading-filters", title: "Reading: filters, ranges, AND/OR, composite prefixes", product: Product::Dms, section: "QQL" },
-    DocRef { path: "/docs/dms/qql-reading-streaming", title: "Reading: streaming SELECT, aggregates, early-stop limit", product: Product::Dms, section: "QQL" },
-    DocRef { path: "/docs/dms/qql-reading-sort-index", title: "Reading: sort-via-index (top-K)", product: Product::Dms, section: "QQL" },
-    DocRef { path: "/docs/dms/qql-reading-joins", title: "Reading: joins (nested-loop with index probing)", product: Product::Dms, section: "QQL" },
-    DocRef { path: "/docs/dms/qql-search-inverted", title: "Search: full-text inverted index", product: Product::Dms, section: "QQL" },
-    DocRef { path: "/docs/dms/qql-graph-traverse", title: "Graph: breadth-first traversal", product: Product::Dms, section: "QQL" },
-    DocRef { path: "/docs/dms/qql-vector-ann", title: "Vector: approximate nearest neighbor (LSH k-NN)", product: Product::Dms, section: "QQL" },
-    DocRef { path: "/docs/dms/qql-writing-acid", title: "Writing: INSERT/UPDATE/DELETE with ACID (WAL + indexes)", product: Product::Dms, section: "QQL" },
-    DocRef { path: "/docs/dms/qql-ddl-tables", title: "DDL: CREATE TABLE (schema/schemaless, columns, TTL)", product: Product::Dms, section: "QQL" },
-    DocRef { path: "/docs/dms/qql-ddl-indexes", title: "DDL: CREATE INDEX (filter/sort/search/vector/graph/nested/composite)", product: Product::Dms, section: "QQL" },
-    DocRef { path: "/docs/dms/qql-return-shaping", title: "Response: RETURN custom shaping", product: Product::Dms, section: "QQL" },
-    DocRef { path: "/docs/dms/qql-batch", title: "QQL batch: concurrent statements", product: Product::Dms, section: "QQL" },
-    DocRef { path: "/docs/dms/qql-plan-cache", title: "Performance: prepared-plan cache", product: Product::Dms, section: "QQL" },
-    DocRef { path: "/docs/dms/qql-ttl-sweep", title: "Maintenance: TTL sweep", product: Product::Dms, section: "QQL" },
-    DocRef { path: "/docs/dms/qql-wal-recovery", title: "Durability: WAL & crash recovery", product: Product::Dms, section: "QQL" },
-    DocRef { path: "/docs/dms/session-tokens-lifecycle", title: "Session tokens: mint, validate, extend", product: Product::Dms, section: "Authentication & RBAC" },
-    DocRef { path: "/docs/dms/hmac-signed-api-keys", title: "HMAC-signed API keys & replay guard", product: Product::Dms, section: "Authentication & RBAC" },
-    DocRef { path: "/docs/dms/api-keys-minting-rotation", title: "API keys: minting, storage, scope & rotation", product: Product::Dms, section: "Authentication & RBAC" },
-    DocRef { path: "/docs/dms/rbac-roles-onboarding", title: "RBAC: four roles & invite-only onboarding", product: Product::Dms, section: "Authentication & RBAC" },
-    DocRef { path: "/docs/dms/table-level-rbac-grants", title: "Table-level RBAC: grants CSV & deny-by-default", product: Product::Dms, section: "Authentication & RBAC" },
-    DocRef { path: "/docs/dms/response-envelope", title: "Response envelope: {error|data|root}", product: Product::Dms, section: "API & discovery" },
-    DocRef { path: "/docs/dms/api-spec-catalog", title: "Self-describing API: /api/spec", product: Product::Dms, section: "API & discovery" },
-    DocRef { path: "/docs/dms/openapi-projection", title: "OpenAPI 3.1 projection: /api/spec/openapi", product: Product::Dms, section: "API & discovery" },
-    DocRef { path: "/docs/dms/system-catalogs", title: "System catalogs: config-as-data (_sys_*)", product: Product::Dms, section: "Operations" },
-    DocRef { path: "/docs/dms/scheduler-jobs", title: "Per-function scheduler: interval & daily cron", product: Product::Dms, section: "Operations" },
-    DocRef { path: "/docs/dms/studio-overview", title: "Studio: the admin app", product: Product::Dms, section: "Studio" },
-    DocRef { path: "/docs/dms/studio-authentication", title: "Studio authentication: sessions, cookies, CSRF", product: Product::Dms, section: "Studio" },
-    DocRef { path: "/docs/dms/studio-rbac", title: "Studio RBAC: role hierarchy & screen permissions", product: Product::Dms, section: "Studio" },
-    DocRef { path: "/docs/dms/studio-ui-architecture", title: "Studio UI architecture: SSR, components, shell", product: Product::Dms, section: "Studio" },
-    DocRef { path: "/docs/quill", title: "Overview", product: Product::Quill, section: "Start here" },
-    DocRef { path: "/docs/quill/installation", title: "Installation & getting started", product: Product::Quill, section: "Get started" },
-    DocRef { path: "/docs/quill/project-structure", title: "Project structure & architecture", product: Product::Quill, section: "Get started" },
-    DocRef { path: "/docs/quill/cli-scaffolding", title: "CLI: scaffolding & commands", product: Product::Quill, section: "Get started" },
-    DocRef { path: "/docs/quill/view-authoring", title: "View layer & authoring (view! macro)", product: Product::Quill, section: "Authoring" },
-    DocRef { path: "/docs/quill/styling-css", title: "CSS compilation (style! macro)", product: Product::Quill, section: "Authoring" },
-    DocRef { path: "/docs/quill/design-tokens-theming", title: "Design tokens & theme system", product: Product::Quill, section: "Authoring" },
-    DocRef { path: "/docs/quill/components-ui", title: "Headless components (qquill-ui)", product: Product::Quill, section: "Components" },
-    DocRef { path: "/docs/quill/styled-components", title: "Styled components (qquill-design)", product: Product::Quill, section: "Components" },
-    DocRef { path: "/docs/quill/components", title: "Component library", product: Product::Quill, section: "Components" },
-    DocRef { path: "/docs/quill/components/button", title: "Button", product: Product::Quill, section: "Components" },
-    DocRef { path: "/docs/quill/components/badge", title: "Badge", product: Product::Quill, section: "Components" },
-    DocRef { path: "/docs/quill/components/card", title: "Card", product: Product::Quill, section: "Components" },
-    DocRef { path: "/docs/quill/components/alert", title: "Alert", product: Product::Quill, section: "Components" },
-    DocRef { path: "/docs/quill/components/stat", title: "Stat", product: Product::Quill, section: "Components" },
-    DocRef { path: "/docs/quill/components/list", title: "List", product: Product::Quill, section: "Components" },
-    DocRef { path: "/docs/quill/components/divider", title: "Divider", product: Product::Quill, section: "Components" },
-    DocRef { path: "/docs/quill/components/breadcrumb", title: "Breadcrumb", product: Product::Quill, section: "Components" },
-    DocRef { path: "/docs/quill/components/tabs", title: "Tabs", product: Product::Quill, section: "Components" },
-    DocRef { path: "/docs/quill/components/dialog", title: "Dialog", product: Product::Quill, section: "Components" },
-    DocRef { path: "/docs/quill/components/menu", title: "Menu", product: Product::Quill, section: "Components" },
-    DocRef { path: "/docs/quill/components/tooltip", title: "Tooltip", product: Product::Quill, section: "Components" },
-    DocRef { path: "/docs/quill/components/checkbox", title: "Checkbox", product: Product::Quill, section: "Components" },
-    DocRef { path: "/docs/quill/components/switch", title: "Switch", product: Product::Quill, section: "Components" },
-    DocRef { path: "/docs/quill/components/accordion", title: "Accordion", product: Product::Quill, section: "Components" },
-    DocRef { path: "/docs/quill/islands-hydration", title: "Islands & client hydration", product: Product::Quill, section: "Interactivity" },
-    DocRef { path: "/docs/quill/signals", title: "Signals & reactive state", product: Product::Quill, section: "Interactivity" },
-    DocRef { path: "/docs/quill/client-runtime", title: "Client runtime & behaviors", product: Product::Quill, section: "Interactivity" },
-    DocRef { path: "/docs/quill/static-export-ssg", title: "Static export & SSG (qquill-build)", product: Product::Quill, section: "Ship" },
-    DocRef { path: "/docs/quill/examples-patterns", title: "Common patterns & examples", product: Product::Quill, section: "Ship" },
-    DocRef { path: "/docs/stdlib", title: "Overview", product: Product::Stdlib, section: "Start here" },
-    DocRef { path: "/docs/stdlib/substrate", title: "Substrate: qexec executor & qvalue model", product: Product::Stdlib, section: "Substrate" },
-    DocRef { path: "/docs/stdlib/dependencies", title: "Dependency rules & architecture", product: Product::Stdlib, section: "Substrate" },
-    DocRef { path: "/docs/stdlib/qarray", title: "qarray: list operations", product: Product::Stdlib, section: "Utility crates" },
-    DocRef { path: "/docs/stdlib/qobject", title: "qobject: map operations", product: Product::Stdlib, section: "Utility crates" },
-    DocRef { path: "/docs/stdlib/qstring", title: "qstring: string operations", product: Product::Stdlib, section: "Utility crates" },
-    DocRef { path: "/docs/stdlib/qmath", title: "qmath: fast floating-point arithmetic", product: Product::Stdlib, section: "Utility crates" },
-    DocRef { path: "/docs/stdlib/qnumber", title: "qnumber: arbitrary-precision arithmetic", product: Product::Stdlib, section: "Utility crates" },
-    DocRef { path: "/docs/stdlib/qconvert", title: "qconvert: type casting", product: Product::Stdlib, section: "Utility crates" },
-    DocRef { path: "/docs/stdlib/qencoding", title: "qencoding: base64 & hex codecs", product: Product::Stdlib, section: "Utility crates" },
-    DocRef { path: "/docs/stdlib/qcrypto", title: "qcrypto: cryptographic hashing", product: Product::Stdlib, section: "Utility crates" },
-    DocRef { path: "/docs/stdlib/qregex", title: "qregex: regular expression matching", product: Product::Stdlib, section: "Utility crates" },
-    DocRef { path: "/docs/stdlib/qtime", title: "qtime: time operations", product: Product::Stdlib, section: "Utility crates" },
-    DocRef { path: "/docs/stdlib/quuid", title: "quuid: UUID generation", product: Product::Stdlib, section: "Utility crates" },
-    DocRef { path: "/docs/cloud", title: "Overview", product: Product::Cloud, section: "Start here" },
-    DocRef { path: "/docs/cloud/control-plane-model", title: "Control plane data model (_cp_* catalogs)", product: Product::Cloud, section: "How it works" },
-    DocRef { path: "/docs/cloud/orchestration-functions", title: "Orchestration functions (cloud.* API)", product: Product::Cloud, section: "How it works" },
-    DocRef { path: "/docs/cloud/placement-binpack", title: "Placement: first-fit bin-packing", product: Product::Cloud, section: "How it works" },
-    DocRef { path: "/docs/cloud/architecture", title: "Cloud architecture", product: Product::Cloud, section: "How it works" },
-    DocRef { path: "/docs/cloud/scaling-vertical", title: "Vertical scaling: live capacity growth", product: Product::Cloud, section: "Scaling" },
-    DocRef { path: "/docs/cloud/scaling-horizontal", title: "Horizontal scaling: cluster replica count", product: Product::Cloud, section: "Scaling" },
-    DocRef { path: "/docs/cloud/mode-switching", title: "Mode switching: standalone <-> cluster", product: Product::Cloud, section: "Scaling" },
-    DocRef { path: "/docs/cloud/scaling-architecture", title: "Scaling, migration & upgrades (mechanism)", product: Product::Cloud, section: "Scaling" },
-    DocRef { path: "/docs/cloud/suspension-termination", title: "Lifecycle: suspend, resume, terminate", product: Product::Cloud, section: "Operations" },
-    DocRef { path: "/docs/cloud/billing-metering", title: "Billing & metering", product: Product::Cloud, section: "Operations" },
-    DocRef { path: "/docs/cloud/console-ui", title: "Cloud Console: RBAC-gated web interface", product: Product::Cloud, section: "Console" },
-    DocRef { path: "/docs/cloud/rbac-enforcement", title: "RBAC: deny-by-default role gates", product: Product::Cloud, section: "Console" },
-    DocRef { path: "/docs/cloud/audit-trail", title: "Audit trail: control-plane action logging", product: Product::Cloud, section: "Console" },
-    DocRef { path: "/docs/cloud/built-vs-planned", title: "Built vs planned", product: Product::Cloud, section: "Console" },
+    DocRef {
+        path: "/docs/dms",
+        title: "Overview",
+        product: Product::Dms,
+        section: "Start here",
+    },
+    DocRef {
+        path: "/docs/dms/install",
+        title: "Installation & build",
+        product: Product::Dms,
+        section: "Get started",
+    },
+    DocRef {
+        path: "/docs/dms/quick-start",
+        title: "Quick start: boot & first query",
+        product: Product::Dms,
+        section: "Get started",
+    },
+    DocRef {
+        path: "/docs/dms/configuration",
+        title: "Configuration",
+        product: Product::Dms,
+        section: "Get started",
+    },
+    DocRef {
+        path: "/docs/dms/tuning",
+        title: "Performance tuning",
+        product: Product::Dms,
+        section: "Get started",
+    },
+    DocRef {
+        path: "/docs/dms/concepts",
+        title: "Core concepts",
+        product: Product::Dms,
+        section: "Core architecture",
+    },
+    DocRef {
+        path: "/docs/dms/access-model-overview",
+        title: "Access model: three-tier authorization",
+        product: Product::Dms,
+        section: "Core architecture",
+    },
+    DocRef {
+        path: "/docs/dms/worker-pipeline",
+        title: "Worker pipeline: before -> handle -> after",
+        product: Product::Dms,
+        section: "Core architecture",
+    },
+    DocRef {
+        path: "/docs/dms/execute-model",
+        title: "The execute model & function scope",
+        product: Product::Dms,
+        section: "Core architecture",
+    },
+    DocRef {
+        path: "/docs/dms/architecture-overview",
+        title: "Architecture overview",
+        product: Product::Dms,
+        section: "Core architecture",
+    },
+    DocRef {
+        path: "/docs/dms/architecture-security",
+        title: "Security & governance architecture",
+        product: Product::Dms,
+        section: "Core architecture",
+    },
+    DocRef {
+        path: "/docs/dms/embedded-and-sync",
+        title: "Embedded & sync",
+        product: Product::Dms,
+        section: "Core architecture",
+    },
+    DocRef {
+        path: "/docs/dms/qql-basics",
+        title: "QQL fundamentals & core syntax",
+        product: Product::Dms,
+        section: "QQL",
+    },
+    DocRef {
+        path: "/docs/dms/qql-reading-filters",
+        title: "Reading: filters, ranges, AND/OR, composite prefixes",
+        product: Product::Dms,
+        section: "QQL",
+    },
+    DocRef {
+        path: "/docs/dms/qql-reading-streaming",
+        title: "Reading: streaming SELECT, aggregates, early-stop limit",
+        product: Product::Dms,
+        section: "QQL",
+    },
+    DocRef {
+        path: "/docs/dms/qql-reading-sort-index",
+        title: "Reading: sort-via-index (top-K)",
+        product: Product::Dms,
+        section: "QQL",
+    },
+    DocRef {
+        path: "/docs/dms/qql-reading-joins",
+        title: "Reading: joins (nested-loop with index probing)",
+        product: Product::Dms,
+        section: "QQL",
+    },
+    DocRef {
+        path: "/docs/dms/qql-search-inverted",
+        title: "Search: full-text inverted index",
+        product: Product::Dms,
+        section: "QQL",
+    },
+    DocRef {
+        path: "/docs/dms/qql-graph-traverse",
+        title: "Graph: breadth-first traversal",
+        product: Product::Dms,
+        section: "QQL",
+    },
+    DocRef {
+        path: "/docs/dms/qql-vector-ann",
+        title: "Vector: approximate nearest neighbor (LSH k-NN)",
+        product: Product::Dms,
+        section: "QQL",
+    },
+    DocRef {
+        path: "/docs/dms/qql-writing-acid",
+        title: "Writing: INSERT/UPDATE/DELETE with ACID (WAL + indexes)",
+        product: Product::Dms,
+        section: "QQL",
+    },
+    DocRef {
+        path: "/docs/dms/qql-ddl-tables",
+        title: "DDL: CREATE TABLE (schema/schemaless, columns, TTL)",
+        product: Product::Dms,
+        section: "QQL",
+    },
+    DocRef {
+        path: "/docs/dms/qql-ddl-indexes",
+        title: "DDL: CREATE INDEX (filter/sort/search/vector/graph/nested/composite)",
+        product: Product::Dms,
+        section: "QQL",
+    },
+    DocRef {
+        path: "/docs/dms/qql-return-shaping",
+        title: "Response: RETURN custom shaping",
+        product: Product::Dms,
+        section: "QQL",
+    },
+    DocRef {
+        path: "/docs/dms/qql-batch",
+        title: "QQL batch: concurrent statements",
+        product: Product::Dms,
+        section: "QQL",
+    },
+    DocRef {
+        path: "/docs/dms/qql-plan-cache",
+        title: "Performance: prepared-plan cache",
+        product: Product::Dms,
+        section: "QQL",
+    },
+    DocRef {
+        path: "/docs/dms/qql-ttl-sweep",
+        title: "Maintenance: TTL sweep",
+        product: Product::Dms,
+        section: "QQL",
+    },
+    DocRef {
+        path: "/docs/dms/qql-wal-recovery",
+        title: "Durability: WAL & crash recovery",
+        product: Product::Dms,
+        section: "QQL",
+    },
+    DocRef {
+        path: "/docs/dms/session-tokens-lifecycle",
+        title: "Session tokens: mint, validate, extend",
+        product: Product::Dms,
+        section: "Authentication & RBAC",
+    },
+    DocRef {
+        path: "/docs/dms/hmac-signed-api-keys",
+        title: "HMAC-signed API keys & replay guard",
+        product: Product::Dms,
+        section: "Authentication & RBAC",
+    },
+    DocRef {
+        path: "/docs/dms/api-keys-minting-rotation",
+        title: "API keys: minting, storage, scope & rotation",
+        product: Product::Dms,
+        section: "Authentication & RBAC",
+    },
+    DocRef {
+        path: "/docs/dms/rbac-roles-onboarding",
+        title: "RBAC: four roles & invite-only onboarding",
+        product: Product::Dms,
+        section: "Authentication & RBAC",
+    },
+    DocRef {
+        path: "/docs/dms/table-level-rbac-grants",
+        title: "Table-level RBAC: grants CSV & deny-by-default",
+        product: Product::Dms,
+        section: "Authentication & RBAC",
+    },
+    DocRef {
+        path: "/docs/dms/response-envelope",
+        title: "Response envelope: {error|data|root}",
+        product: Product::Dms,
+        section: "API & discovery",
+    },
+    DocRef {
+        path: "/docs/dms/api-spec-catalog",
+        title: "Self-describing API: /api/spec",
+        product: Product::Dms,
+        section: "API & discovery",
+    },
+    DocRef {
+        path: "/docs/dms/openapi-projection",
+        title: "OpenAPI 3.1 projection: /api/spec/openapi",
+        product: Product::Dms,
+        section: "API & discovery",
+    },
+    DocRef {
+        path: "/docs/dms/system-catalogs",
+        title: "System catalogs: config-as-data (_sys_*)",
+        product: Product::Dms,
+        section: "Operations",
+    },
+    DocRef {
+        path: "/docs/dms/scheduler-jobs",
+        title: "Per-function scheduler: interval & daily cron",
+        product: Product::Dms,
+        section: "Operations",
+    },
+    DocRef {
+        path: "/docs/dms/studio-overview",
+        title: "Studio: the admin app",
+        product: Product::Dms,
+        section: "Studio",
+    },
+    DocRef {
+        path: "/docs/dms/studio-authentication",
+        title: "Studio authentication: sessions, cookies, CSRF",
+        product: Product::Dms,
+        section: "Studio",
+    },
+    DocRef {
+        path: "/docs/dms/studio-rbac",
+        title: "Studio RBAC: role hierarchy & screen permissions",
+        product: Product::Dms,
+        section: "Studio",
+    },
+    DocRef {
+        path: "/docs/dms/studio-ui-architecture",
+        title: "Studio UI architecture: SSR, components, shell",
+        product: Product::Dms,
+        section: "Studio",
+    },
+    DocRef {
+        path: "/docs/quill",
+        title: "Overview",
+        product: Product::Quill,
+        section: "Start here",
+    },
+    DocRef {
+        path: "/docs/quill/installation",
+        title: "Installation & getting started",
+        product: Product::Quill,
+        section: "Get started",
+    },
+    DocRef {
+        path: "/docs/quill/project-structure",
+        title: "Project structure & architecture",
+        product: Product::Quill,
+        section: "Get started",
+    },
+    DocRef {
+        path: "/docs/quill/cli-scaffolding",
+        title: "CLI: scaffolding & commands",
+        product: Product::Quill,
+        section: "Get started",
+    },
+    DocRef {
+        path: "/docs/quill/view-authoring",
+        title: "View layer & authoring (view! macro)",
+        product: Product::Quill,
+        section: "Authoring",
+    },
+    DocRef {
+        path: "/docs/quill/styling-css",
+        title: "CSS compilation (style! macro)",
+        product: Product::Quill,
+        section: "Authoring",
+    },
+    DocRef {
+        path: "/docs/quill/design-tokens-theming",
+        title: "Design tokens & theme system",
+        product: Product::Quill,
+        section: "Authoring",
+    },
+    DocRef {
+        path: "/docs/quill/components-ui",
+        title: "Headless components (qquill-ui)",
+        product: Product::Quill,
+        section: "Components",
+    },
+    DocRef {
+        path: "/docs/quill/styled-components",
+        title: "Styled components (qquill-design)",
+        product: Product::Quill,
+        section: "Components",
+    },
+    DocRef {
+        path: "/docs/quill/components",
+        title: "Component library",
+        product: Product::Quill,
+        section: "Components",
+    },
+    DocRef {
+        path: "/docs/quill/components/button",
+        title: "Button",
+        product: Product::Quill,
+        section: "Components",
+    },
+    DocRef {
+        path: "/docs/quill/components/badge",
+        title: "Badge",
+        product: Product::Quill,
+        section: "Components",
+    },
+    DocRef {
+        path: "/docs/quill/components/card",
+        title: "Card",
+        product: Product::Quill,
+        section: "Components",
+    },
+    DocRef {
+        path: "/docs/quill/components/alert",
+        title: "Alert",
+        product: Product::Quill,
+        section: "Components",
+    },
+    DocRef {
+        path: "/docs/quill/components/stat",
+        title: "Stat",
+        product: Product::Quill,
+        section: "Components",
+    },
+    DocRef {
+        path: "/docs/quill/components/list",
+        title: "List",
+        product: Product::Quill,
+        section: "Components",
+    },
+    DocRef {
+        path: "/docs/quill/components/divider",
+        title: "Divider",
+        product: Product::Quill,
+        section: "Components",
+    },
+    DocRef {
+        path: "/docs/quill/components/breadcrumb",
+        title: "Breadcrumb",
+        product: Product::Quill,
+        section: "Components",
+    },
+    DocRef {
+        path: "/docs/quill/components/tabs",
+        title: "Tabs",
+        product: Product::Quill,
+        section: "Components",
+    },
+    DocRef {
+        path: "/docs/quill/components/dialog",
+        title: "Dialog",
+        product: Product::Quill,
+        section: "Components",
+    },
+    DocRef {
+        path: "/docs/quill/components/menu",
+        title: "Menu",
+        product: Product::Quill,
+        section: "Components",
+    },
+    DocRef {
+        path: "/docs/quill/components/tooltip",
+        title: "Tooltip",
+        product: Product::Quill,
+        section: "Components",
+    },
+    DocRef {
+        path: "/docs/quill/components/checkbox",
+        title: "Checkbox",
+        product: Product::Quill,
+        section: "Components",
+    },
+    DocRef {
+        path: "/docs/quill/components/switch",
+        title: "Switch",
+        product: Product::Quill,
+        section: "Components",
+    },
+    DocRef {
+        path: "/docs/quill/components/accordion",
+        title: "Accordion",
+        product: Product::Quill,
+        section: "Components",
+    },
+    DocRef {
+        path: "/docs/quill/islands-hydration",
+        title: "Islands & client hydration",
+        product: Product::Quill,
+        section: "Interactivity",
+    },
+    DocRef {
+        path: "/docs/quill/signals",
+        title: "Signals & reactive state",
+        product: Product::Quill,
+        section: "Interactivity",
+    },
+    DocRef {
+        path: "/docs/quill/client-runtime",
+        title: "Client runtime & behaviors",
+        product: Product::Quill,
+        section: "Interactivity",
+    },
+    DocRef {
+        path: "/docs/quill/static-export-ssg",
+        title: "Static export & SSG (qquill-build)",
+        product: Product::Quill,
+        section: "Ship",
+    },
+    DocRef {
+        path: "/docs/quill/examples-patterns",
+        title: "Common patterns & examples",
+        product: Product::Quill,
+        section: "Ship",
+    },
+    DocRef {
+        path: "/docs/stdlib",
+        title: "Overview",
+        product: Product::Stdlib,
+        section: "Start here",
+    },
+    DocRef {
+        path: "/docs/stdlib/substrate",
+        title: "Substrate: qexec executor & qvalue model",
+        product: Product::Stdlib,
+        section: "Substrate",
+    },
+    DocRef {
+        path: "/docs/stdlib/dependencies",
+        title: "Dependency rules & architecture",
+        product: Product::Stdlib,
+        section: "Substrate",
+    },
+    DocRef {
+        path: "/docs/stdlib/qarray",
+        title: "qarray: list operations",
+        product: Product::Stdlib,
+        section: "Utility crates",
+    },
+    DocRef {
+        path: "/docs/stdlib/qobject",
+        title: "qobject: map operations",
+        product: Product::Stdlib,
+        section: "Utility crates",
+    },
+    DocRef {
+        path: "/docs/stdlib/qstring",
+        title: "qstring: string operations",
+        product: Product::Stdlib,
+        section: "Utility crates",
+    },
+    DocRef {
+        path: "/docs/stdlib/qmath",
+        title: "qmath: fast floating-point arithmetic",
+        product: Product::Stdlib,
+        section: "Utility crates",
+    },
+    DocRef {
+        path: "/docs/stdlib/qnumber",
+        title: "qnumber: arbitrary-precision arithmetic",
+        product: Product::Stdlib,
+        section: "Utility crates",
+    },
+    DocRef {
+        path: "/docs/stdlib/qconvert",
+        title: "qconvert: type casting",
+        product: Product::Stdlib,
+        section: "Utility crates",
+    },
+    DocRef {
+        path: "/docs/stdlib/qencoding",
+        title: "qencoding: base64 & hex codecs",
+        product: Product::Stdlib,
+        section: "Utility crates",
+    },
+    DocRef {
+        path: "/docs/stdlib/qcrypto",
+        title: "qcrypto: cryptographic hashing",
+        product: Product::Stdlib,
+        section: "Utility crates",
+    },
+    DocRef {
+        path: "/docs/stdlib/qregex",
+        title: "qregex: regular expression matching",
+        product: Product::Stdlib,
+        section: "Utility crates",
+    },
+    DocRef {
+        path: "/docs/stdlib/qtime",
+        title: "qtime: time operations",
+        product: Product::Stdlib,
+        section: "Utility crates",
+    },
+    DocRef {
+        path: "/docs/stdlib/quuid",
+        title: "quuid: UUID generation",
+        product: Product::Stdlib,
+        section: "Utility crates",
+    },
+    DocRef {
+        path: "/docs/cloud",
+        title: "Overview",
+        product: Product::Cloud,
+        section: "Start here",
+    },
+    DocRef {
+        path: "/docs/cloud/control-plane-model",
+        title: "Control plane data model (_cp_* catalogs)",
+        product: Product::Cloud,
+        section: "How it works",
+    },
+    DocRef {
+        path: "/docs/cloud/orchestration-functions",
+        title: "Orchestration functions (cloud.* API)",
+        product: Product::Cloud,
+        section: "How it works",
+    },
+    DocRef {
+        path: "/docs/cloud/placement-binpack",
+        title: "Placement: first-fit bin-packing",
+        product: Product::Cloud,
+        section: "How it works",
+    },
+    DocRef {
+        path: "/docs/cloud/architecture",
+        title: "Cloud architecture",
+        product: Product::Cloud,
+        section: "How it works",
+    },
+    DocRef {
+        path: "/docs/cloud/scaling-vertical",
+        title: "Vertical scaling: live capacity growth",
+        product: Product::Cloud,
+        section: "Scaling",
+    },
+    DocRef {
+        path: "/docs/cloud/scaling-horizontal",
+        title: "Horizontal scaling: cluster replica count",
+        product: Product::Cloud,
+        section: "Scaling",
+    },
+    DocRef {
+        path: "/docs/cloud/mode-switching",
+        title: "Mode switching: standalone <-> cluster",
+        product: Product::Cloud,
+        section: "Scaling",
+    },
+    DocRef {
+        path: "/docs/cloud/scaling-architecture",
+        title: "Scaling, migration & upgrades (mechanism)",
+        product: Product::Cloud,
+        section: "Scaling",
+    },
+    DocRef {
+        path: "/docs/cloud/suspension-termination",
+        title: "Lifecycle: suspend, resume, terminate",
+        product: Product::Cloud,
+        section: "Operations",
+    },
+    DocRef {
+        path: "/docs/cloud/billing-metering",
+        title: "Billing & metering",
+        product: Product::Cloud,
+        section: "Operations",
+    },
+    DocRef {
+        path: "/docs/cloud/console-ui",
+        title: "Cloud Console: RBAC-gated web interface",
+        product: Product::Cloud,
+        section: "Console",
+    },
+    DocRef {
+        path: "/docs/cloud/rbac-enforcement",
+        title: "RBAC: deny-by-default role gates",
+        product: Product::Cloud,
+        section: "Console",
+    },
+    DocRef {
+        path: "/docs/cloud/audit-trail",
+        title: "Audit trail: control-plane action logging",
+        product: Product::Cloud,
+        section: "Console",
+    },
+    DocRef {
+        path: "/docs/cloud/built-vs-planned",
+        title: "Built vs planned",
+        product: Product::Cloud,
+        section: "Console",
+    },
 ];
 
 /// Look up a page's `DocRef` by path (so a route can derive its own product).
@@ -410,7 +974,9 @@ pub struct Toc {
 
 impl Toc {
     pub fn new() -> Self {
-        Toc { entries: Vec::new() }
+        Toc {
+            entries: Vec::new(),
+        }
     }
 
     /// Record an H2 (`slug`, `title`) for the TOC, returning the rendered
@@ -424,8 +990,14 @@ impl Toc {
     /// Render the captured headings into the right-rail TOC nav. Public so the
     /// architecture section (`arch_kit`) can reuse the same TOC widget.
     pub fn render(&self) -> Node {
-        let mut nav = el("nav").class("q-docs__toc").attr("aria-label", "On this page");
-        nav = nav.child(el("p").class("q-docs__toc-label").child(text("On this page")));
+        let mut nav = el("nav")
+            .class("q-docs__toc")
+            .attr("aria-label", "On this page");
+        nav = nav.child(
+            el("p")
+                .class("q-docs__toc-label")
+                .child(text("On this page")),
+        );
         for (slug, title) in &self.entries {
             nav = nav.child(
                 el("a")
@@ -440,7 +1012,10 @@ impl Toc {
 /// The product switcher pinned to the top of the sidebar: one pill per product,
 /// the active product marked. Lets a reader jump between product doc sets.
 fn product_switcher(active: Product) -> Node {
-    let mut row = el("div").class("q-docs__switch").attr("role", "tablist").attr("aria-label", "Documentation product");
+    let mut row = el("div")
+        .class("q-docs__switch")
+        .attr("role", "tablist")
+        .attr("aria-label", "Documentation product");
     for p in Product::ALL {
         let mut link = el("a")
             .class("q-docs__switch-pill")
@@ -458,7 +1033,9 @@ fn product_switcher(active: Product) -> Node {
 /// product's sections (first-appearance order) → page links, with the current
 /// page marked `aria-current="page"`.
 fn sidebar(product: Product, current: &str) -> Node {
-    let mut nav = el("nav").class("q-docs__side").attr("aria-label", "Documentation");
+    let mut nav = el("nav")
+        .class("q-docs__side")
+        .attr("aria-label", "Documentation");
     nav = nav.child(product_switcher(product));
 
     // Sections in first-appearance order, restricted to this product.
@@ -470,10 +1047,19 @@ fn sidebar(product: Product, current: &str) -> Node {
     }
     for section in seen {
         let mut sec = el("div").class("q-docs__sec");
-        sec = sec.child(el("p").class("q-docs__sec-label").child(text(section.to_string())));
+        sec = sec.child(
+            el("p")
+                .class("q-docs__sec-label")
+                .child(text(section.to_string())),
+        );
         let mut list = el("div").class("q-docs__nav");
-        for d in DOCS.iter().filter(|d| d.product == product && d.section == section) {
-            let mut link = el("a").attr("href", d.path).child(text(d.title.to_string()));
+        for d in DOCS
+            .iter()
+            .filter(|d| d.product == product && d.section == section)
+        {
+            let mut link = el("a")
+                .attr("href", d.path)
+                .child(text(d.title.to_string()));
             if d.path == current {
                 link = link.attr("aria-current", "page");
             }
@@ -490,17 +1076,25 @@ fn sidebar(product: Product, current: &str) -> Node {
 fn prev_next(product: Product, current: &str) -> Node {
     let pages: Vec<&DocRef> = DOCS.iter().filter(|d| d.product == product).collect();
     let idx = pages.iter().position(|d| d.path == current);
-    let prev = idx.and_then(|i| i.checked_sub(1)).and_then(|i| pages.get(i));
+    let prev = idx
+        .and_then(|i| i.checked_sub(1))
+        .and_then(|i| pages.get(i));
     let next = idx.and_then(|i| pages.get(i + 1));
 
-    let mut row = el("nav").class("q-docs__pager").attr("aria-label", "Pagination");
+    let mut row = el("nav")
+        .class("q-docs__pager")
+        .attr("aria-label", "Pagination");
     if let Some(p) = prev {
         row = row.child(
             el("a")
                 .class("q-pager q-pager--prev")
                 .attr("href", p.path)
                 .child(el("span").class("q-pager__dir").child(text("← Previous")))
-                .child(el("span").class("q-pager__title").child(text(p.title.to_string()))),
+                .child(
+                    el("span")
+                        .class("q-pager__title")
+                        .child(text(p.title.to_string())),
+                ),
         );
     } else {
         row = row.child(el("span"));
@@ -511,7 +1105,11 @@ fn prev_next(product: Product, current: &str) -> Node {
                 .class("q-pager q-pager--next")
                 .attr("href", n.path)
                 .child(el("span").class("q-pager__dir").child(text("Next →")))
-                .child(el("span").class("q-pager__title").child(text(n.title.to_string()))),
+                .child(
+                    el("span")
+                        .class("q-pager__title")
+                        .child(text(n.title.to_string())),
+                ),
         );
     }
     row
@@ -523,10 +1121,21 @@ fn prev_next(product: Product, current: &str) -> Node {
 /// `current` is the page path; it MUST exist in [`DOCS`] under `product`.
 /// `content` is the page body the route built (interleaving `toc.h2(..)` and
 /// prose); `toc` is the same accumulator, rendered into the right rail.
-pub fn layout(product: Product, current: &str, title: &str, lead: &str, content: Node, toc: Toc) -> Node {
+pub fn layout(
+    product: Product,
+    current: &str,
+    title: &str,
+    lead: &str,
+    content: Node,
+    toc: Toc,
+) -> Node {
     let main = el("article")
         .class("q-docs__main")
-        .child(el("p").class("q-docs__crumb").child(text(format!("{} docs", product.name()))))
+        .child(
+            el("p")
+                .class("q-docs__crumb")
+                .child(text(format!("{} docs", product.name()))),
+        )
         .child(el("h1").child(text(title.to_string())))
         .child(el("p").class("q-lead").children(inline(lead)))
         .child(content)
@@ -547,11 +1156,11 @@ pub fn pager_css() -> &'static str {
 .q-docs__crumb{font-size:.8rem;text-transform:uppercase;letter-spacing:var(--q-tracking-wide,.06em);color:var(--q-color-brand);font-weight:var(--q-font-weight-bold);margin:0 0 .6rem}\
 .q-docs__switch{display:flex;flex-wrap:wrap;gap:.3rem;margin:0 0 1.5rem;padding:0 0 1.25rem;border-bottom:1px solid var(--q-color-border)}\
 .q-docs__switch-pill{font-size:.82rem;font-weight:var(--q-font-weight-medium);color:var(--q-color-muted);padding:.3rem .6rem;border-radius:var(--q-radius-md);border:1px solid transparent;transition:color var(--q-duration-fast) var(--q-ease-out),background-color var(--q-duration-fast) var(--q-ease-out),border-color var(--q-duration-fast) var(--q-ease-out)}\
-.q-docs__switch-pill:hover{color:var(--q-color-fg);background:var(--q-color-surface);text-decoration:none}\
+.q-docs__switch-pill:hover{color:var(--q-color-fg);background:var(--q-surface-bg,var(--q-color-surface));border-color:var(--q-surface-border,var(--q-color-border));text-decoration:none}\
 .q-docs__switch-pill[aria-current=\"page\"]{color:var(--q-color-on-brand);background:var(--q-color-brand);border-color:var(--q-color-brand)}\
 .q-docs__pager{display:flex;justify-content:space-between;gap:1rem;margin:3rem 0 0;padding-top:1.5rem;border-top:1px solid var(--q-color-border)}\
-.q-pager{display:flex;flex-direction:column;gap:.2rem;padding:.8rem 1rem;border:1px solid var(--q-color-border);border-radius:var(--q-radius-lg);min-width:0;transition:border-color var(--q-duration-fast) var(--q-ease-out),transform var(--q-duration-fast) var(--q-ease-out)}\
-.q-pager:hover{border-color:var(--q-color-brand);text-decoration:none;transform:translateY(-2px)}\
+.q-pager{display:flex;flex-direction:column;gap:.2rem;padding:.8rem 1rem;border:1px solid var(--q-surface-border,var(--q-color-border));border-radius:var(--q-radius-lg);background:var(--q-surface-bg,var(--q-color-surface));box-shadow:var(--q-surface-shadow,none);-webkit-backdrop-filter:var(--q-surface-filter,none);backdrop-filter:var(--q-surface-filter,none);min-width:0;transition:border-color var(--q-duration-fast) var(--q-ease-out),transform var(--q-duration-fast) var(--q-ease-out),background var(--q-duration-fast) var(--q-ease-out),box-shadow var(--q-duration-fast) var(--q-ease-out)}\
+.q-pager:hover{border-color:var(--q-color-brand);box-shadow:var(--q-surface-hover-shadow,var(--q-surface-shadow,none));text-decoration:none;transform:translateY(-2px)}\
 .q-pager--next{text-align:right;margin-left:auto}\
 .q-pager__dir{font-size:.78rem;color:var(--q-color-muted)}\
 .q-pager__title{color:var(--q-color-fg);font-weight:var(--q-font-weight-medium)}"
@@ -573,24 +1182,24 @@ pub fn docs_extras_css() -> &'static str {
 .q-codeblock__lang{margin:0 0 .3rem;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--q-color-muted);font-weight:var(--q-font-weight-bold)}\
 /* ---- worked example (request / response / output) ---- */\
 .q-eg{display:grid;gap:.75rem;margin:1.5rem 0}\
-.q-eg__pane{border:1px solid var(--q-color-border);border-radius:var(--q-radius-lg);overflow:hidden;background:var(--q-color-surface)}\
-.q-eg__label{margin:0;padding:.45rem .85rem;font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;font-weight:var(--q-font-weight-bold);color:var(--q-color-brand);background:color-mix(in srgb,var(--q-color-brand) 7%,transparent);border-bottom:1px solid var(--q-color-border)}\
+.q-eg__pane{border:1px solid var(--q-surface-border,var(--q-color-border));border-radius:var(--q-radius-lg);overflow:hidden;background:var(--q-surface-bg,var(--q-color-surface));box-shadow:var(--q-surface-shadow,none);-webkit-backdrop-filter:var(--q-surface-filter,none);backdrop-filter:var(--q-surface-filter,none)}\
+.q-eg__label{margin:0;padding:.45rem .85rem;font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;font-weight:var(--q-font-weight-bold);color:var(--q-color-brand);background:color-mix(in srgb,var(--q-color-brand) 7%,transparent);border-bottom:1px solid var(--q-surface-border,var(--q-color-border))}\
 .q-eg__pre{margin:0;padding:.85rem;overflow-x:auto;background:var(--q-color-bg);font-family:var(--q-font-mono,monospace);font-size:.82rem;line-height:1.55;color:var(--q-color-fg)}\
 .q-eg__pre code{font:inherit;white-space:pre}\
 /* ---- ascii diagrams ---- */\
-.q-ascii-wrap{margin:1.5rem 0;border:1px solid var(--q-color-border);border-radius:var(--q-radius-lg);background:var(--q-color-surface);overflow:hidden}\
+.q-ascii-wrap{margin:1.5rem 0;border:1px solid var(--q-surface-border,var(--q-color-border));border-radius:var(--q-radius-lg);background:var(--q-surface-bg,var(--q-color-surface));box-shadow:var(--q-surface-shadow,none);-webkit-backdrop-filter:var(--q-surface-filter,none);backdrop-filter:var(--q-surface-filter,none);overflow:hidden}\
 .q-ascii{margin:0;padding:1rem 1.1rem;overflow-x:auto;background:var(--q-color-bg);font-family:var(--q-font-mono,monospace);font-size:.74rem;line-height:1.5;color:var(--q-color-fg)}\
 .q-ascii code{font:inherit;white-space:pre;display:block;min-width:max-content}\
-.q-ascii-cap{padding:.6rem 1.1rem;font-size:.82rem;color:var(--q-color-muted);border-top:1px solid var(--q-color-border)}\
+.q-ascii-cap{padding:.6rem 1.1rem;font-size:.82rem;color:var(--q-color-muted);border-top:1px solid var(--q-surface-border,var(--q-color-border))}\
 /* ---- tables ---- */\
-.q-table-wrap{margin:1.5rem 0;overflow-x:auto;border:1px solid var(--q-color-border);border-radius:var(--q-radius-lg)}\
+.q-table-wrap{margin:1.5rem 0;overflow-x:auto;border:1px solid var(--q-surface-border,var(--q-color-border));border-radius:var(--q-radius-lg);background:var(--q-surface-bg,var(--q-color-surface));box-shadow:var(--q-surface-shadow,none);-webkit-backdrop-filter:var(--q-surface-filter,none);backdrop-filter:var(--q-surface-filter,none)}\
 .q-table{border-collapse:collapse;width:100%;font-size:.9rem;min-width:34rem}\
-.q-table th,.q-table td{text-align:left;padding:.6rem .85rem;border-bottom:1px solid var(--q-color-border);vertical-align:top}\
-.q-table th{background:var(--q-color-surface);color:var(--q-color-fg);font-weight:var(--q-font-weight-bold);font-size:.78rem;text-transform:uppercase;letter-spacing:.04em}\
+.q-table th,.q-table td{text-align:left;padding:.6rem .85rem;border-bottom:1px solid var(--q-surface-border,var(--q-color-border));vertical-align:top}\
+.q-table th{background:color-mix(in srgb,var(--q-color-brand) 7%,transparent);color:var(--q-color-fg);font-weight:var(--q-font-weight-bold);font-size:.78rem;text-transform:uppercase;letter-spacing:.04em}\
 .q-table tbody tr:last-child td{border-bottom:0}\
 .q-table td:first-child{font-weight:var(--q-font-weight-medium);color:var(--q-color-fg)}\
 /* ---- callouts ---- */\
-.q-callout{display:flex;flex-direction:column;gap:.3rem;margin:1.5rem 0;padding:1rem 1.15rem;border:1px solid var(--q-color-border);border-left:3px solid var(--q-color-brand);border-radius:var(--q-radius-md);background:var(--q-color-surface)}\
+.q-callout{display:flex;flex-direction:column;gap:.3rem;margin:1.5rem 0;padding:1rem 1.15rem;border:1px solid var(--q-surface-border,var(--q-color-border));border-left:3px solid var(--q-color-brand);border-radius:min(var(--q-radius-md),.9rem);background:var(--q-surface-bg,var(--q-color-surface));box-shadow:var(--q-surface-shadow,none);-webkit-backdrop-filter:var(--q-surface-filter,none);backdrop-filter:var(--q-surface-filter,none)}\
 .q-callout--warn{border-left-color:color-mix(in srgb,var(--q-color-fg) 45%,var(--q-color-brand))}\
 .q-callout__label{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;font-weight:var(--q-font-weight-bold);color:var(--q-color-brand)}\
 .q-callout--warn .q-callout__label{color:var(--q-color-fg)}\

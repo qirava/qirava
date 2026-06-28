@@ -43,14 +43,34 @@ fn body(css: &mut Css) -> Node {
          through execute(), only via a worker. That worker serves HTTP, WebSocket, and native \
          SSR/SSG/ISR on a single port. Apache-2.0.",
         &[
-            Cta { label: "Read the DMS docs", href: "/docs/dms", solid: true },
-            Cta { label: "View on GitHub", href: GITHUB_URL, solid: false },
+            Cta {
+                label: "Read the DMS docs",
+                href: "/docs/dms",
+                solid: true,
+            },
+            Cta {
+                label: "View on GitHub",
+                href: GITHUB_URL,
+                solid: false,
+            },
         ],
         &[
-            HeroStat { value: "1", label: "execute primitive" },
-            HeroStat { value: "3", label: "auth checkpoints" },
-            HeroStat { value: "7179", label: "one port: HTTP·WS·SSR" },
-            HeroStat { value: "0", label: "third-party deps" },
+            HeroStat {
+                value: "1",
+                label: "execute primitive",
+            },
+            HeroStat {
+                value: "3",
+                label: "auth checkpoints",
+            },
+            HeroStat {
+                value: "7179",
+                label: "one port: HTTP·WS·SSR",
+            },
+            HeroStat {
+                value: "0",
+                label: "third-party deps",
+            },
         ],
     );
 
@@ -106,7 +126,8 @@ fn body(css: &mut Css) -> Node {
             Feature {
                 kicker: "ACID · WAL",
                 title: "Transactions you can trust",
-                body: "ACID semantics on top of a write-ahead log: commits are atomic and durable, \
+                body:
+                    "ACID semantics on top of a write-ahead log: commits are atomic and durable, \
                        and recovery is a replay — no separate journal service to babysit.",
             },
             Feature {
@@ -183,11 +204,31 @@ fn body(css: &mut Css) -> Node {
          module family: qpkgs (stdlib), qquill (UI), qdms (the data system), and qcloud (managed \
          control plane).",
         &[
-            ArchNode { label: "Worker", sub: "L1 · authenticate", badge: "" },
-            ArchNode { label: "execute()", sub: "L2 · function scope", badge: "" },
-            ArchNode { label: "Planner", sub: "L3 · the only db door", badge: "" },
-            ArchNode { label: "Engine", sub: "tables · WAL · indexes", badge: "" },
-            ArchNode { label: "q* modules", sub: "qpkgs·qquill·qdms·qcloud", badge: "" },
+            ArchNode {
+                label: "Worker",
+                sub: "L1 · authenticate",
+                badge: "",
+            },
+            ArchNode {
+                label: "execute()",
+                sub: "L2 · function scope",
+                badge: "",
+            },
+            ArchNode {
+                label: "Planner",
+                sub: "L3 · the only db door",
+                badge: "",
+            },
+            ArchNode {
+                label: "Engine",
+                sub: "tables · WAL · indexes",
+                badge: "",
+            },
+            ArchNode {
+                label: "q* modules",
+                sub: "qpkgs·qquill·qdms·qcloud",
+                badge: "",
+            },
         ],
     );
 
@@ -219,8 +260,16 @@ fn body(css: &mut Css) -> Node {
         "Build on the DMS",
         "Start with the getting-started guide, browse the self-describing API reference, or read \
          the three-checkpoint access model end to end.",
-        Cta { label: "Read the DMS docs", href: "/docs/dms", solid: true },
-        Cta { label: "View on GitHub", href: GITHUB_URL, solid: false },
+        Cta {
+            label: "Read the DMS docs",
+            href: "/docs/dms",
+            solid: true,
+        },
+        Cta {
+            label: "View on GitHub",
+            href: GITHUB_URL,
+            solid: false,
+        },
     );
 
     main_wrap(vec![hero, what, features, how, arch, status, closing])
@@ -229,6 +278,10 @@ fn body(css: &mut Css) -> Node {
 pub fn respond(_input: &[u8]) -> FunctionResponse {
     let mut css = Css::new();
     let content = body(&mut css);
-    let meta = Meta { title: TITLE, description: DESCRIPTION, path: "/products/dms" };
+    let meta = Meta {
+        title: TITLE,
+        description: DESCRIPTION,
+        path: "/products/dms",
+    };
     page(&meta, css, content)
 }

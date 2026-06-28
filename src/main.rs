@@ -71,123 +71,579 @@ impl Page {
 /// one list, so they can never drift. All routes are static (no `:id`/`*rest`),
 /// so the exporter writes a file for every one.
 const PAGES: &[Page] = &[
-    Page { id: "index", path: "/", render: Render::Fn(app::routes::index::respond) },
-    Page { id: "products", path: "/products", render: Render::Fn(app::routes::products::respond) },
-    Page { id: "products-dms", path: "/products/dms", render: Render::Fn(app::routes::product_dms::respond) },
-    Page { id: "products-quill", path: "/products/quill", render: Render::Fn(app::routes::product_quill::respond) },
-    Page { id: "products-stdlib", path: "/products/stdlib", render: Render::Fn(app::routes::product_stdlib::respond) },
-    Page { id: "products-cloud", path: "/products/cloud", render: Render::Fn(app::routes::product_cloud::respond) },
-    Page { id: "roadmap", path: "/roadmap", render: Render::Fn(app::routes::roadmap::respond) },
-    Page { id: "roadmap-dms", path: "/roadmap/dms", render: Render::Fn(app::routes::roadmap_dms::respond) },
-    Page { id: "roadmap-quill", path: "/roadmap/quill", render: Render::Fn(app::routes::roadmap_quill::respond) },
-    Page { id: "roadmap-stdlib", path: "/roadmap/stdlib", render: Render::Fn(app::routes::roadmap_stdlib::respond) },
-    Page { id: "roadmap-cloud", path: "/roadmap/cloud", render: Render::Fn(app::routes::roadmap_cloud::respond) },
+    Page {
+        id: "index",
+        path: "/",
+        render: Render::Fn(app::routes::index::respond),
+    },
+    Page {
+        id: "products",
+        path: "/products",
+        render: Render::Fn(app::routes::products::respond),
+    },
+    Page {
+        id: "products-dms",
+        path: "/products/dms",
+        render: Render::Fn(app::routes::product_dms::respond),
+    },
+    Page {
+        id: "products-quill",
+        path: "/products/quill",
+        render: Render::Fn(app::routes::product_quill::respond),
+    },
+    Page {
+        id: "products-stdlib",
+        path: "/products/stdlib",
+        render: Render::Fn(app::routes::product_stdlib::respond),
+    },
+    Page {
+        id: "products-cloud",
+        path: "/products/cloud",
+        render: Render::Fn(app::routes::product_cloud::respond),
+    },
+    Page {
+        id: "roadmap",
+        path: "/roadmap",
+        render: Render::Fn(app::routes::roadmap::respond),
+    },
+    Page {
+        id: "roadmap-dms",
+        path: "/roadmap/dms",
+        render: Render::Fn(app::routes::roadmap_dms::respond),
+    },
+    Page {
+        id: "roadmap-quill",
+        path: "/roadmap/quill",
+        render: Render::Fn(app::routes::roadmap_quill::respond),
+    },
+    Page {
+        id: "roadmap-stdlib",
+        path: "/roadmap/stdlib",
+        render: Render::Fn(app::routes::roadmap_stdlib::respond),
+    },
+    Page {
+        id: "roadmap-cloud",
+        path: "/roadmap/cloud",
+        render: Render::Fn(app::routes::roadmap_cloud::respond),
+    },
     // Docs hub + the data-driven per-product manual (content in routes::docs_content).
-    Page { id: "docs", path: "/docs", render: Render::Fn(app::routes::docs::respond) },
-    Page { id: "docs-dms", path: "/docs/dms", render: Render::Doc },
-    Page { id: "docs-dms-install", path: "/docs/dms/install", render: Render::Doc },
-    Page { id: "docs-dms-quick-start", path: "/docs/dms/quick-start", render: Render::Doc },
-    Page { id: "docs-dms-configuration", path: "/docs/dms/configuration", render: Render::Doc },
-    Page { id: "docs-dms-tuning", path: "/docs/dms/tuning", render: Render::Doc },
-    Page { id: "docs-dms-concepts", path: "/docs/dms/concepts", render: Render::Doc },
-    Page { id: "docs-dms-access-model-overview", path: "/docs/dms/access-model-overview", render: Render::Doc },
-    Page { id: "docs-dms-worker-pipeline", path: "/docs/dms/worker-pipeline", render: Render::Doc },
-    Page { id: "docs-dms-execute-model", path: "/docs/dms/execute-model", render: Render::Doc },
-    Page { id: "docs-dms-architecture-overview", path: "/docs/dms/architecture-overview", render: Render::Doc },
-    Page { id: "docs-dms-architecture-security", path: "/docs/dms/architecture-security", render: Render::Doc },
-    Page { id: "docs-dms-embedded-and-sync", path: "/docs/dms/embedded-and-sync", render: Render::Doc },
-    Page { id: "docs-dms-qql-basics", path: "/docs/dms/qql-basics", render: Render::Doc },
-    Page { id: "docs-dms-qql-reading-filters", path: "/docs/dms/qql-reading-filters", render: Render::Doc },
-    Page { id: "docs-dms-qql-reading-streaming", path: "/docs/dms/qql-reading-streaming", render: Render::Doc },
-    Page { id: "docs-dms-qql-reading-sort-index", path: "/docs/dms/qql-reading-sort-index", render: Render::Doc },
-    Page { id: "docs-dms-qql-reading-joins", path: "/docs/dms/qql-reading-joins", render: Render::Doc },
-    Page { id: "docs-dms-qql-search-inverted", path: "/docs/dms/qql-search-inverted", render: Render::Doc },
-    Page { id: "docs-dms-qql-graph-traverse", path: "/docs/dms/qql-graph-traverse", render: Render::Doc },
-    Page { id: "docs-dms-qql-vector-ann", path: "/docs/dms/qql-vector-ann", render: Render::Doc },
-    Page { id: "docs-dms-qql-writing-acid", path: "/docs/dms/qql-writing-acid", render: Render::Doc },
-    Page { id: "docs-dms-qql-ddl-tables", path: "/docs/dms/qql-ddl-tables", render: Render::Doc },
-    Page { id: "docs-dms-qql-ddl-indexes", path: "/docs/dms/qql-ddl-indexes", render: Render::Doc },
-    Page { id: "docs-dms-qql-return-shaping", path: "/docs/dms/qql-return-shaping", render: Render::Doc },
-    Page { id: "docs-dms-qql-batch", path: "/docs/dms/qql-batch", render: Render::Doc },
-    Page { id: "docs-dms-qql-plan-cache", path: "/docs/dms/qql-plan-cache", render: Render::Doc },
-    Page { id: "docs-dms-qql-ttl-sweep", path: "/docs/dms/qql-ttl-sweep", render: Render::Doc },
-    Page { id: "docs-dms-qql-wal-recovery", path: "/docs/dms/qql-wal-recovery", render: Render::Doc },
-    Page { id: "docs-dms-session-tokens-lifecycle", path: "/docs/dms/session-tokens-lifecycle", render: Render::Doc },
-    Page { id: "docs-dms-hmac-signed-api-keys", path: "/docs/dms/hmac-signed-api-keys", render: Render::Doc },
-    Page { id: "docs-dms-api-keys-minting-rotation", path: "/docs/dms/api-keys-minting-rotation", render: Render::Doc },
-    Page { id: "docs-dms-rbac-roles-onboarding", path: "/docs/dms/rbac-roles-onboarding", render: Render::Doc },
-    Page { id: "docs-dms-table-level-rbac-grants", path: "/docs/dms/table-level-rbac-grants", render: Render::Doc },
-    Page { id: "docs-dms-response-envelope", path: "/docs/dms/response-envelope", render: Render::Doc },
-    Page { id: "docs-dms-api-spec-catalog", path: "/docs/dms/api-spec-catalog", render: Render::Doc },
-    Page { id: "docs-dms-openapi-projection", path: "/docs/dms/openapi-projection", render: Render::Doc },
-    Page { id: "docs-dms-system-catalogs", path: "/docs/dms/system-catalogs", render: Render::Doc },
-    Page { id: "docs-dms-scheduler-jobs", path: "/docs/dms/scheduler-jobs", render: Render::Doc },
-    Page { id: "docs-dms-studio-overview", path: "/docs/dms/studio-overview", render: Render::Doc },
-    Page { id: "docs-dms-studio-authentication", path: "/docs/dms/studio-authentication", render: Render::Doc },
-    Page { id: "docs-dms-studio-rbac", path: "/docs/dms/studio-rbac", render: Render::Doc },
-    Page { id: "docs-dms-studio-ui-architecture", path: "/docs/dms/studio-ui-architecture", render: Render::Doc },
-    Page { id: "docs-quill", path: "/docs/quill", render: Render::Doc },
-    Page { id: "docs-quill-installation", path: "/docs/quill/installation", render: Render::Doc },
-    Page { id: "docs-quill-project-structure", path: "/docs/quill/project-structure", render: Render::Doc },
-    Page { id: "docs-quill-cli-scaffolding", path: "/docs/quill/cli-scaffolding", render: Render::Doc },
-    Page { id: "docs-quill-view-authoring", path: "/docs/quill/view-authoring", render: Render::Doc },
-    Page { id: "docs-quill-styling-css", path: "/docs/quill/styling-css", render: Render::Doc },
-    Page { id: "docs-quill-design-tokens-theming", path: "/docs/quill/design-tokens-theming", render: Render::Doc },
-    Page { id: "docs-quill-components-ui", path: "/docs/quill/components-ui", render: Render::Doc },
-    Page { id: "docs-quill-styled-components", path: "/docs/quill/styled-components", render: Render::Doc },
-    Page { id: "docs-quill-components", path: "/docs/quill/components", render: Render::Doc },
-    Page { id: "docs-quill-islands-hydration", path: "/docs/quill/islands-hydration", render: Render::Doc },
-    Page { id: "docs-quill-signals", path: "/docs/quill/signals", render: Render::Doc },
-    Page { id: "docs-quill-client-runtime", path: "/docs/quill/client-runtime", render: Render::Doc },
-    Page { id: "docs-quill-static-export-ssg", path: "/docs/quill/static-export-ssg", render: Render::Doc },
-    Page { id: "docs-quill-examples-patterns", path: "/docs/quill/examples-patterns", render: Render::Doc },
-    Page { id: "docs-stdlib", path: "/docs/stdlib", render: Render::Doc },
-    Page { id: "docs-stdlib-substrate", path: "/docs/stdlib/substrate", render: Render::Doc },
-    Page { id: "docs-stdlib-dependencies", path: "/docs/stdlib/dependencies", render: Render::Doc },
-    Page { id: "docs-stdlib-qarray", path: "/docs/stdlib/qarray", render: Render::Doc },
-    Page { id: "docs-stdlib-qobject", path: "/docs/stdlib/qobject", render: Render::Doc },
-    Page { id: "docs-stdlib-qstring", path: "/docs/stdlib/qstring", render: Render::Doc },
-    Page { id: "docs-stdlib-qmath", path: "/docs/stdlib/qmath", render: Render::Doc },
-    Page { id: "docs-stdlib-qnumber", path: "/docs/stdlib/qnumber", render: Render::Doc },
-    Page { id: "docs-stdlib-qconvert", path: "/docs/stdlib/qconvert", render: Render::Doc },
-    Page { id: "docs-stdlib-qencoding", path: "/docs/stdlib/qencoding", render: Render::Doc },
-    Page { id: "docs-stdlib-qcrypto", path: "/docs/stdlib/qcrypto", render: Render::Doc },
-    Page { id: "docs-stdlib-qregex", path: "/docs/stdlib/qregex", render: Render::Doc },
-    Page { id: "docs-stdlib-qtime", path: "/docs/stdlib/qtime", render: Render::Doc },
-    Page { id: "docs-stdlib-quuid", path: "/docs/stdlib/quuid", render: Render::Doc },
-    Page { id: "docs-cloud", path: "/docs/cloud", render: Render::Doc },
-    Page { id: "docs-cloud-control-plane-model", path: "/docs/cloud/control-plane-model", render: Render::Doc },
-    Page { id: "docs-cloud-orchestration-functions", path: "/docs/cloud/orchestration-functions", render: Render::Doc },
-    Page { id: "docs-cloud-placement-binpack", path: "/docs/cloud/placement-binpack", render: Render::Doc },
-    Page { id: "docs-cloud-architecture", path: "/docs/cloud/architecture", render: Render::Doc },
-    Page { id: "docs-cloud-scaling-vertical", path: "/docs/cloud/scaling-vertical", render: Render::Doc },
-    Page { id: "docs-cloud-scaling-horizontal", path: "/docs/cloud/scaling-horizontal", render: Render::Doc },
-    Page { id: "docs-cloud-mode-switching", path: "/docs/cloud/mode-switching", render: Render::Doc },
-    Page { id: "docs-cloud-scaling-architecture", path: "/docs/cloud/scaling-architecture", render: Render::Doc },
-    Page { id: "docs-cloud-suspension-termination", path: "/docs/cloud/suspension-termination", render: Render::Doc },
-    Page { id: "docs-cloud-billing-metering", path: "/docs/cloud/billing-metering", render: Render::Doc },
-    Page { id: "docs-cloud-console-ui", path: "/docs/cloud/console-ui", render: Render::Doc },
-    Page { id: "docs-cloud-rbac-enforcement", path: "/docs/cloud/rbac-enforcement", render: Render::Doc },
-    Page { id: "docs-cloud-audit-trail", path: "/docs/cloud/audit-trail", render: Render::Doc },
-    Page { id: "docs-cloud-built-vs-planned", path: "/docs/cloud/built-vs-planned", render: Render::Doc },
+    Page {
+        id: "docs",
+        path: "/docs",
+        render: Render::Fn(app::routes::docs::respond),
+    },
+    Page {
+        id: "docs-dms",
+        path: "/docs/dms",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-install",
+        path: "/docs/dms/install",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-quick-start",
+        path: "/docs/dms/quick-start",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-configuration",
+        path: "/docs/dms/configuration",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-tuning",
+        path: "/docs/dms/tuning",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-concepts",
+        path: "/docs/dms/concepts",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-access-model-overview",
+        path: "/docs/dms/access-model-overview",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-worker-pipeline",
+        path: "/docs/dms/worker-pipeline",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-execute-model",
+        path: "/docs/dms/execute-model",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-architecture-overview",
+        path: "/docs/dms/architecture-overview",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-architecture-security",
+        path: "/docs/dms/architecture-security",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-embedded-and-sync",
+        path: "/docs/dms/embedded-and-sync",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-qql-basics",
+        path: "/docs/dms/qql-basics",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-qql-reading-filters",
+        path: "/docs/dms/qql-reading-filters",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-qql-reading-streaming",
+        path: "/docs/dms/qql-reading-streaming",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-qql-reading-sort-index",
+        path: "/docs/dms/qql-reading-sort-index",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-qql-reading-joins",
+        path: "/docs/dms/qql-reading-joins",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-qql-search-inverted",
+        path: "/docs/dms/qql-search-inverted",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-qql-graph-traverse",
+        path: "/docs/dms/qql-graph-traverse",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-qql-vector-ann",
+        path: "/docs/dms/qql-vector-ann",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-qql-writing-acid",
+        path: "/docs/dms/qql-writing-acid",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-qql-ddl-tables",
+        path: "/docs/dms/qql-ddl-tables",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-qql-ddl-indexes",
+        path: "/docs/dms/qql-ddl-indexes",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-qql-return-shaping",
+        path: "/docs/dms/qql-return-shaping",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-qql-batch",
+        path: "/docs/dms/qql-batch",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-qql-plan-cache",
+        path: "/docs/dms/qql-plan-cache",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-qql-ttl-sweep",
+        path: "/docs/dms/qql-ttl-sweep",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-qql-wal-recovery",
+        path: "/docs/dms/qql-wal-recovery",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-session-tokens-lifecycle",
+        path: "/docs/dms/session-tokens-lifecycle",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-hmac-signed-api-keys",
+        path: "/docs/dms/hmac-signed-api-keys",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-api-keys-minting-rotation",
+        path: "/docs/dms/api-keys-minting-rotation",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-rbac-roles-onboarding",
+        path: "/docs/dms/rbac-roles-onboarding",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-table-level-rbac-grants",
+        path: "/docs/dms/table-level-rbac-grants",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-response-envelope",
+        path: "/docs/dms/response-envelope",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-api-spec-catalog",
+        path: "/docs/dms/api-spec-catalog",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-openapi-projection",
+        path: "/docs/dms/openapi-projection",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-system-catalogs",
+        path: "/docs/dms/system-catalogs",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-scheduler-jobs",
+        path: "/docs/dms/scheduler-jobs",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-studio-overview",
+        path: "/docs/dms/studio-overview",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-studio-authentication",
+        path: "/docs/dms/studio-authentication",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-studio-rbac",
+        path: "/docs/dms/studio-rbac",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-dms-studio-ui-architecture",
+        path: "/docs/dms/studio-ui-architecture",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-quill",
+        path: "/docs/quill",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-quill-installation",
+        path: "/docs/quill/installation",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-quill-project-structure",
+        path: "/docs/quill/project-structure",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-quill-cli-scaffolding",
+        path: "/docs/quill/cli-scaffolding",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-quill-view-authoring",
+        path: "/docs/quill/view-authoring",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-quill-styling-css",
+        path: "/docs/quill/styling-css",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-quill-design-tokens-theming",
+        path: "/docs/quill/design-tokens-theming",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-quill-components-ui",
+        path: "/docs/quill/components-ui",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-quill-styled-components",
+        path: "/docs/quill/styled-components",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-quill-components",
+        path: "/docs/quill/components",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-quill-islands-hydration",
+        path: "/docs/quill/islands-hydration",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-quill-signals",
+        path: "/docs/quill/signals",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-quill-client-runtime",
+        path: "/docs/quill/client-runtime",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-quill-static-export-ssg",
+        path: "/docs/quill/static-export-ssg",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-quill-examples-patterns",
+        path: "/docs/quill/examples-patterns",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-stdlib",
+        path: "/docs/stdlib",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-stdlib-substrate",
+        path: "/docs/stdlib/substrate",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-stdlib-dependencies",
+        path: "/docs/stdlib/dependencies",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-stdlib-qarray",
+        path: "/docs/stdlib/qarray",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-stdlib-qobject",
+        path: "/docs/stdlib/qobject",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-stdlib-qstring",
+        path: "/docs/stdlib/qstring",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-stdlib-qmath",
+        path: "/docs/stdlib/qmath",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-stdlib-qnumber",
+        path: "/docs/stdlib/qnumber",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-stdlib-qconvert",
+        path: "/docs/stdlib/qconvert",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-stdlib-qencoding",
+        path: "/docs/stdlib/qencoding",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-stdlib-qcrypto",
+        path: "/docs/stdlib/qcrypto",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-stdlib-qregex",
+        path: "/docs/stdlib/qregex",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-stdlib-qtime",
+        path: "/docs/stdlib/qtime",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-stdlib-quuid",
+        path: "/docs/stdlib/quuid",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-cloud",
+        path: "/docs/cloud",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-cloud-control-plane-model",
+        path: "/docs/cloud/control-plane-model",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-cloud-orchestration-functions",
+        path: "/docs/cloud/orchestration-functions",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-cloud-placement-binpack",
+        path: "/docs/cloud/placement-binpack",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-cloud-architecture",
+        path: "/docs/cloud/architecture",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-cloud-scaling-vertical",
+        path: "/docs/cloud/scaling-vertical",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-cloud-scaling-horizontal",
+        path: "/docs/cloud/scaling-horizontal",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-cloud-mode-switching",
+        path: "/docs/cloud/mode-switching",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-cloud-scaling-architecture",
+        path: "/docs/cloud/scaling-architecture",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-cloud-suspension-termination",
+        path: "/docs/cloud/suspension-termination",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-cloud-billing-metering",
+        path: "/docs/cloud/billing-metering",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-cloud-console-ui",
+        path: "/docs/cloud/console-ui",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-cloud-rbac-enforcement",
+        path: "/docs/cloud/rbac-enforcement",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-cloud-audit-trail",
+        path: "/docs/cloud/audit-trail",
+        render: Render::Doc,
+    },
+    Page {
+        id: "docs-cloud-built-vs-planned",
+        path: "/docs/cloud/built-vs-planned",
+        render: Render::Doc,
+    },
     // Component showcase, mounted under the Quill docs (the standalone
     // /components index row is gone — the docs sidebar lists each component).
-    Page { id: "components-button", path: "/docs/quill/components/button", render: Render::Fn(app::routes::components::respond_button) },
-    Page { id: "components-badge", path: "/docs/quill/components/badge", render: Render::Fn(app::routes::components::respond_badge) },
-    Page { id: "components-card", path: "/docs/quill/components/card", render: Render::Fn(app::routes::components::respond_card) },
-    Page { id: "components-tabs", path: "/docs/quill/components/tabs", render: Render::Fn(app::routes::components::respond_tabs) },
-    Page { id: "components-alert", path: "/docs/quill/components/alert", render: Render::Fn(app::routes::components::respond_alert) },
-    Page { id: "components-stat", path: "/docs/quill/components/stat", render: Render::Fn(app::routes::components::respond_stat) },
-    Page { id: "components-list", path: "/docs/quill/components/list", render: Render::Fn(app::routes::components::respond_list) },
-    Page { id: "components-divider", path: "/docs/quill/components/divider", render: Render::Fn(app::routes::components::respond_divider) },
-    Page { id: "components-breadcrumb", path: "/docs/quill/components/breadcrumb", render: Render::Fn(app::routes::components::respond_breadcrumb) },
-    Page { id: "components-dialog", path: "/docs/quill/components/dialog", render: Render::Fn(app::routes::components::respond_dialog) },
-    Page { id: "components-menu", path: "/docs/quill/components/menu", render: Render::Fn(app::routes::components::respond_menu) },
-    Page { id: "components-tooltip", path: "/docs/quill/components/tooltip", render: Render::Fn(app::routes::components::respond_tooltip) },
-    Page { id: "components-checkbox", path: "/docs/quill/components/checkbox", render: Render::Fn(app::routes::components::respond_checkbox) },
-    Page { id: "components-switch", path: "/docs/quill/components/switch", render: Render::Fn(app::routes::components::respond_switch) },
-    Page { id: "components-accordion", path: "/docs/quill/components/accordion", render: Render::Fn(app::routes::components::respond_accordion) },
-    Page { id: "api", path: "/api", render: Render::Fn(app::routes::api::respond) },
+    Page {
+        id: "components-button",
+        path: "/docs/quill/components/button",
+        render: Render::Fn(app::routes::components::respond_button),
+    },
+    Page {
+        id: "components-badge",
+        path: "/docs/quill/components/badge",
+        render: Render::Fn(app::routes::components::respond_badge),
+    },
+    Page {
+        id: "components-card",
+        path: "/docs/quill/components/card",
+        render: Render::Fn(app::routes::components::respond_card),
+    },
+    Page {
+        id: "components-tabs",
+        path: "/docs/quill/components/tabs",
+        render: Render::Fn(app::routes::components::respond_tabs),
+    },
+    Page {
+        id: "components-alert",
+        path: "/docs/quill/components/alert",
+        render: Render::Fn(app::routes::components::respond_alert),
+    },
+    Page {
+        id: "components-stat",
+        path: "/docs/quill/components/stat",
+        render: Render::Fn(app::routes::components::respond_stat),
+    },
+    Page {
+        id: "components-list",
+        path: "/docs/quill/components/list",
+        render: Render::Fn(app::routes::components::respond_list),
+    },
+    Page {
+        id: "components-divider",
+        path: "/docs/quill/components/divider",
+        render: Render::Fn(app::routes::components::respond_divider),
+    },
+    Page {
+        id: "components-breadcrumb",
+        path: "/docs/quill/components/breadcrumb",
+        render: Render::Fn(app::routes::components::respond_breadcrumb),
+    },
+    Page {
+        id: "components-dialog",
+        path: "/docs/quill/components/dialog",
+        render: Render::Fn(app::routes::components::respond_dialog),
+    },
+    Page {
+        id: "components-menu",
+        path: "/docs/quill/components/menu",
+        render: Render::Fn(app::routes::components::respond_menu),
+    },
+    Page {
+        id: "components-tooltip",
+        path: "/docs/quill/components/tooltip",
+        render: Render::Fn(app::routes::components::respond_tooltip),
+    },
+    Page {
+        id: "components-checkbox",
+        path: "/docs/quill/components/checkbox",
+        render: Render::Fn(app::routes::components::respond_checkbox),
+    },
+    Page {
+        id: "components-switch",
+        path: "/docs/quill/components/switch",
+        render: Render::Fn(app::routes::components::respond_switch),
+    },
+    Page {
+        id: "components-accordion",
+        path: "/docs/quill/components/accordion",
+        render: Render::Fn(app::routes::components::respond_accordion),
+    },
+    Page {
+        id: "api",
+        path: "/api",
+        render: Render::Fn(app::routes::api::respond),
+    },
 ];
 
 /// Write a **theme-aware favicon** to `dir/favicon.svg`, overwriting the flat one
@@ -264,17 +720,27 @@ fn cmd_build(out_dir: Option<&str>) -> std::io::Result<()> {
     };
     let report = export_static(&plan, &pages)?;
 
-    println!("Exported {} page(s) to {}/", report.pages_written.len(), out.display());
+    println!(
+        "Exported {} page(s) to {}/",
+        report.pages_written.len(),
+        out.display()
+    );
     for rel in &report.pages_written {
         println!("  {}/{}", out.display(), rel);
     }
     if report.assets_copied > 0 {
-        println!("Copied {} asset(s) from {}/", report.assets_copied, PUBLIC_DIR);
+        println!(
+            "Copied {} asset(s) from {}/",
+            report.assets_copied, PUBLIC_DIR
+        );
     }
     for skipped in &report.skipped_dynamic {
         println!("  skipped dynamic route {skipped} (no static file)");
     }
-    println!("Deploy {}/ to any static host — it serves with no DMS running.", out.display());
+    println!(
+        "Deploy {}/ to any static host — it serves with no DMS running.",
+        out.display()
+    );
     Ok(())
 }
 

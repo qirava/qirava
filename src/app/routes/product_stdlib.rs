@@ -39,14 +39,34 @@ fn body(css: &mut Css) -> Node {
          sit on top. Crypto, encoding, regex, and arbitrary-precision numbers are all written from \
          scratch. Products depend on q*; q* never depends on a product.",
         &[
-            Cta { label: "Read the concepts", href: "/docs/stdlib", solid: true },
-            Cta { label: "View on GitHub", href: GITHUB_URL, solid: false },
+            Cta {
+                label: "Read the concepts",
+                href: "/docs/stdlib",
+                solid: true,
+            },
+            Cta {
+                label: "View on GitHub",
+                href: GITHUB_URL,
+                solid: false,
+            },
         ],
         &[
-            HeroStat { value: "13", label: "zero-dep crates" },
-            HeroStat { value: "2", label: "substrate crates" },
-            HeroStat { value: "1", label: "way the arrow points" },
-            HeroStat { value: "0", label: "third-party deps" },
+            HeroStat {
+                value: "13",
+                label: "zero-dep crates",
+            },
+            HeroStat {
+                value: "2",
+                label: "substrate crates",
+            },
+            HeroStat {
+                value: "1",
+                label: "way the arrow points",
+            },
+            HeroStat {
+                value: "0",
+                label: "third-party deps",
+            },
         ],
     );
 
@@ -64,7 +84,8 @@ fn body(css: &mut Css) -> Node {
             Feature {
                 kicker: "qexec",
                 title: "The bounded executor",
-                body: "Every call runs inside qexec, the runtime that governs memory and work with \
+                body:
+                    "Every call runs inside qexec, the runtime that governs memory and work with \
                        explicit resource budgets. Nothing executes unbounded.",
             },
             Feature {
@@ -76,7 +97,8 @@ fn body(css: &mut Css) -> Node {
             Feature {
                 kicker: "eleven utilities",
                 title: "Batteries, no dependencies",
-                body: "array, object, string, math, number, convert, crypto, encoding, regex, \
+                body:
+                    "array, object, string, math, number, convert, crypto, encoding, regex, \
                        time, and uuid — each replacing a third-party package with first-party code.",
             },
         ],
@@ -172,10 +194,26 @@ fn body(css: &mut Css) -> Node {
          layer on top of the value model, and the products sit above everything. The dependency \
          arrow only points one way, so the graph is acyclic by rule.",
         &[
-            ArchNode { label: "qexec", sub: "bounded executor", badge: "SUBSTRATE" },
-            ArchNode { label: "qvalue", sub: "value model + ABI", badge: "SUBSTRATE" },
-            ArchNode { label: "11 utilities", sub: "crypto · regex · uuid …", badge: "STDLIB" },
-            ArchNode { label: "products", sub: "DMS · Quill · Cloud", badge: "ON TOP" },
+            ArchNode {
+                label: "qexec",
+                sub: "bounded executor",
+                badge: "SUBSTRATE",
+            },
+            ArchNode {
+                label: "qvalue",
+                sub: "value model + ABI",
+                badge: "SUBSTRATE",
+            },
+            ArchNode {
+                label: "11 utilities",
+                sub: "crypto · regex · uuid …",
+                badge: "STDLIB",
+            },
+            ArchNode {
+                label: "products",
+                sub: "DMS · Quill · Cloud",
+                badge: "ON TOP",
+            },
         ],
     );
 
@@ -217,6 +255,10 @@ fn body(css: &mut Css) -> Node {
 pub fn respond(_input: &[u8]) -> FunctionResponse {
     let mut css = Css::new();
     let content = body(&mut css);
-    let meta = Meta { title: TITLE, description: DESCRIPTION, path: "/products/stdlib" };
+    let meta = Meta {
+        title: TITLE,
+        description: DESCRIPTION,
+        path: "/products/stdlib",
+    };
     page(&meta, css, content)
 }

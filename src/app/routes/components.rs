@@ -21,8 +21,8 @@
 use qexec::FunctionResponse;
 use qquill_design::{
     Accordion, Alert, Badge, Breadcrumb, Button, Card, Checkbox, Crumb, Dialog, Divider, Effect,
-    List, ListItem, Menu, MenuItem, Radius, Section as AccSection, Severity, Size, Stat, Styled,
-    SwitchGroup, Tabs, Tone, Tooltip, Trend, Variant, Variants,
+    List, ListItem, Menu, MenuItem, Motion, Radius, Section as AccSection, Severity, Size, Stat,
+    Styled, SwitchGroup, Tabs, Tone, Tooltip, Trend, Variant, Variants,
 };
 use qquill_docs::CodeBlock;
 use qquill_view::{el, island, text, Node, Trigger};
@@ -59,7 +59,10 @@ struct Playground<'a> {
 
 /// A segmented control group for one axis: pressed = the default at SSR time.
 fn control_group(axis_name: &str, axis: &Axis) -> Node {
-    let mut seg = el("div").class("pg__seg").attr("role", "group").attr("aria-label", axis.legend);
+    let mut seg = el("div")
+        .class("pg__seg")
+        .attr("role", "group")
+        .attr("aria-label", axis.legend);
     for &v in axis.values {
         let pressed = v == axis.default;
         seg = seg.child(
@@ -74,7 +77,11 @@ fn control_group(axis_name: &str, axis: &Axis) -> Node {
     }
     el("div")
         .class("pg__group")
-        .child(el("span").class("pg__legend").child(text(axis.legend.to_string())))
+        .child(
+            el("span")
+                .class("pg__legend")
+                .child(text(axis.legend.to_string())),
+        )
         .child(seg)
 }
 
@@ -106,7 +113,8 @@ fn playground(css: &mut Css, pg: &Playground) -> Node {
             for &t in pg.tone.values {
                 let styled = (pg.render_cell)(v, s, t);
                 let node = css.node(styled);
-                let active = v == pg.variant.default && s == pg.size.default && t == pg.tone.default;
+                let active =
+                    v == pg.variant.default && s == pg.size.default && t == pg.tone.default;
                 stage = stage.child(
                     el("div")
                         .class("pg__cell")
@@ -263,7 +271,7 @@ const SEVERITY_VALUES: &[&str] = &["info", "success", "warn", "danger"];
 fn comp_css() -> &'static str {
     "\
 /* ---- static preview showcase ---- */\
-.cl-preview{margin:1.25rem 0;padding:1.75rem;border:1px solid var(--q-color-border);border-radius:var(--q-radius-xl);background:radial-gradient(120% 120% at 50% 0%,var(--q-color-surface),var(--q-color-bg))}\
+.cl-preview{margin:1.25rem 0;padding:1.75rem;border:1px solid var(--q-surface-border,var(--q-color-border));border-radius:var(--q-radius-xl);background:var(--q-surface-bg,var(--q-color-surface));box-shadow:var(--q-surface-shadow,none);-webkit-backdrop-filter:var(--q-surface-filter,none);backdrop-filter:var(--q-surface-filter,none)}\
 .cl-row{display:flex;flex-wrap:wrap;align-items:center;gap:.85rem;margin:0 0 1rem}\
 .cl-row:last-child{margin-bottom:0}\
 .cl-row__label{flex:0 0 auto;min-width:6.5rem;font-size:.72rem;text-transform:uppercase;letter-spacing:.07em;font-weight:var(--q-font-weight-bold);color:var(--q-color-muted)}\
@@ -271,18 +279,33 @@ fn comp_css() -> &'static str {
 .cl-grid{display:flex;flex-wrap:wrap;gap:1rem}\
 /* ---- the live (island) demo surface ---- */\
 .cl-demo{margin:1.25rem 0}\
-.cl-demo__stage{padding:1.75rem;border:1px solid var(--q-color-border);border-radius:var(--q-radius-xl);background:radial-gradient(120% 120% at 50% 0%,var(--q-color-surface),var(--q-color-bg));display:flex;flex-wrap:wrap;gap:1rem;align-items:center}\
+.cl-demo__stage{padding:1.75rem;border:1px solid var(--q-surface-border,var(--q-color-border));border-radius:var(--q-radius-xl);background:var(--q-surface-bg,var(--q-color-surface));box-shadow:var(--q-surface-shadow,none);-webkit-backdrop-filter:var(--q-surface-filter,none);backdrop-filter:var(--q-surface-filter,none);display:flex;flex-wrap:wrap;gap:1rem;align-items:center}\
 /* ---- 'Theme it': a SCOPED demo surface + its segmented controls ---- */\
-.cl-themeit{margin:1.25rem 0;border:1px solid var(--q-color-border);border-radius:var(--q-radius-xl);overflow:hidden}\
-.cl-themeit__surface{display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:center;min-height:9rem;padding:2rem;background:var(--q-surf-bg,var(--q-color-surface));color:var(--q-surf-fg,var(--q-color-fg));border-bottom:1px solid var(--q-surf-border,var(--q-color-border));box-shadow:var(--q-surf-shadow,none);-webkit-backdrop-filter:blur(var(--q-surf-blur,0px));backdrop-filter:blur(var(--q-surf-blur,0px));transition:background var(--q-duration-base) var(--q-ease-out),color var(--q-duration-base) var(--q-ease-out),border-color var(--q-duration-base) var(--q-ease-out)}\
-.cl-tc{display:flex;flex-wrap:wrap;gap:1.5rem;padding:1rem 1.25rem;background:var(--q-color-surface)}\
-.cl-tc__group{display:flex;flex-direction:column;gap:.4rem}\
-.cl-tc__legend{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--q-color-muted);font-weight:var(--q-font-weight-bold)}\
-.cl-tc__seg{display:inline-flex;border:1px solid var(--q-color-border);border-radius:var(--q-radius-md);overflow:hidden}\
-.cl-tc__opt{appearance:none;border:0;background:transparent;color:var(--q-color-muted);font:inherit;font-size:.82rem;padding:.35rem .7rem;cursor:pointer;transition:background-color var(--q-duration-fast) var(--q-ease-out),color var(--q-duration-fast) var(--q-ease-out)}\
-.cl-tc__opt+.cl-tc__opt{border-left:1px solid var(--q-color-border)}\
-.cl-tc__opt:hover{color:var(--q-color-fg)}\
-.cl-tc__opt[aria-pressed=\"true\"]{background:var(--q-color-brand);color:var(--q-color-on-brand)}"
+.cl-themeit{margin:1.25rem 0;border:1px solid var(--q-color-border);border-radius:var(--q-radius-xl);background:var(--q-color-surface);box-shadow:var(--q-shadow-sm);overflow:hidden}\
+.cl-themeit__surface{display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:center;min-height:11rem;padding:var(--q-space-6);background:color-mix(in srgb,var(--q-color-bg) 96%,var(--q-color-brand) 4%);border-bottom:1px solid var(--q-color-border);transition:padding var(--q-duration-base) var(--q-ease-out),background var(--q-duration-base) var(--q-ease-out),border-color var(--q-duration-base) var(--q-ease-out)}\
+.cl-themeit__surface :where(.qq-badge,.qq-btn,.qq-card){box-shadow:var(--q-surface-shadow,none);-webkit-backdrop-filter:var(--q-surface-filter,none);backdrop-filter:var(--q-surface-filter,none);transition:background var(--q-duration-base) var(--q-ease-out),background-color var(--q-duration-base) var(--q-ease-out),border-color var(--q-duration-base) var(--q-ease-out),box-shadow var(--q-duration-base) var(--q-ease-out),color var(--q-duration-base) var(--q-ease-out),transform var(--q-duration-base) var(--q-ease-out),filter var(--q-duration-base) var(--q-ease-out)}\
+.cl-themeit__surface .qq-badge.qq-badge--soft,.cl-themeit__surface .qq-btn.qq-btn--soft,.cl-themeit__surface .qq-btn.qq-btn--neutral.qq-btn--solid{background:var(--q-surface-ring,var(--q-color-surface));border-color:var(--q-surface-border,var(--q-color-border))}\
+.cl-themeit__surface .qq-card{background:var(--q-surface-bg,var(--q-color-surface));border-color:var(--q-surface-border,var(--q-color-border));box-shadow:var(--q-surface-shadow,none)}\
+.cl-themeit__surface[data-q-surface=\"gradient\"] .qq-badge.qq-badge--soft,.cl-themeit__surface[data-q-surface=\"gradient\"] .qq-btn.qq-btn--soft,.cl-themeit__surface[data-q-surface=\"gradient\"] .qq-btn.qq-btn--neutral.qq-btn--solid{background:var(--q-surface-bg,var(--q-color-surface))}\
+.cl-themeit__surface[data-q-surface=\"gradient\"] :where(.qq-btn--solid,.qq-badge--solid){background:linear-gradient(135deg,var(--q-color-brand),var(--q-color-accent));border-color:color-mix(in srgb,var(--q-color-brand) 70%,var(--q-color-accent));box-shadow:0 18px 46px -26px color-mix(in srgb,var(--q-color-brand) 88%,transparent),inset 0 1px 0 color-mix(in srgb,var(--q-color-on-brand) 24%,transparent)}\
+.cl-themeit__surface[data-q-surface=\"gradient\"] :where(.qq-btn--outline,.qq-badge--outline){background:linear-gradient(var(--q-color-surface),var(--q-color-surface)) padding-box,linear-gradient(135deg,var(--q-color-brand),var(--q-color-accent)) border-box;border-color:transparent}\
+.cl-themeit__surface[data-q-surface=\"glass\"]{background:color-mix(in srgb,var(--q-color-surface) 86%,transparent);-webkit-backdrop-filter:saturate(1.25) blur(16px);backdrop-filter:saturate(1.25) blur(16px)}\
+.cl-themeit__surface[data-q-motion=\"snappy\"] :where(.qq-btn,.qq-badge,.qq-card):hover{transform:translateY(-1px)}\
+.cl-themeit__surface[data-q-motion=\"playful\"] :where(.qq-btn,.qq-badge,.qq-card):hover{transform:translateY(-2px) scale(1.035) rotate(-.35deg)}\
+.cl-themeit__surface[data-q-motion=\"none\"] :where(.qq-btn,.qq-badge,.qq-card),.cl-themeit__surface[data-q-motion=\"none\"] :where(.qq-btn,.qq-badge,.qq-card):hover{transform:none;transition:none}\
+.cl-tc{display:flex;flex-wrap:wrap;gap:var(--q-space-5);padding:var(--q-space-4) var(--q-space-5);background:var(--q-color-surface)}\
+.cl-tc__group{display:flex;flex-direction:column;gap:var(--q-space-2)}\
+.cl-tc__legend{font-size:var(--q-font-size-xs);text-transform:uppercase;letter-spacing:.08em;color:var(--q-color-muted);font-weight:var(--q-font-weight-bold)}\
+.cl-tc__seg{display:inline-flex;border:1px solid var(--q-color-border);border-radius:min(var(--q-radius-md),calc(var(--q-control-h,2.5rem) * .28));overflow:hidden}\
+.cl-tc__opt{appearance:none;display:flex;align-items:center;justify-content:center;min-height:calc(var(--q-control-h,2.5rem) - var(--q-space-2));border:0;background:transparent;color:var(--q-color-muted);font:inherit;font-size:var(--q-font-size-sm);padding:0 var(--q-space-3);cursor:pointer;transition:background-color var(--q-duration-fast) var(--q-ease-out),color var(--q-duration-fast) var(--q-ease-out)}\
+	.cl-tc__opt+.cl-tc__opt{border-left:1px solid var(--q-color-border)}\
+	.cl-tc__opt:hover{color:var(--q-color-fg)}\
+	.cl-tc__opt[aria-pressed=\"true\"]{background:var(--q-color-brand);color:var(--q-color-on-brand)}\
+	/* ---- live code panes for Playground + Theme it ---- */\
+	.q-doc-body .pg__codewrap,.cl-themeit__code{position:relative;border-top:1px solid var(--q-surface-border,var(--q-color-border));background:var(--q-surface-bg,var(--q-color-surface));box-shadow:inset 0 1px 0 color-mix(in srgb,var(--q-color-fg) 4%,transparent)}\
+	.q-doc-body .pg .q-code,.cl-themeit__code .q-code{display:block;width:100%;min-height:calc(var(--q-control-h,2.5rem) * 3.2);max-height:24rem;margin:0;border:0;border-radius:0;background:var(--q-surface-bg,var(--q-color-surface));color:var(--q-color-fg);padding:var(--q-space-4) var(--q-space-5);overflow:auto;white-space:pre;box-shadow:none}\
+	.q-doc-body .pg .q-code code,.cl-themeit__code .q-code code{display:block;min-width:max-content;font-family:inherit;color:inherit}\
+	.cl-themeit__code{border-top-color:var(--q-surface-border,var(--q-color-border))}"
 }
 
 /// One labelled row in the static preview (`label:` + the rendered cells).
@@ -293,7 +316,11 @@ fn preview_row(label: &str, cells: Vec<Node>) -> Node {
     }
     el("div")
         .class("cl-row")
-        .child(el("span").class("cl-row__label").child(text(label.to_string())))
+        .child(
+            el("span")
+                .class("cl-row__label")
+                .child(text(label.to_string())),
+        )
         .child(grid)
 }
 
@@ -319,29 +346,127 @@ fn tc_group(legend: &str, axis: &str, values: &[(&str, &str)], default: &str) ->
     }
     el("div")
         .class("cl-tc__group")
-        .child(el("span").class("cl-tc__legend").child(text(legend.to_string())))
+        .child(
+            el("span")
+                .class("cl-tc__legend")
+                .child(text(legend.to_string())),
+        )
         .child(seg)
 }
 
-/// The "Theme it" section: the given `preview` wrapped in a `[data-q-demo-surface]`
-/// box whose `data-q-size`/`data-q-radius`/`data-q-surface` are flipped live and
-/// SCOPED to the box by a `demo-theme-control` island. The reader sees the
-/// component respect each design axis without affecting the rest of the site.
+fn theme_component_from_instance(instance: &'static str) -> &'static str {
+    instance.strip_suffix("-themeit").unwrap_or(instance)
+}
+
+fn theme_it_snippet(component: &str, default_variant: Option<&str>) -> String {
+    let mut out = String::from("// This demo is scoped: these axes apply only to this preview.\n");
+    out.push_str("el(\"div\")\n");
+    out.push_str("    .attr(\"data-q-size\", \"cozy\")\n");
+    out.push_str("    .attr(\"data-q-radius\", \"rounded\")\n");
+    out.push_str("    .attr(\"data-q-surface\", \"flat\")\n");
+    out.push_str("    .attr(\"data-q-motion\", \"smooth\")\n");
+    if let Some(v) = default_variant {
+        out.push_str(&format!("    .attr(\"data-q-variant\", \"{v}\")\n"));
+    }
+    out.push_str("    .child(\n");
+    out.push_str(&theme_it_component_body(component));
+    out.push_str("    )");
+    out
+}
+
+/// The real builder body for a component's Theme-it snippet. Every component
+/// gets a genuine `render()`/`.island()` call (no placeholder comments) so the
+/// reader can copy working code. The `demo-theme-control` runtime preserves this
+/// SSR body verbatim and only swaps the `Variant::*` token for button/badge as
+/// the variant axis changes — so this is the SINGLE source of truth for bodies.
+fn theme_it_component_body(component: &str) -> String {
+    let body = match component {
+        "button" => "Button::action(\"Button\")\n    .variants(Variants::new().variant(Variant::Solid))\n    .render()",
+        "badge" => "Badge::badge(\"Badge\")\n    .variant(Variant::Soft)\n    .render()",
+        "card" => "Card::new(\"summary\")\n    .header(el(\"div\").child(text(\"Card\")))\n    .body(el(\"p\").child(text(\"A surface container.\")))\n    .effect(Effect::Elevated)\n    .radius(Radius::Lg)\n    .tone(Tone::Neutral)\n    .motion(Motion::Tilt3d)\n    .render()",
+        "alert" => "Alert::new(Severity::Info, \"Your changes have been saved.\")\n    .title(\"Info\")\n    .effect(Effect::Flat)\n    .radius(Radius::Md)\n    .render()",
+        "stat" => "Stat::new(\"revenue\", \"Monthly revenue\", \"$48,250\")\n    .size(Size::Md)\n    .trend(\"8.2%\", Trend::Up)\n    .render()",
+        "list" => "List::new()\n    .size(Size::Md)\n    .item(ListItem::new(text(\"Authenticate the request\")))\n    .item(ListItem::new(text(\"Authorize against the grant\")))\n    .render()",
+        "divider" => "Divider::new().size(Size::Md).render()",
+        "breadcrumb" => "Breadcrumb::new(vec![\n    Crumb::new(\"Home\", \"/\"),\n    Crumb::new(\"Components\", \"/docs/quill/components\"),\n])\n.size(Size::Md)\n.radius(Radius::Md)\n.render()",
+        "tabs" => "Tabs::new(\"demo\", /* sections */).island(\"demo-island\")",
+        "dialog" => "Dialog::new(\"demo\", /* ... */).island(\"demo-island\", \"Open dialog\")",
+        "menu" => "Menu::new(\"demo\", /* items */).island(\"demo-island\")",
+        "tooltip" => "Tooltip::new(\"Helpful hint\").island(\"demo-island\")",
+        "checkbox" => "Checkbox::new(\"cb\", \"Email me product news\", false).island(\"cb-island\")",
+        "switch" => "SwitchGroup::new(\"radios\", /* tracks */).tone(Tone::Brand).island(\"radios-island\")",
+        "accordion" => "Accordion::new(\"faq\", /* sections */).open(0).island(\"faq-island\")",
+        other => return format!("        /* {other}::new(...).render() */\n"),
+    };
+    // Indent the (possibly multi-line) builder body to sit under `.child(`.
+    let mut out = String::new();
+    for line in body.lines() {
+        out.push_str("        ");
+        out.push_str(line);
+        out.push('\n');
+    }
+    out
+}
+
+/// The "Theme it" section: the `preview` is placed DIRECTLY on a
+/// `[data-q-demo-surface]` stage whose `data-q-size`/`data-q-radius`/
+/// `data-q-surface` are flipped live and SCOPED by a `demo-theme-control`
+/// island. The axes re-point the design tokens (`--q-space-*`, `--q-radius-*`,
+/// and the surface tokens) on the stage, and the COMPONENT itself consumes
+/// them — there is no decorative wrapper box being skinned in its place.
 fn theme_it(toc: &mut Toc, instance: &'static str, preview: Node) -> Node {
+    theme_it_with_variant(toc, instance, preview, None)
+}
+
+/// Variant-aware flavor of [`theme_it`]. Buttons and badges have a real
+/// `solid | soft | outline | ghost` component axis, so those pages get an
+/// explicit Variant control. Other components still get density/radius/surface/
+/// motion without a fake no-op Variant row.
+fn theme_it_with_variant(
+    toc: &mut Toc,
+    instance: &'static str,
+    preview: Node,
+    default_variant: Option<&'static str>,
+) -> Node {
+    let component = theme_component_from_instance(instance);
     let surface = el("div")
         .class("cl-themeit__surface")
+        .attr("data-q-component", component)
         .attr("data-q-demo-surface", "")
         .attr("data-q-size", "cozy")
         .attr("data-q-radius", "rounded")
         .attr("data-q-surface", "flat")
-        .child(preview);
+        .attr("data-q-motion", "smooth");
+    let surface = if let Some(v) = default_variant {
+        surface.attr("data-q-variant", v)
+    } else {
+        surface
+    }
+    .child(preview);
 
     let controls = el("div")
         .class("cl-tc")
+        .children(default_variant.map(|v| {
+            tc_group(
+                "Variant",
+                "variant",
+                &[
+                    ("solid", "solid"),
+                    ("soft", "soft"),
+                    ("outline", "outline"),
+                    ("ghost", "ghost"),
+                ],
+                v,
+            )
+        }))
         .child(tc_group(
             "Density",
             "size",
-            &[("compact", "compact"), ("cozy", "cozy"), ("comfortable", "comfortable")],
+            &[
+                ("compact", "compact"),
+                ("cozy", "cozy"),
+                ("comfortable", "comfortable"),
+            ],
             "cozy",
         ))
         .child(tc_group(
@@ -353,8 +478,24 @@ fn theme_it(toc: &mut Toc, instance: &'static str, preview: Node) -> Node {
         .child(tc_group(
             "Surface",
             "surface",
-            &[("flat", "flat"), ("glass", "glass"), ("neu", "neu"), ("gradient", "gradient")],
+            &[
+                ("flat", "flat"),
+                ("glass", "glass"),
+                ("neu", "neu"),
+                ("gradient", "gradient"),
+            ],
             "flat",
+        ))
+        .child(tc_group(
+            "Motion",
+            "motion",
+            &[
+                ("smooth", "smooth"),
+                ("snappy", "snappy"),
+                ("playful", "playful"),
+                ("none", "off"),
+            ],
+            "smooth",
         ));
 
     // The control island is OnLoad so the segmented state seeds + reflects
@@ -363,17 +504,38 @@ fn theme_it(toc: &mut Toc, instance: &'static str, preview: Node) -> Node {
         instance,
         "demo-theme-control",
         Trigger::Load,
-        "{}",
-        el("div").class("cl-themeit").child(surface).child(controls),
+        format!(
+            "{{\"component\":\"{}\",\"hasVariant\":{}}}",
+            component,
+            if default_variant.is_some() {
+                "true"
+            } else {
+                "false"
+            }
+        ),
+        el("div")
+            .class("cl-themeit")
+            .child(surface)
+            .child(controls)
+            .child(
+                el("div").class("cl-themeit__code").child(
+                    el("pre")
+                        .class("q-code")
+                        .attr("data-q-part", "theme-code")
+                        .child(
+                            el("code").child(text(theme_it_snippet(component, default_variant))),
+                        ),
+                ),
+            ),
     );
 
     el("div")
         .child(toc.h2("Theme it"))
         .child(docs_kit::p(
-            "Flip the density, radius, and surface for this preview alone — the choice is **scoped** \
-             to the box below (it writes onto a `[data-q-demo-surface]` ancestor, never the page). \
-             With JavaScript off the controls are inert but present, and the preview renders at its \
-             baseline axes.",
+            "Flip the component axes for this preview alone — the controls re-point scoped design \
+             tokens on the demo stage and the **component itself** restyles. Variant controls swap \
+             the component class, surface controls change the visual treatment, and motion controls \
+             change the interaction feel without leaking to the page.",
         ))
         .child(demo)
 }
@@ -406,7 +568,11 @@ fn ship(
 
     let full_title = format!("{title_text} — Qirava docs");
     let desc: String = lead.chars().take(155).collect();
-    let meta = Meta { title: &full_title, description: &desc, path };
+    let meta = Meta {
+        title: &full_title,
+        description: &desc,
+        path,
+    };
     page(&meta, css, main)
 }
 
@@ -422,15 +588,28 @@ pub fn respond_button(_input: &[u8]) -> FunctionResponse {
 
     let cell = |v: &str, s: &str, t: &str| -> Styled {
         Button::action("Button")
-            .variants(Variants::new().variant(to_variant(v)).size(to_size(s)).tone(to_tone(t)))
+            .variants(
+                Variants::new()
+                    .variant(to_variant(v))
+                    .size(to_size(s))
+                    .tone(to_tone(t)),
+            )
             .render()
     };
 
     // Preview: variants (one row), sizes (one row), tones (one row).
-    let variants: Vec<Node> =
-        VARIANT_VALUES.iter().map(|v| css.node(cell(v, "md", "brand"))).collect();
-    let sizes: Vec<Node> = SIZE_VALUES.iter().map(|s| css.node(cell("solid", s, "brand"))).collect();
-    let tones: Vec<Node> = TONE_VALUES.iter().map(|t| css.node(cell("solid", "md", t))).collect();
+    let variants: Vec<Node> = VARIANT_VALUES
+        .iter()
+        .map(|v| css.node(cell(v, "md", "brand")))
+        .collect();
+    let sizes: Vec<Node> = SIZE_VALUES
+        .iter()
+        .map(|s| css.node(cell("solid", s, "brand")))
+        .collect();
+    let tones: Vec<Node> = TONE_VALUES
+        .iter()
+        .map(|t| css.node(cell("solid", "md", t)))
+        .collect();
     let preview = el("div")
         .class("cl-preview")
         .child(preview_row("variant", variants))
@@ -446,7 +625,9 @@ pub fn respond_button(_input: &[u8]) -> FunctionResponse {
         render_cell: &cell,
     };
 
-    let theme_preview = el("div").class("cl-stack").child(css.node(cell("solid", "md", "brand")));
+    let theme_preview = el("div")
+        .class("cl-stack")
+        .child(css.node(cell("solid", "md", "brand")));
 
     let body = el("div")
         .class("q-doc-body")
@@ -456,7 +637,7 @@ pub fn respond_button(_input: &[u8]) -> FunctionResponse {
         .child(toc.h2("Playground"))
         .child(docs_kit::p("Change the controls — the preview and the snippet update live."))
         .child(playground(&mut css, &pg))
-        .child(theme_it(&mut toc, "button-themeit", theme_preview))
+        .child(theme_it_with_variant(&mut toc, "button-themeit", theme_preview, Some("solid")))
         .child(code_example(
             &mut toc,
             "Button::action(\"Save changes\")\n    .variants(\n        Variants::new()\n            .variant(Variant::Solid)\n            .size(Size::Md)\n            .tone(Tone::Brand),\n    )\n    .render()",
@@ -479,18 +660,46 @@ pub fn respond_badge(_input: &[u8]) -> FunctionResponse {
     let mut toc = Toc::new();
 
     let cell = |v: &str, s: &str, t: &str| -> Styled {
-        Badge::badge("Badge").variant(to_variant(v)).size(to_size(s)).tone(to_tone(t)).render()
+        Badge::badge("Badge")
+            .variant(to_variant(v))
+            .size(to_size(s))
+            .tone(to_tone(t))
+            .render()
     };
 
-    let variants: Vec<Node> =
-        VARIANT_VALUES.iter().map(|v| css.node(cell(v, "sm", "brand"))).collect();
-    let sizes: Vec<Node> = SIZE_VALUES.iter().map(|s| css.node(cell("soft", s, "brand"))).collect();
-    let tones: Vec<Node> = TONE_VALUES.iter().map(|t| css.node(cell("soft", "sm", t))).collect();
+    let variants: Vec<Node> = VARIANT_VALUES
+        .iter()
+        .map(|v| css.node(cell(v, "sm", "brand")))
+        .collect();
+    let sizes: Vec<Node> = SIZE_VALUES
+        .iter()
+        .map(|s| css.node(cell("soft", s, "brand")))
+        .collect();
+    let tones: Vec<Node> = TONE_VALUES
+        .iter()
+        .map(|t| css.node(cell("soft", "sm", t)))
+        .collect();
     // The kind axis: a plain badge, a tag, and a removable chip.
     let kinds: Vec<Node> = vec![
-        css.node(Badge::badge("Badge").tone(Tone::Brand).variant(Variant::Soft).render()),
-        css.node(Badge::tag("Tag").tone(Tone::Neutral).variant(Variant::Outline).render()),
-        css.node(Badge::chip("Chip").removable(true).tone(Tone::Brand).variant(Variant::Soft).render()),
+        css.node(
+            Badge::badge("Badge")
+                .tone(Tone::Brand)
+                .variant(Variant::Soft)
+                .render(),
+        ),
+        css.node(
+            Badge::tag("Tag")
+                .tone(Tone::Neutral)
+                .variant(Variant::Outline)
+                .render(),
+        ),
+        css.node(
+            Badge::chip("Chip")
+                .removable(true)
+                .tone(Tone::Brand)
+                .variant(Variant::Soft)
+                .render(),
+        ),
     ];
     let preview = el("div")
         .class("cl-preview")
@@ -508,7 +717,9 @@ pub fn respond_badge(_input: &[u8]) -> FunctionResponse {
         render_cell: &cell,
     };
 
-    let theme_preview = el("div").class("cl-stack").child(css.node(cell("soft", "sm", "brand")));
+    let theme_preview = el("div")
+        .class("cl-stack")
+        .child(css.node(cell("soft", "sm", "brand")));
 
     let body = el("div")
         .class("q-doc-body")
@@ -520,7 +731,7 @@ pub fn respond_badge(_input: &[u8]) -> FunctionResponse {
         .child(toc.h2("Playground"))
         .child(docs_kit::p("Change the controls — the preview and the snippet update live."))
         .child(playground(&mut css, &pg))
-        .child(theme_it(&mut toc, "badge-themeit", theme_preview))
+        .child(theme_it_with_variant(&mut toc, "badge-themeit", theme_preview, Some("soft")))
         .child(code_example(
             &mut toc,
             "Badge::badge(\"Active\").variant(Variant::Soft).tone(Tone::Brand).render()\nBadge::tag(\"Draft\").variant(Variant::Outline).tone(Tone::Neutral).render()\nBadge::chip(\"Filter\").removable(true).render()",
@@ -543,10 +754,16 @@ pub fn respond_card(_input: &[u8]) -> FunctionResponse {
     let mut toc = Toc::new();
 
     let cell = |effect: &str, radius: &str, tone: &str| -> Styled {
-        let body = el("p").class("q-muted").child(text("A surface container.".to_string()));
+        let body = el("p")
+            .class("q-muted")
+            .child(text("A surface container.".to_string()));
         Card::new(format!("cl-card-{effect}-{radius}-{tone}"))
             .region()
-            .header(el("div").class("q-card-eyebrow").child(text("Card".to_string())))
+            .header(
+                el("div")
+                    .class("q-card-eyebrow")
+                    .child(text("Card".to_string())),
+            )
             .body(body)
             .effect(to_effect(effect))
             .radius(to_radius(radius))
@@ -554,17 +771,56 @@ pub fn respond_card(_input: &[u8]) -> FunctionResponse {
             .render()
     };
 
-    let effects: Vec<Node> =
-        EFFECT_VALUES.iter().map(|e| css.node(cell(e, "lg", "neutral"))).collect();
-    let radii: Vec<Node> =
-        ["sm", "md", "lg", "xl"].iter().map(|r| css.node(cell("elevated", r, "neutral"))).collect();
-    let tones: Vec<Node> =
-        TONE_VALUES.iter().map(|t| css.node(cell("elevated", "lg", t))).collect();
+    let effects: Vec<Node> = EFFECT_VALUES
+        .iter()
+        .map(|e| css.node(cell(e, "lg", "neutral")))
+        .collect();
+    let radii: Vec<Node> = ["sm", "md", "lg", "xl"]
+        .iter()
+        .map(|r| css.node(cell("elevated", r, "neutral")))
+        .collect();
+    let tones: Vec<Node> = TONE_VALUES
+        .iter()
+        .map(|t| css.node(cell("elevated", "lg", t)))
+        .collect();
+    let motion_cell = |id: &str, label: &str, motion: Motion| -> Styled {
+        Card::new(format!("cl-card-motion-{id}"))
+            .region()
+            .header(
+                el("div")
+                    .class("q-card-eyebrow")
+                    .child(text(label.to_string())),
+            )
+            .body(
+                el("p")
+                    .class("q-muted")
+                    .child(text("Design-system motion, not page CSS.".to_string())),
+            )
+            .effect(Effect::Elevated)
+            .radius(Radius::Lg)
+            .tone(Tone::Neutral)
+            .motion(motion)
+            .render()
+    };
+    let motions: Vec<Node> = vec![
+        css.node(motion_cell("lift", "Lift", Motion::Lift)),
+        css.node(motion_cell("tilt3d", "3D tilt", Motion::Tilt3d)),
+    ];
     let preview = el("div")
         .class("cl-preview")
         .child(preview_row("effect", effects))
         .child(preview_row("radius", radii))
-        .child(preview_row("tone", tones));
+        .child(preview_row("tone", tones))
+        .child(preview_row("motion", motions));
+    // The 3D card in the preview carries data-q-tilt; hydrate it with Quill's
+    // generic `motion` behavior so docs prove the runtime path, not just CSS.
+    let preview = island(
+        "card-motion-preview",
+        "motion",
+        Trigger::Load,
+        "{}",
+        preview,
+    );
 
     let pg = Playground {
         id: "card",
@@ -575,13 +831,15 @@ pub fn respond_card(_input: &[u8]) -> FunctionResponse {
         render_cell: &cell,
     };
 
-    let theme_preview = el("div").class("cl-stack").child(css.node(cell("elevated", "lg", "neutral")));
+    let theme_preview = el("div")
+        .class("cl-stack")
+        .child(css.node(cell("elevated", "lg", "neutral")));
 
     let body = el("div")
         .class("q-doc-body")
         .child(toc.h2("Preview"))
         .child(docs_kit::p(
-            "The surface effect, corner radius, and tone — orthogonal treatments you compose.",
+            "The surface effect, corner radius, tone, and motion — orthogonal treatments you compose.",
         ))
         .child(preview)
         .child(toc.h2("Playground"))
@@ -590,15 +848,15 @@ pub fn respond_card(_input: &[u8]) -> FunctionResponse {
         .child(theme_it(&mut toc, "card-themeit", theme_preview))
         .child(code_example(
             &mut toc,
-            "Card::new(\"summary\")\n    .header(el(\"div\").child(text(\"Card\")))\n    .body(el(\"p\").child(text(\"A surface container.\")))\n    .effect(Effect::Elevated)\n    .radius(Radius::Lg)\n    .tone(Tone::Neutral)\n    .render()",
+            "Card::new(\"summary\")\n    .header(el(\"div\").child(text(\"Card\")))\n    .body(el(\"p\").child(text(\"A surface container.\")))\n    .effect(Effect::Elevated)\n    .radius(Radius::Lg)\n    .tone(Tone::Neutral)\n    .motion(Motion::Tilt3d)\n    .render()",
         ));
 
     ship(
         "/docs/quill/components/card",
         "Card",
         "A surface container for grouped content. Its axes are the surface effect (flat, glass, \
-         gradient, elevated), the corner radius, and the tone. Cards are static surfaces, not \
-         islands — reach for an elevated effect to lift a card off the page; keep flat for dense grids.",
+         gradient, elevated), corner radius, tone, and motion. Use lift or 3D tilt for hero/product \
+         cards; keep dense grids static.",
         body,
         toc,
         css,
@@ -619,11 +877,19 @@ pub fn respond_alert(_input: &[u8]) -> FunctionResponse {
 
     let severities: Vec<Node> = SEVERITY_VALUES
         .iter()
-        .map(|sv| el("div").class("cl-stack").child(css.node(cell(sv, "flat", "md"))))
+        .map(|sv| {
+            el("div")
+                .class("cl-stack")
+                .child(css.node(cell(sv, "flat", "md")))
+        })
         .collect();
     let effects: Vec<Node> = EFFECT_VALUES
         .iter()
-        .map(|e| el("div").class("cl-stack").child(css.node(cell("info", e, "md"))))
+        .map(|e| {
+            el("div")
+                .class("cl-stack")
+                .child(css.node(cell("info", e, "md")))
+        })
         .collect();
     let preview = el("div")
         .class("cl-preview")
@@ -639,7 +905,9 @@ pub fn respond_alert(_input: &[u8]) -> FunctionResponse {
         render_cell: &cell,
     };
 
-    let theme_preview = el("div").class("cl-stack").child(css.node(cell("info", "flat", "md")));
+    let theme_preview = el("div")
+        .class("cl-stack")
+        .child(css.node(cell("info", "flat", "md")));
 
     let body = el("div")
         .class("q-doc-body")
@@ -681,9 +949,14 @@ pub fn respond_stat(_input: &[u8]) -> FunctionResponse {
             .render()
     };
 
-    let sizes: Vec<Node> = SIZE_VALUES.iter().map(|s| css.node(cell(s, "up", ""))).collect();
-    let trends: Vec<Node> =
-        ["up", "down", "flat"].iter().map(|tr| css.node(cell("md", tr, ""))).collect();
+    let sizes: Vec<Node> = SIZE_VALUES
+        .iter()
+        .map(|s| css.node(cell(s, "up", "")))
+        .collect();
+    let trends: Vec<Node> = ["up", "down", "flat"]
+        .iter()
+        .map(|tr| css.node(cell("md", tr, "")))
+        .collect();
     let preview = el("div")
         .class("cl-preview")
         .child(preview_row("size", sizes))
@@ -698,7 +971,9 @@ pub fn respond_stat(_input: &[u8]) -> FunctionResponse {
         render_cell: &cell,
     };
 
-    let theme_preview = el("div").class("cl-stack").child(css.node(cell("md", "up", "")));
+    let theme_preview = el("div")
+        .class("cl-stack")
+        .child(css.node(cell("md", "up", "")));
 
     let body = el("div")
         .class("q-doc-body")
@@ -733,18 +1008,30 @@ pub fn respond_list(_input: &[u8]) -> FunctionResponse {
     let mut toc = Toc::new();
 
     let cell = |kind: &str, size: &str, _t: &str| -> Styled {
-        let base = if kind == "ordered" { List::ordered() } else { List::new() };
+        let base = if kind == "ordered" {
+            List::ordered()
+        } else {
+            List::new()
+        };
         base.size(to_size(size))
             .item(ListItem::new(text("Authenticate the request".to_string())))
-            .item(ListItem::new(text("Authorize against the grant".to_string())))
-            .item(ListItem::new(text("Plan and execute the query".to_string())))
+            .item(ListItem::new(text(
+                "Authorize against the grant".to_string(),
+            )))
+            .item(ListItem::new(text(
+                "Plan and execute the query".to_string(),
+            )))
             .render()
     };
 
-    let kinds: Vec<Node> =
-        ["unordered", "ordered"].iter().map(|k| css.node(cell(k, "md", ""))).collect();
-    let sizes: Vec<Node> =
-        SIZE_VALUES.iter().map(|s| css.node(cell("unordered", s, ""))).collect();
+    let kinds: Vec<Node> = ["unordered", "ordered"]
+        .iter()
+        .map(|k| css.node(cell(k, "md", "")))
+        .collect();
+    let sizes: Vec<Node> = SIZE_VALUES
+        .iter()
+        .map(|s| css.node(cell("unordered", s, "")))
+        .collect();
     let preview = el("div")
         .class("cl-preview")
         .child(preview_row("kind", kinds))
@@ -759,7 +1046,9 @@ pub fn respond_list(_input: &[u8]) -> FunctionResponse {
         render_cell: &cell,
     };
 
-    let theme_preview = el("div").class("cl-stack").child(css.node(cell("unordered", "md", "")));
+    let theme_preview = el("div")
+        .class("cl-stack")
+        .child(css.node(cell("unordered", "md", "")));
 
     let body = el("div")
         .class("q-doc-body")
@@ -812,7 +1101,10 @@ pub fn respond_divider(_input: &[u8]) -> FunctionResponse {
         })
         .collect();
     let v_demo = el("div")
-        .attr("style", "display:flex;align-items:center;gap:1rem;height:3rem")
+        .attr(
+            "style",
+            "display:flex;align-items:center;gap:1rem;height:3rem",
+        )
         .child(text("Left".to_string()))
         .child(css.node(cell("vertical", "md", "")))
         .child(text("Right".to_string()));
@@ -830,9 +1122,10 @@ pub fn respond_divider(_input: &[u8]) -> FunctionResponse {
         render_cell: &cell,
     };
 
-    let theme_preview = el("div")
-        .attr("style", "width:14rem")
-        .child(css.node(cell("horizontal", "md", "")));
+    let theme_preview =
+        el("div")
+            .attr("style", "width:14rem")
+            .child(css.node(cell("horizontal", "md", "")));
 
     let body = el("div")
         .class("q-doc-body")
@@ -880,11 +1173,19 @@ pub fn respond_breadcrumb(_input: &[u8]) -> FunctionResponse {
 
     let sizes: Vec<Node> = SIZE_VALUES
         .iter()
-        .map(|s| el("div").class("cl-stack").child(css.node(cell(s, "md", ""))))
+        .map(|s| {
+            el("div")
+                .class("cl-stack")
+                .child(css.node(cell(s, "md", "")))
+        })
         .collect();
     let radii: Vec<Node> = RADIUS_VALUES
         .iter()
-        .map(|r| el("div").class("cl-stack").child(css.node(cell("md", r, ""))))
+        .map(|r| {
+            el("div")
+                .class("cl-stack")
+                .child(css.node(cell("md", r, "")))
+        })
         .collect();
     let preview = el("div")
         .class("cl-preview")
@@ -900,7 +1201,9 @@ pub fn respond_breadcrumb(_input: &[u8]) -> FunctionResponse {
         render_cell: &cell,
     };
 
-    let theme_preview = el("div").class("cl-stack").child(css.node(cell("md", "md", "")));
+    let theme_preview = el("div")
+        .class("cl-stack")
+        .child(css.node(cell("md", "md", "")));
 
     let body = el("div")
         .class("q-doc-body")
@@ -956,8 +1259,16 @@ fn island_page(
         .class("q-doc-body")
         .child(toc.h2("Live demo"))
         .child(docs_kit::p(demo_lead))
-        .child(el("div").class("cl-demo").child(el("div").class("cl-demo__stage").child(demo)))
-        .child(theme_it(&mut toc, theme_instance, el("div").class("cl-stack").child(theme_demo)))
+        .child(
+            el("div")
+                .class("cl-demo")
+                .child(el("div").class("cl-demo__stage").child(demo)),
+        )
+        .child(theme_it(
+            &mut toc,
+            theme_instance,
+            el("div").class("cl-stack").child(theme_demo),
+        ))
         .child(code_example(&mut toc, code));
 
     ship(path, title_text, lead, body, toc, css)
@@ -1006,9 +1317,11 @@ pub fn respond_dialog(_input: &[u8]) -> FunctionResponse {
     let mut css = Css::new();
     let mut make = |id: &str, instance: &str| -> Node {
         let body = el("p").class("q-muted").child(text(
-            "This surface is focus-trapped while open; Escape or the backdrop closes it.".to_string(),
+            "This surface is focus-trapped while open; Escape or the backdrop closes it."
+                .to_string(),
         ));
-        let dialog = Dialog::modal(id.to_string(), "Delete project?", body).effect(Effect::Elevated);
+        let dialog =
+            Dialog::modal(id.to_string(), "Delete project?", body).effect(Effect::Elevated);
         css.node(dialog.island(instance.to_string(), "Open dialog"))
     };
     let demo = make("demo-dialog", "demo-dialog-island");
@@ -1214,4 +1527,59 @@ pub fn respond_accordion(_input: &[u8]) -> FunctionResponse {
         Toc::new(),
         css,
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{comp_css, theme_it_snippet};
+
+    #[test]
+    fn theme_it_surface_styles_the_demo_component_not_a_gradient_canvas() {
+        let css = comp_css();
+        assert!(css.contains(".cl-themeit__surface :where(.qq-badge,.qq-btn,.qq-card)"));
+        assert!(css.contains(
+            ".cl-themeit__surface[data-q-surface=\"gradient\"] .qq-badge.qq-badge--soft"
+        ));
+        assert!(css.contains(".cl-themeit__surface .qq-card{background:var(--q-surface-bg"));
+        assert!(css.contains(".cl-themeit{margin:1.25rem 0;border:1px solid var(--q-color-border)"));
+        assert!(
+            !css.contains(".cl-themeit{margin:1.25rem 0;border:1px solid var(--q-surface-border")
+        );
+        assert!(!css.contains(".cl-themeit__surface{display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:center;min-height:11rem;padding:var(--q-space-6);background:var(--q-surface-bg"));
+        // Gradient surface gives solid/outline components a real gradient fill,
+        // not just a wrapper recolor.
+        assert!(css.contains(".cl-themeit__surface[data-q-surface=\"gradient\"] :where(.qq-btn--solid,.qq-badge--solid)"));
+        // Motion axis changes interaction feel on the previewed component.
+        assert!(css.contains(".cl-themeit__surface[data-q-motion=\"playful\"]"));
+        // Segmented controls use the shared density/control tokens and never
+        // become full stadiums at pill radius.
+        assert!(css.contains(".cl-tc__seg{display:inline-flex;border:1px solid var(--q-color-border);border-radius:min(var(--q-radius-md),calc(var(--q-control-h,2.5rem) * .28))"));
+        assert!(css.contains(".cl-tc__opt{appearance:none;display:flex;align-items:center;justify-content:center;min-height:calc(var(--q-control-h,2.5rem) - var(--q-space-2))"));
+    }
+
+    #[test]
+    fn playground_and_theme_it_ship_visible_live_code_panes() {
+        let css = comp_css();
+        assert!(css.contains(".q-doc-body .pg__codewrap,.cl-themeit__code"));
+        assert!(css.contains(".q-doc-body .pg .q-code,.cl-themeit__code .q-code{display:block;width:100%;min-height:calc(var(--q-control-h,2.5rem) * 3.2)"));
+        assert!(css.contains("overflow:auto;white-space:pre"));
+
+        let button = theme_it_snippet("button", Some("solid"));
+        assert!(button.contains(".attr(\"data-q-size\", \"cozy\")"));
+        assert!(button.contains(".attr(\"data-q-surface\", \"flat\")"));
+        assert!(button.contains(".attr(\"data-q-motion\", \"smooth\")"));
+        assert!(button.contains(".attr(\"data-q-variant\", \"solid\")"));
+        assert!(button.contains("Button::action(\"Button\")"));
+        assert!(button.contains("Variant::Solid"));
+
+        // Every component (not just button/badge) ships REAL builder code in its
+        // Theme-it snippet — no placeholder comments like `/* card render() */`.
+        let card = theme_it_snippet("card", None);
+        assert!(card.contains("Card::new("));
+        assert!(card.contains(".render()"));
+        assert!(!card.contains("/*"));
+        let switch = theme_it_snippet("switch", None);
+        assert!(switch.contains("SwitchGroup::new("));
+        assert!(switch.contains(".island("));
+    }
 }

@@ -1,157 +1,158 @@
-//! `GET /roadmap` — the roadmap INDEX hub.
+//! `GET /roadmap` — roadmap SSOT hub.
 //!
-//! A chooser, mirroring the `/docs` hub: one card per product linking to that
-//! product's roadmap (`/roadmap/{dms,quill,stdlib,cloud}`). The per-product
-//! roadmaps carry the honest BUILT / PARTIAL / PLANNED boards. Pure SSR, zero JS.
+//! This page is the human-readable index for product state. It does not promise
+//! dates; it separates what is built, partial, and planned per product and links
+//! to the detailed product boards.
 
 use qexec::FunctionResponse;
-use qquill_view::{el, raw, text, Node};
+use qquill_view::{el, text, Node};
 
-use crate::app::routes::product_page::ARROW_SVG;
-use crate::app::routes::{inline_code, Status};
+use crate::app::routes::inline_code;
 use crate::app::shell::page;
+use crate::app::site_ui;
 use crate::app::{Css, Meta};
 
 const TITLE: &str = "Roadmap — Qirava";
-const DESCRIPTION: &str = "The Qirava roadmap, organized per product: an honest BUILT / PARTIAL / \
-PLANNED status board for the DMS, Quill, the q* stdlib, and the planned managed cloud. No dates \
-promised — only state.";
+const DESCRIPTION: &str = "The Qirava roadmap SSOT: honest built, partial, and planned status for the DMS, Quill, the q* stdlib, and Qirava Cloud.";
 
-/// One product hub card: name, a summary, a status snapshot, and a "View" link
-/// to that product's roadmap. `snapshot` is the (built, partial, planned) tags
-/// shown as chips.
-fn hub_card(
-    name: &str,
-    crate_name: &str,
-    href: &str,
-    summary: &str,
-    snapshot: &[(Status, &str)],
-) -> Node {
-    let title = el("div")
-        .class("q-rm-hub-card__title")
-        .child(el("span").child(text(name.to_string())))
-        .child(el("code").class("q-rm-hub-card__crate").child(text(crate_name.to_string())));
-
-    let mut chips = el("div").class("q-rm-hub-card__chips");
-    for (status, label) in snapshot {
-        let chip_mod = match status {
-            Status::Built => "is-built",
-            Status::Partial => "is-partial",
-            Status::Planned => "is-planned",
-        };
-        chips = chips.child(
-            el("span")
-                .class(format!("q-rm-hub-card__chip {chip_mod}"))
-                .child(text((*label).to_string())),
-        );
-    }
-
-    let learn = el("a")
-        .class("q-prod-learn")
-        .attr("href", href.to_string())
-        .child(text(format!("View the {name} roadmap ")))
-        .child(raw(ARROW_SVG));
-
-    el("article")
-        .class("q-rm-hub-card")
-        .child(title)
-        .child(el("p").class("q-rm-hub-card__sum").child(text(summary.to_string())))
-        .child(chips)
-        .child(learn)
+fn legend() -> Node {
+    el("div")
+        .class("q-ui-card q-road-legend")
+        .child(el("h2").class("q-h2").child(text("How to read status")))
+        .child(
+            el("div")
+                .class("q-ui-grid q-ui-grid--3")
+                .child(site_ui::feature_card("Built", "Shipping today", "Present in the codebase and usable now. It can still improve, but the capability exists."))
+                .child(site_ui::feature_card("Partial", "Working seam", "A real implementation path exists, with known gaps or hardening still in progress."))
+                .child(site_ui::feature_card("Planned", "Designed, not shipped", "Important to the product direction, but not something users should depend on today.")),
+        )
 }
 
-fn hub_css() -> &'static str {
-    "\
-.q-rm-hub{max-width:72rem;margin:0 auto;padding:3rem 1.5rem 5rem}\
-.q-rm-hub__head{max-width:48rem;margin:0 0 2.5rem}\
-.q-rm-hub-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.25rem}\
-@media (max-width:720px){.q-rm-hub-grid{grid-template-columns:1fr}}\
-.q-rm-hub-card{display:flex;flex-direction:column;padding:1.5rem;border:1px solid var(--q-color-border);border-radius:var(--q-radius-lg);background:var(--q-color-surface);transition:border-color var(--q-duration-fast) var(--q-ease-out),transform var(--q-duration-fast) var(--q-ease-out)}\
-.q-rm-hub-card:hover{border-color:var(--q-color-brand);transform:translateY(-2px)}\
-.q-rm-hub-card__title{display:flex;align-items:baseline;gap:.6rem;font-size:1.2rem;font-weight:var(--q-font-weight-bold);margin:0 0 .4rem}\
-.q-rm-hub-card__crate{font-family:var(--q-font-mono);font-size:.78rem;color:var(--q-color-muted);font-weight:var(--q-font-weight-normal)}\
-.q-rm-hub-card__sum{color:var(--q-color-muted);margin:0 0 1rem;line-height:1.6}\
-.q-rm-hub-card__chips{display:flex;flex-wrap:wrap;gap:.4rem;margin:0 0 .25rem}\
-.q-rm-hub-card__chip{font-size:.66rem;font-weight:var(--q-font-weight-bold);letter-spacing:.08em;text-transform:uppercase;padding:.2rem .5rem;border-radius:var(--q-radius-full);border:1px solid var(--q-color-border);color:var(--q-color-muted)}\
-.q-rm-hub-card__chip.is-built{color:var(--q-color-brand);border-color:color-mix(in srgb,var(--q-color-brand) 45%,transparent);background:color-mix(in srgb,var(--q-color-brand) 12%,transparent)}\
-.q-rm-hub-card__chip.is-partial{color:var(--q-color-fg);border-color:color-mix(in srgb,var(--q-color-fg) 30%,transparent);background:color-mix(in srgb,var(--q-color-fg) 7%,transparent)}\
-.q-prod-learn{display:inline-flex;align-items:center;gap:.35rem;margin-top:auto;padding-top:1rem;font-weight:var(--q-font-weight-medium);font-size:.92rem;color:var(--q-color-brand)}\
-.q-prod-learn:hover{text-decoration:none}\
-.q-prod-learn .q-arr{transition:transform var(--q-duration-fast) var(--q-ease-out)}\
-.q-prod-learn:hover .q-arr{transform:translateX(3px)}\
-.q-rm-hub__legend{margin:2.5rem 0 0;color:var(--q-color-muted);font-size:.92rem}"
+fn body() -> Node {
+    let head = site_ui::page_head(
+        "Roadmap SSOT",
+        "What is complete, what is partial, what is planned",
+        "The qirava website is the source of truth for product status. This page gives the product-level summary; open a product board for the detailed lane-by-lane status.",
+    );
+
+    let board = el("section")
+        .class("q-section q-section--tight")
+        .child(site_ui::section_head(
+            "Product boards",
+            "Status per product",
+            "Capability state is more useful than aspirational dates. Each product has an honest board with built, partial, and planned lanes.",
+            false,
+        ))
+        .child(
+            el("div")
+                .class("q-ui-grid q-ui-grid--2")
+                .child(site_ui::roadmap_card(
+                    "Qirava DMS",
+                    "qdms",
+                    "Engine, workers, function registry, QQL/DDL, RBAC + governance, config-as-data, WAL, and the self-describing API are shipping; replication and cluster/KMS hardening continue.",
+                    &[("Engine + workers", "built"), ("Replication", "partial"), ("KMS · cluster", "planned")],
+                    "/roadmap/dms",
+                ))
+                .child(site_ui::roadmap_card(
+                    "Quill",
+                    "qquill",
+                    "The view layer, native SSR, islands, per-page bundling, static export, component library, theming, and CLI are shipping; dev ergonomics and component breadth continue.",
+                    &[("SSR · islands · SSG", "built"), ("Auto-routes", "partial"), ("quill dev", "planned")],
+                    "/roadmap/quill",
+                ))
+                .child(site_ui::roadmap_card(
+                    "The q* stdlib",
+                    "qpkgs",
+                    "The zero-dependency substrate crates are shipping. Planned work adds crypto primitives and broader standard library coverage behind first-party contracts.",
+                    &[("13 crates", "built"), ("More crypto", "planned")],
+                    "/roadmap/stdlib",
+                ))
+                .child(site_ui::roadmap_card(
+                    "Qirava Cloud",
+                    "qcloud",
+                    "Control plane v1 is built: _cp_* catalogs, cloud.* functions, and the RBAC-gated Cloud Console. The physical infra effect is simulated today; live tenant spawning and billing are planned.",
+                    &[("Control plane", "built"), ("Infra effect", "partial"), ("Live cloud", "planned")],
+                    "/roadmap/cloud",
+                )),
+        );
+
+    let audit = el("section")
+        .class("q-section")
+        .child(site_ui::section_head(
+            "Code audit snapshot",
+            "What the repo proves today",
+            "This tracker is based on local product code, not aspirational copy. Unknowns stay out until product info is supplied.",
+            false,
+        ))
+        .child(
+            el("div")
+                .class("q-ui-grid q-ui-grid--2")
+                .child(site_ui::status_card(
+                    "Qirava DMS",
+                    "Engine/QQL, WAL, worker funnel, auth/session/HMAC, Studio, API/OpenAPI, jobs, and single-leader replication seams are present in qdms.",
+                    "Standalone KMS, dual-sync clustering, authenticated replication hardening, and confidential-compute seed ceremony remain planned/in progress.",
+                    "/docs/dms",
+                    "/roadmap/dms",
+                ))
+                .child(site_ui::status_card(
+                    "Quill",
+                    "view/style/theme/ui/design/runtime/docs/icons/cli/build/signal crates are present; Motion::Press/Lift/Tilt3d and the motion runtime are now implemented.",
+                    "quill dev, route auto-discovery hardening, and broader component catalog remain planned/in progress.",
+                    "/docs/quill",
+                    "/roadmap/quill",
+                ))
+                .child(site_ui::status_card(
+                    "q* stdlib",
+                    "Thirteen q* crates are present: qexec, qvalue, qarray, qobject, qstring, qmath, qnumber, qconvert, qencoding, qcrypto, qregex, qtime, quuid.",
+                    "Additional crypto/provider work and wider stdlib coverage remain planned.",
+                    "/docs/stdlib",
+                    "/roadmap/stdlib",
+                ))
+                .child(site_ui::status_card(
+                    "Qirava Cloud",
+                    "qcloud boots a control DMS, creates _cp_* catalogs, registers cloud.* functions, and serves an RBAC-gated Cloud Console.",
+                    "Real DMS spawning, cgroup caps, live scaling, public signup, payment, and domain automation are simulated/planned.",
+                    "/docs/cloud",
+                    "/roadmap/cloud",
+                )),
+        );
+
+    let ssot = el("section")
+        .class("q-section")
+        .child(site_ui::section_head(
+            "Why this page exists",
+            "No parallel roadmap, no marketing fog",
+            "The roadmap is part of the website SSOT and is backed by the code audit: qdms, qquill, qpkgs, qcloud, qbrand, and qirava. Status changes should update this site instead of creating disconnected docs.",
+            false,
+        ))
+        .child(
+            el("p")
+                .class("q-muted")
+                .children([
+                    text("Status legend: "),
+                    inline_code("BUILT"),
+                    text(" means usable now, "),
+                    inline_code("PARTIAL"),
+                    text(" means a working seam with known gaps, and "),
+                    inline_code("PLANNED"),
+                    text(" means designed but not yet built. No dates are promised here."),
+                ]),
+        );
+
+    site_ui::page_frame("q-roadmap-hub")
+        .child(head)
+        .child(legend())
+        .child(board)
+        .child(audit)
+        .child(ssot)
 }
 
 pub fn respond(_input: &[u8]) -> FunctionResponse {
-    let mut css = Css::new();
-    css.push(hub_css().to_string());
-
-    let head = el("div")
-        .class("q-rm-hub__head")
-        .child(el("p").class("q-eyebrow").child(text("Roadmap")))
-        .child(el("h1").class("q-h1").child(text("Pick a product to see what's next")))
-        .child(el("p").class("q-lead").child(text(
-            "Each product has its own roadmap — an honest BUILT / PARTIAL / PLANNED board sourced \
-             from the repository and the architecture docs. We track three states and promise no \
-             dates: only where each capability actually stands.",
-        )));
-
-    let grid = el("div")
-        .class("q-rm-hub-grid")
-        .child(hub_card(
-            "Qirava DMS",
-            "qdms",
-            "/roadmap/dms",
-            "The engine, workers, function registry, QQL/DDL, RBAC + governance, config-as-data, \
-             WAL, and the self-describing API are shipping. Single-leader replication is in \
-             progress; standalone KMS and dual-sync clustering are planned.",
-            &[(Status::Built, "Engine + workers + RBAC"), (Status::Partial, "Replication"), (Status::Planned, "KMS · cluster")],
-        ))
-        .child(hub_card(
-            "Quill",
-            "qquill",
-            "/roadmap/quill",
-            "The view layer, native SSR, islands, per-page bundling, static export, the component \
-             library, theming, and the quill CLI are shipping. Folder-route auto-discovery, a quill \
-             dev server, and more components are next.",
-            &[(Status::Built, "SSR · islands · SSG · CLI"), (Status::Partial, "Auto-routes"), (Status::Planned, "quill dev")],
-        ))
-        .child(hub_card(
-            "The q* stdlib",
-            "qpkgs",
-            "/roadmap/stdlib",
-            "The 13 zero-dependency crates — qexec and qvalue plus the focused utilities — are \
-             shipping. The planned work is the cryptographic primitives the security model needs, \
-             behind the Crypto provider trait.",
-            &[(Status::Built, "13 crates"), (Status::Planned, "More crypto")],
-        ))
-        .child(hub_card(
-            "Qirava Cloud",
-            "qcloud",
-            "/roadmap/cloud",
-            "The managed, multi-tenant control plane — a DMS that manages other DMSes. The whole \
-             control plane (provisioning, metering, billing, OS caps, scaling) is planned; the \
-             single-tenant primitives it orchestrates are already built.",
-            &[(Status::Built, "OSS primitives"), (Status::Planned, "Control plane")],
-        ));
-
-    let legend = el("p").class("q-rm-hub__legend").children([
-        text("Status legend: ".to_string()),
-        inline_code("BUILT"),
-        text(" is shipping today, ".to_string()),
-        inline_code("PARTIAL"),
-        text(" has a working seam with deferred parts, and ".to_string()),
-        inline_code("PLANNED"),
-        text(" is designed but not yet built. Open a product roadmap for the full board.".to_string()),
-    ]);
-
-    let body = el("main")
-        .class("q-rm-hub")
-        .id("main")
-        .child(head)
-        .child(grid)
-        .child(legend);
-
-    let meta = Meta { title: TITLE, description: DESCRIPTION, path: "/roadmap" };
-    page(&meta, css, body)
+    let css = Css::new();
+    let meta = Meta {
+        title: TITLE,
+        description: DESCRIPTION,
+        path: "/roadmap",
+    };
+    page(&meta, css, body())
 }

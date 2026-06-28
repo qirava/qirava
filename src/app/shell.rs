@@ -31,20 +31,48 @@ const MENUS: &[Menu] = &[
         label: "Products",
         id: "products",
         items: &[
-            ("Qirava DMS", "AI-native, zero-dependency data system", "/products/dms"),
+            (
+                "Qirava DMS",
+                "AI-native, zero-dependency data system",
+                "/products/dms",
+            ),
             ("Quill", "Rust-native UI + app framework", "/products/quill"),
-            ("The q* stdlib", "13 zero-dependency shared crates", "/products/stdlib"),
-            ("Qirava Cloud", "Managed DMS service (planned)", "/products/cloud"),
+            (
+                "The q* stdlib",
+                "13 zero-dependency shared crates",
+                "/products/stdlib",
+            ),
+            (
+                "Qirava Cloud",
+                "Managed DMS service (planned)",
+                "/products/cloud",
+            ),
         ],
     },
     Menu {
         label: "Developer Docs",
         id: "docs",
         items: &[
-            ("Qirava DMS", "Data system: install, concepts, auth model", "/docs/dms"),
-            ("Quill", "UI framework: SSR, islands, components", "/docs/quill"),
-            ("The q* stdlib", "qexec, qvalue, and the utility crates", "/docs/stdlib"),
-            ("Qirava Cloud", "Managed control plane (planned)", "/docs/cloud"),
+            (
+                "Qirava DMS",
+                "Data system: install, concepts, auth model",
+                "/docs/dms",
+            ),
+            (
+                "Quill",
+                "UI framework: SSR, islands, components",
+                "/docs/quill",
+            ),
+            (
+                "The q* stdlib",
+                "qexec, qvalue, and the utility crates",
+                "/docs/stdlib",
+            ),
+            (
+                "Qirava Cloud",
+                "Managed control plane (planned)",
+                "/docs/cloud",
+            ),
             ("All docs", "The per-product documentation hub", "/docs"),
         ],
     },
@@ -52,10 +80,26 @@ const MENUS: &[Menu] = &[
         label: "Roadmap",
         id: "roadmap",
         items: &[
-            ("Qirava DMS", "Engine, workers, RBAC — built; cluster planned", "/roadmap/dms"),
-            ("Quill", "SSR, islands, CLI — built; more next", "/roadmap/quill"),
-            ("The q* stdlib", "13 crates built; more crypto planned", "/roadmap/stdlib"),
-            ("Qirava Cloud", "Managed control plane (planned)", "/roadmap/cloud"),
+            (
+                "Qirava DMS",
+                "Engine, workers, RBAC — built; cluster planned",
+                "/roadmap/dms",
+            ),
+            (
+                "Quill",
+                "SSR, islands, CLI — built; more next",
+                "/roadmap/quill",
+            ),
+            (
+                "The q* stdlib",
+                "13 crates built; more crypto planned",
+                "/roadmap/stdlib",
+            ),
+            (
+                "Qirava Cloud",
+                "Managed control plane (planned)",
+                "/roadmap/cloud",
+            ),
             ("All roadmaps", "The per-product roadmap hub", "/roadmap"),
         ],
     },
@@ -89,6 +133,8 @@ fn nav_menu(menu: &Menu, active_path: &str) -> Node {
         .attr("data-q-part", "trigger")
         .attr("aria-haspopup", "menu")
         .attr("aria-expanded", "false")
+        .attr("data-q-nav-top", "")
+        .attr("data-q-match", format!("/{}", menu.id))
         .child(text(menu.label))
         .child(raw(CHEVRON_SVG));
     let trigger = if active {
@@ -109,6 +155,7 @@ fn nav_menu(menu: &Menu, active_path: &str) -> Node {
             el("a")
                 .class("q-menu__item")
                 .attr("data-q-part", "item")
+                .attr("data-q-nav-item", "")
                 .attr("role", "menuitem")
                 .attr("tabindex", "-1")
                 .attr("href", *href)
@@ -152,11 +199,14 @@ const SUN_SVG: &str = "<svg class=\"q-ico-sun\" viewBox=\"0 0 24 24\" width=\"18
 const MOON_SVG: &str = "<svg class=\"q-ico-moon\" viewBox=\"0 0 24 24\" width=\"17\" height=\"17\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z\"/></svg>";
 const SLIDERS_SVG: &str = "<svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6\"/></svg>";
 
-/// The appearance menu: density / radius / surface segmented controls, shipped as
+/// The appearance menu: density / radius segmented controls, shipped as
 /// a `theme-control` island inside a `menu` island. Each button sets a
 /// `data-q-*` attribute on `<html>` (the behavior persists the choice); the token
 /// layers re-point so the whole UI restyles with no reflow. The quick Light/Dark
-/// toggle ([`theme_toggle`]) sits next to it for the most common switch.
+/// toggle ([`theme_toggle`]) sits next to it for the most common switch. The
+/// `surface` axis is intentionally NOT a global content control — surface
+/// treatments (glass/neu/gradient) are demonstrated per-component in the docs
+/// playground, never smeared across all reading content.
 fn theme_panel() -> Node {
     let axis = "data-q-axis";
     let value = "data-q-value";
@@ -166,7 +216,7 @@ fn theme_panel() -> Node {
                  opts: &[(&'static str, &'static str)],
                  default: &'static str| {
         let g = el("div")
-            .class("q-tc__group")
+            .class(format!("q-tc__group q-tc__group--{ax}"))
             .attr("role", "group")
             .attr("aria-label", legend)
             .child(el("span").class("q-tc__legend").child(text(legend)));
@@ -188,14 +238,55 @@ fn theme_panel() -> Node {
         g.child(seg)
     };
 
+    // Accent swatches: one round color button per accent. Each writes
+    // `data-q-accent` on <html>; the accent_css axis regenerates the brand
+    // family for both light and dark. The swatch fill previews the (light)
+    // brand color so the choice reads at a glance.
+    let accent_swatch = |label: &'static str, val: &'static str, default: bool| {
+        let mut b = el("button")
+            .class("q-tc__swatch")
+            .attr("type", "button")
+            .attr(axis, "accent")
+            .attr(value, val)
+            .attr("data-accent", val)
+            .attr("title", label)
+            .attr("aria-label", label);
+        b = if default {
+            b.attr("aria-pressed", "true")
+        } else {
+            b.attr("aria-pressed", "false")
+        };
+        b
+    };
+    let accent_group = {
+        let names = crate::app::design::accent_names();
+        let labels = ["Azure", "Violet", "Emerald", "Amber", "Rose"];
+        let mut seg = el("div").class("q-tc__swatches");
+        for (i, val) in names.iter().enumerate() {
+            let label = labels.get(i).copied().unwrap_or(*val);
+            seg = seg.child(accent_swatch(label, val, i == 0));
+        }
+        el("div")
+            .class("q-tc__group q-tc__group--accent")
+            .attr("role", "group")
+            .attr("aria-label", "Accent color")
+            .child(el("span").class("q-tc__legend").child(text("Accent")))
+            .child(seg)
+    };
+
     let panel = el("div")
         .class("q-tc__panel")
         .attr("role", "menu")
         .attr("aria-label", "Appearance settings")
+        .child(accent_group)
         .child(group(
             "Density",
             "size",
-            &[("Compact", "compact"), ("Cozy", "cozy"), ("Comfortable", "comfortable")],
+            &[
+                ("Compact", "compact"),
+                ("Cozy", "cozy"),
+                ("Comfortable", "comfortable"),
+            ],
             "cozy",
         ))
         .child(group(
@@ -207,8 +298,24 @@ fn theme_panel() -> Node {
         .child(group(
             "Surface",
             "surface",
-            &[("Flat", "flat"), ("Glass", "glass"), ("Neu", "neu"), ("Gradient", "gradient")],
+            &[
+                ("Flat", "flat"),
+                ("Glass", "glass"),
+                ("Neu", "neu"),
+                ("Gradient", "gradient"),
+            ],
             "flat",
+        ))
+        .child(group(
+            "Motion",
+            "motion",
+            &[
+                ("Smooth", "smooth"),
+                ("Snappy", "snappy"),
+                ("Playful", "playful"),
+                ("Off", "none"),
+            ],
+            "smooth",
         ));
 
     let trigger = el("button")
@@ -227,7 +334,13 @@ fn theme_panel() -> Node {
         .attr("role", "menu")
         .attr("hidden", "")
         .attr("aria-hidden", "true")
-        .child(island("theme-control", "theme-control", Trigger::Load, "{}", panel));
+        .child(island(
+            "theme-control",
+            "theme-control",
+            Trigger::Load,
+            "{}",
+            panel,
+        ));
 
     let menu_fallback = el("div")
         .class("q-menu q-tc")
@@ -245,12 +358,17 @@ fn header(active_path: &str) -> Node {
     let mut home = el("a")
         .class("q-nav__link")
         .attr("href", "/")
+        .attr("data-q-nav-top", "")
+        .attr("data-q-match", "/")
         .child(text("Home"));
     if home_active {
         home = home.attr("aria-current", "page");
     }
 
-    let mut nav = el("nav").class("q-nav").attr("aria-label", "Primary").child(home);
+    let mut nav = el("nav")
+        .class("q-nav")
+        .attr("aria-label", "Primary")
+        .child(home);
     for menu in MENUS {
         nav = nav.child(nav_menu(menu, active_path));
     }
@@ -263,6 +381,13 @@ fn header(active_path: &str) -> Node {
             .child(text("GitHub"))
             .child(raw(EXTERNAL_SVG)),
     );
+
+    // Wrap the nav in a `nav-active` island so the active-route highlight is
+    // recomputed on hydrate AND on every client-router navigation (the header
+    // is preserved across SPA navigations, so the SSR markers would otherwise
+    // go stale). With JS off, the SSR `aria-current` markers above are already
+    // correct, so this is pure progressive enhancement.
+    let nav = island("nav-active", "nav-active", Trigger::Load, "{}", nav);
 
     el("header").class("q-site-header").child(
         el("div")
@@ -281,9 +406,11 @@ fn header(active_path: &str) -> Node {
 /// The site footer: brand lockup, tagline, grouped link columns, and a legal row.
 fn footer() -> Node {
     let col = |title: &str, links: &[(&'static str, &'static str)]| {
-        let mut c = el("div")
-            .class("q-foot__col")
-            .child(el("p").class("q-foot__title").child(text(title.to_string())));
+        let mut c = el("div").class("q-foot__col").child(
+            el("p")
+                .class("q-foot__title")
+                .child(text(title.to_string())),
+        );
         for (label, href) in links {
             c = c.child(el("a").attr("href", *href).child(text(*label)));
         }
@@ -354,70 +481,139 @@ fn chrome_css() -> &'static str {
     "\
 /* ---- sticky header ---- */\
 .q-site-header{position:sticky;top:0;z-index:40;-webkit-backdrop-filter:saturate(1.4) blur(12px);backdrop-filter:saturate(1.4) blur(12px);background:color-mix(in srgb,var(--q-color-bg) 80%,transparent);border-bottom:1px solid var(--q-color-border)}\
-.q-site-header__inner{max-width:80rem;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:1.5rem;padding:.7rem 1.5rem;min-height:calc(var(--q-control-h,2.5rem) + 1.2rem)}\
+.q-site-header__inner{max-width:var(--q-page-max,80rem);margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:var(--q-space-5);padding:var(--q-space-3) var(--q-page-pad,1.5rem);min-height:calc(var(--q-control-h,2.5rem) + var(--q-space-5))}\
 /* ---- brand lockup (full LOGO_LOWERCASE, inherits currentColor) ---- */\
 .q-brand{display:inline-flex;align-items:center;line-height:0;color:var(--q-color-fg);min-height:var(--q-control-h,2.5rem)}\
 .q-brand:hover{text-decoration:none;opacity:.85}\
-.q-brand__lockup{display:inline-flex;height:calc(2.05rem * var(--q-density,1))}\
+.q-brand__lockup{display:inline-flex;height:var(--q-logo-h,2.05rem)}\
 .q-brand__lockup svg{height:100%;width:auto;display:block}\
 /* ---- nav ---- */\
 .q-nav-wrap{display:flex;align-items:center;gap:.5rem}\
+/* The nav-active island boundary must not disturb the header flex layout. */\
+[data-q-island=\"nav-active\"]{display:contents}\
 .q-nav{display:flex;align-items:center;gap:.15rem}\
-.q-nav__link{display:inline-flex;align-items:center;gap:.3rem;color:var(--q-color-muted);font-weight:var(--q-font-weight-medium);font-size:.95rem;line-height:1;padding:.5rem .7rem;min-height:var(--q-control-h,2.5rem);border-radius:var(--q-radius-md);border:0;background:transparent;cursor:pointer;font-family:inherit;transition:color var(--q-duration-fast) var(--q-ease-out),background-color var(--q-duration-fast) var(--q-ease-out)}\
-.q-nav__link:hover{color:var(--q-color-fg);background-color:var(--q-color-surface);text-decoration:none}\
+.q-nav__link{display:inline-flex;align-items:center;gap:var(--q-space-1);color:var(--q-color-muted);font-weight:var(--q-font-weight-medium);font-size:.95rem;line-height:1;padding:var(--q-space-2) var(--q-space-3);min-height:var(--q-control-h,2.5rem);border-radius:var(--q-radius-md);border:1px solid transparent;background:transparent;cursor:pointer;font-family:inherit;transition:color var(--q-duration-fast) var(--q-ease-out),background-color var(--q-duration-fast) var(--q-ease-out),border-color var(--q-duration-fast) var(--q-ease-out),box-shadow var(--q-duration-fast) var(--q-ease-out)}\
+.q-nav__link:hover{color:var(--q-color-fg);background:color-mix(in srgb,var(--q-color-brand) 9%,transparent);border-color:color-mix(in srgb,var(--q-color-brand) 28%,transparent);text-decoration:none}\
 .q-nav__link:focus-visible{outline:2px solid var(--q-color-brand);outline-offset:2px}\
-.q-nav__link[aria-current=\"page\"]{color:var(--q-color-fg)}\
+.q-nav__link[aria-current=\"page\"],.q-nav__trigger[aria-current=\"page\"]{color:var(--q-color-fg);background:color-mix(in srgb,var(--q-color-brand) 12%,transparent);border-color:color-mix(in srgb,var(--q-color-brand) 32%,transparent);font-weight:var(--q-font-weight-bold)}\
+.q-nav__link[aria-current=\"page\"]::after,.q-nav__trigger[aria-current=\"page\"]::after{content:\"\";position:absolute;left:.7rem;right:.7rem;bottom:-.42rem;height:2px;border-radius:2px;background:var(--q-color-brand)}\
+.q-nav__link,.q-nav__trigger{position:relative}\
 .q-nav__trigger .q-chev{opacity:.7;transition:transform var(--q-duration-fast) var(--q-ease-out)}\
-.q-nav__trigger[aria-expanded=\"true\"]{color:var(--q-color-fg);background-color:var(--q-color-surface)}\
+.q-nav__trigger[aria-expanded=\"true\"]{color:var(--q-color-fg);background:color-mix(in srgb,var(--q-color-brand) 10%,transparent);border-color:color-mix(in srgb,var(--q-color-brand) 30%,transparent)}\
 .q-nav__trigger[aria-expanded=\"true\"] .q-chev{transform:rotate(180deg)}\
 .q-ext{opacity:.55}\
 /* ---- dropdown menus (the `menu` island) ---- */\
 .q-menu{position:relative;display:inline-flex}\
-.q-menu__surface{position:absolute;top:calc(100% + .5rem);left:0;z-index:50;min-width:17rem;display:flex;flex-direction:column;gap:.1rem;padding:.4rem;border-radius:var(--q-radius-lg);background:var(--q-color-surface);border:1px solid var(--q-color-border);box-shadow:var(--q-shadow-lg);transform-origin:top left;animation:q-menu-in var(--q-duration-fast) var(--q-ease-out)}\
+.q-menu__surface{position:absolute;top:calc(100% + var(--q-space-2));left:0;z-index:50;min-width:clamp(17rem,calc(var(--q-control-h,2.5rem) * 7.2),21rem);display:flex;flex-direction:column;gap:var(--q-space-1);padding:var(--q-space-2);border-radius:var(--q-radius-lg);background:var(--q-surface-bg,var(--q-color-surface));border:1px solid var(--q-surface-border,var(--q-color-border));box-shadow:var(--q-surface-hover-shadow,var(--q-shadow-lg));-webkit-backdrop-filter:var(--q-surface-filter,none);backdrop-filter:var(--q-surface-filter,none);transform-origin:top left;animation:q-menu-in var(--q-duration-fast) var(--q-ease-out)}\
+:root[data-q-surface=\"glass\"] .q-menu__surface{background:color-mix(in srgb,var(--q-color-surface) 92%,transparent);border-color:color-mix(in srgb,var(--q-color-border) 88%,var(--q-color-fg) 12%);box-shadow:0 28px 80px -36px color-mix(in srgb,var(--q-color-brand) 62%,transparent),0 16px 48px -24px rgba(0,0,0,.5);-webkit-backdrop-filter:saturate(1.35) blur(20px);backdrop-filter:saturate(1.35) blur(20px)}\
 .q-menu__surface[hidden]{display:none}\
 @keyframes q-menu-in{from{opacity:0;transform:translateY(-6px) scale(.98)}to{opacity:1;transform:none}}\
-.q-menu__item{display:flex;flex-direction:column;gap:.1rem;padding:.55rem .7rem;border-radius:var(--q-radius-md);color:var(--q-color-fg);transition:background-color var(--q-duration-fast) var(--q-ease-out)}\
-.q-menu__item:hover,.q-menu__item[data-state=\"active\"]{background-color:var(--q-color-surface-selected,var(--q-color-surface));text-decoration:none}\
+.q-menu__item{display:flex;flex-direction:column;gap:var(--q-space-1);padding:var(--q-space-2) var(--q-space-3);border-radius:min(var(--q-radius-md),calc(var(--q-control-h,2.5rem) * .28));color:var(--q-color-fg);transition:background-color var(--q-duration-fast) var(--q-ease-out),box-shadow var(--q-duration-fast) var(--q-ease-out),color var(--q-duration-fast) var(--q-ease-out)}\
+.q-menu__item:hover,.q-menu__item[data-state=\"active\"]{background-color:color-mix(in srgb,var(--q-color-brand) 10%,var(--q-surface-bg,var(--q-color-surface)));box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--q-color-brand) 80%,transparent);outline:2px solid color-mix(in srgb,var(--q-color-brand) 58%,transparent);outline-offset:-2px;text-decoration:none}\
+.q-menu__item[aria-current=\"page\"]{background-color:color-mix(in srgb,var(--q-color-brand) 14%,transparent);box-shadow:inset 2px 0 0 var(--q-color-brand)}\
+.q-menu__item[aria-current=\"page\"] .q-menu__item-title{color:var(--q-color-brand)}\
 .q-menu__item:focus-visible{outline:2px solid var(--q-color-brand);outline-offset:-2px}\
 .q-menu__item-title{font-weight:var(--q-font-weight-medium);font-size:.92rem;line-height:1.3}\
 .q-menu__item-desc{color:var(--q-color-muted);font-size:.8rem;line-height:1.35}\
 /* ---- header light/dark toggle (the `theme` island) ---- */\
-.q-theme-toggle{display:inline-flex;align-items:center;justify-content:center;width:var(--q-control-h,2.5rem);height:var(--q-control-h,2.5rem);border-radius:var(--q-radius-md);border:1px solid var(--q-color-border);background:var(--q-color-surface);color:var(--q-color-fg);cursor:pointer;transition:border-color var(--q-duration-fast) var(--q-ease-out),color var(--q-duration-fast) var(--q-ease-out)}\
-.q-theme-toggle:hover{border-color:var(--q-color-brand);color:var(--q-color-brand)}\
+.q-theme-toggle{display:inline-flex;align-items:center;justify-content:center;width:var(--q-control-h,2.5rem);height:var(--q-control-h,2.5rem);border-radius:var(--q-radius-md);border:1px solid var(--q-surface-border,var(--q-color-border));background:var(--q-surface-bg,var(--q-color-surface));color:var(--q-color-fg);box-shadow:var(--q-surface-shadow,none);-webkit-backdrop-filter:var(--q-surface-filter,none);backdrop-filter:var(--q-surface-filter,none);cursor:pointer;transition:border-color var(--q-duration-fast) var(--q-ease-out),color var(--q-duration-fast) var(--q-ease-out),background var(--q-duration-fast) var(--q-ease-out),box-shadow var(--q-duration-fast) var(--q-ease-out)}\
+.q-theme-toggle:hover{border-color:var(--q-color-brand);color:var(--q-color-brand);box-shadow:var(--q-surface-hover-shadow,var(--q-surface-shadow,none))}\
 .q-theme-toggle:focus-visible{outline:2px solid var(--q-color-brand);outline-offset:2px}\
 .q-theme-toggle .q-ico-moon{display:none}\
 .q-theme-toggle .q-ico-sun{display:block}\
 :root[data-q-theme=\"light\"] .q-theme-toggle .q-ico-sun{display:none}\
 :root[data-q-theme=\"light\"] .q-theme-toggle .q-ico-moon{display:block}\
+.q-theme-toggle svg,.q-tc__trigger svg{width:calc(var(--q-control-h,2.5rem) * .43);height:calc(var(--q-control-h,2.5rem) * .43)}\
 /* ---- appearance menu (density / radius / surface) ---- */\
-.q-tc__trigger{display:inline-flex;align-items:center;justify-content:center;width:var(--q-control-h,2.5rem);height:var(--q-control-h,2.5rem);border-radius:var(--q-radius-md);border:1px solid var(--q-color-border);background:var(--q-color-surface);color:var(--q-color-fg);cursor:pointer;transition:border-color var(--q-duration-fast) var(--q-ease-out),color var(--q-duration-fast) var(--q-ease-out)}\
-.q-tc__trigger:hover{border-color:var(--q-color-brand);color:var(--q-color-brand)}\
+.q-tc__trigger{display:inline-flex;align-items:center;justify-content:center;width:var(--q-control-h,2.5rem);height:var(--q-control-h,2.5rem);border-radius:var(--q-radius-md);border:1px solid var(--q-surface-border,var(--q-color-border));background:var(--q-surface-bg,var(--q-color-surface));color:var(--q-color-fg);box-shadow:var(--q-surface-shadow,none);-webkit-backdrop-filter:var(--q-surface-filter,none);backdrop-filter:var(--q-surface-filter,none);cursor:pointer;transition:border-color var(--q-duration-fast) var(--q-ease-out),color var(--q-duration-fast) var(--q-ease-out),background var(--q-duration-fast) var(--q-ease-out),box-shadow var(--q-duration-fast) var(--q-ease-out)}\
+.q-tc__trigger:hover{border-color:var(--q-color-brand);color:var(--q-color-brand);box-shadow:var(--q-surface-hover-shadow,var(--q-surface-shadow,none))}\
 .q-tc__trigger:focus-visible{outline:2px solid var(--q-color-brand);outline-offset:2px}\
 .q-tc__trigger[aria-expanded=\"true\"]{border-color:var(--q-color-brand);color:var(--q-color-brand)}\
-.q-tc__surface{left:auto;right:0;min-width:16rem;transform-origin:top right}\
-.q-tc__panel{display:flex;flex-direction:column;gap:1rem;padding:1rem}\
-.q-tc__group{display:flex;flex-direction:column;gap:.4rem}\
+.q-tc__surface{left:auto;right:0;min-width:clamp(18rem,calc(var(--q-control-h,2.5rem) * 7.4),22rem);transform-origin:top right;padding:0;background:var(--q-surface-bg,var(--q-color-surface));border-color:var(--q-surface-border,var(--q-color-border));box-shadow:var(--q-surface-hover-shadow,var(--q-shadow-lg));-webkit-backdrop-filter:var(--q-surface-filter,none);backdrop-filter:var(--q-surface-filter,none)}\
+.q-tc__panel{display:flex;flex-direction:column;gap:var(--q-space-4);padding:var(--q-space-4)}\
+.q-tc__group{display:flex;flex-direction:column;gap:var(--q-space-2)}\
 .q-tc__legend{font-size:var(--q-font-size-xs);text-transform:uppercase;letter-spacing:var(--q-tracking-wide);color:var(--q-color-muted);font-weight:var(--q-font-weight-bold)}\
-.q-tc__seg{display:flex;flex-wrap:wrap;border:1px solid var(--q-color-border);border-radius:var(--q-radius-md);overflow:hidden}\
-.q-tc__opt{flex:1 1 auto;appearance:none;border:0;background:transparent;color:var(--q-color-muted);font:inherit;font-size:.82rem;padding:.4rem .6rem;cursor:pointer;white-space:nowrap;transition:background-color var(--q-duration-fast) var(--q-ease-out),color var(--q-duration-fast) var(--q-ease-out)}\
-.q-tc__opt+.q-tc__opt{border-left:1px solid var(--q-color-border)}\
-.q-tc__opt:hover{color:var(--q-color-fg)}\
-.q-tc__opt[aria-pressed=\"true\"]{background:var(--q-color-brand);color:var(--q-color-on-brand)}\
-.q-tc__opt:focus-visible{outline:2px solid var(--q-color-brand);outline-offset:-2px}\
+.q-tc__seg{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--q-space-1);padding:var(--q-space-1);background:color-mix(in srgb,var(--q-color-bg) 84%,var(--q-color-surface));border:1px solid var(--q-surface-border,var(--q-color-border));border-radius:min(var(--q-radius-md),calc(var(--q-control-h,2.5rem) * .3))}\
+.q-tc__group--surface .q-tc__seg{grid-template-columns:repeat(2,1fr)}\
+.q-tc__opt{appearance:none;display:flex;align-items:center;justify-content:center;border:0;background:transparent;color:var(--q-color-muted);font:inherit;font-size:var(--q-font-size-sm);line-height:1;min-height:calc(var(--q-control-h,2.5rem) - var(--q-space-2));padding:0 var(--q-space-3);cursor:pointer;white-space:nowrap;text-align:center;border-radius:max(0px,min(calc(var(--q-radius-md) - var(--q-space-1)),calc(var(--q-control-h,2.5rem) * .24)));transition:background-color var(--q-duration-fast) var(--q-ease-out),color var(--q-duration-fast) var(--q-ease-out)}\
+.q-tc__opt:hover{color:var(--q-color-fg);background:var(--q-surface-bg,var(--q-color-surface))}\
+.q-tc__opt[aria-pressed=\"true\"]{background:var(--q-color-brand);color:var(--q-color-on-brand);font-weight:var(--q-font-weight-medium)}\
+.q-tc__opt:focus-visible{outline:2px solid var(--q-color-brand);outline-offset:2px}\
+.q-tc__group--motion .q-tc__seg{grid-template-columns:repeat(4,1fr)}\
+.q-tc__swatches{display:flex;gap:var(--q-space-2);padding:var(--q-space-1) 0}\
+.q-tc__swatch{appearance:none;width:calc(var(--q-control-h,2.5rem) * .66);height:calc(var(--q-control-h,2.5rem) * .66);border-radius:var(--q-radius-full);cursor:pointer;padding:0;position:relative;border:2px solid var(--q-surface-border,var(--q-color-border));background:var(--q-tc-sw,#2563eb);transition:transform var(--q-duration-fast) var(--q-ease-out),box-shadow var(--q-duration-fast) var(--q-ease-out)}\
+.q-tc__swatch[data-accent=\"azure\"]{--q-tc-sw:linear-gradient(135deg,#2563eb,#0ea5e9)}\
+.q-tc__swatch[data-accent=\"violet\"]{--q-tc-sw:linear-gradient(135deg,#7c3aed,#a855f7)}\
+.q-tc__swatch[data-accent=\"emerald\"]{--q-tc-sw:linear-gradient(135deg,#059669,#10b981)}\
+.q-tc__swatch[data-accent=\"amber\"]{--q-tc-sw:linear-gradient(135deg,#d97706,#f59e0b)}\
+.q-tc__swatch[data-accent=\"rose\"]{--q-tc-sw:linear-gradient(135deg,#e11d48,#f43f5e)}\
+.q-tc__swatch:hover{transform:translateY(-1px) scale(1.06)}\
+.q-tc__swatch[aria-pressed=\"true\"]{border-color:var(--q-color-fg);box-shadow:0 0 0 2px var(--q-color-bg),0 0 0 4px var(--q-color-brand)}\
+.q-tc__swatch:focus-visible{outline:2px solid var(--q-color-brand);outline-offset:2px}\
 /* ---- mobile: collapse the text nav, keep brand + appearance ---- */\
 @media (max-width:820px){.q-nav{display:none}}\
 /* ---- footer ---- */\
-.q-site-footer{border-top:1px solid var(--q-color-border);background:var(--q-color-surface);color:var(--q-color-muted);margin-top:calc(var(--q-space-10) * var(--q-density,1))}\
-.q-site-footer__inner{max-width:80rem;margin:0 auto;padding:3rem 1.5rem 2.5rem}\
-.q-foot__top{display:grid;grid-template-columns:2.2fr 1fr 1fr 1fr;gap:2rem;padding:0 0 2rem;border-bottom:1px solid var(--q-color-border)}\
+.q-site-footer{border-top:1px solid var(--q-surface-border,var(--q-color-border));background:var(--q-surface-bg,var(--q-color-surface));color:var(--q-color-muted);box-shadow:var(--q-surface-shadow,none);-webkit-backdrop-filter:var(--q-surface-filter,none);backdrop-filter:var(--q-surface-filter,none);margin-top:var(--q-section-gap,4.5rem)}\
+.q-site-footer__inner{max-width:var(--q-page-max,80rem);margin:0 auto;padding:var(--q-space-6) var(--q-page-pad,1.5rem) var(--q-space-5)}\
+.q-foot__top{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:var(--q-space-6);padding:0 0 var(--q-space-6);border-bottom:1px solid var(--q-color-border)}\
 @media (max-width:820px){.q-foot__top{grid-template-columns:1fr 1fr}}\
-@media (max-width:520px){.q-foot__top{grid-template-columns:1fr}}\
+@media (max-width:520px){.q-foot__top{grid-template-columns:1fr;gap:var(--q-space-5)}}\
 .q-foot__brand{color:var(--q-color-fg)}\
 .q-foot__lockup{height:1.95rem}\
-.q-foot__tag{color:var(--q-color-muted);max-width:36ch;margin:1rem 0 0;font-size:.92rem;line-height:1.6}\
-.q-foot__col{display:flex;flex-direction:column;gap:.6rem}\
+.q-foot__tag{color:var(--q-color-muted);max-width:36ch;margin:var(--q-space-3) 0 0;font-size:.92rem;line-height:1.6}\
+.q-foot__col{display:flex;flex-direction:column;gap:var(--q-space-2)}\
 .q-foot__title{color:var(--q-color-fg);font-weight:var(--q-font-weight-bold);margin:0 0 .35rem;font-size:.78rem;text-transform:uppercase;letter-spacing:.1em}\
 .q-foot__col a{color:var(--q-color-muted);font-size:.92rem}\
 .q-foot__col a:hover{color:var(--q-color-fg);text-decoration:none}\
-.q-foot__legal{color:var(--q-color-muted);font-size:.85rem;margin:1.75rem 0 0}"
+.q-foot__legal{color:var(--q-color-muted);font-size:.85rem;margin:var(--q-space-5) 0 0}"
+}
+
+#[cfg(test)]
+mod tests {
+    use super::chrome_css;
+
+    /// At `[data-q-radius="pill"]` the shared `--q-radius-md` token becomes
+    /// `9999px`. Multi-line block rows that live INSIDE a panel (dropdown menu
+    /// items, the appearance segmented controls) must clamp their corner radius
+    /// so they don't blow up into stadiums that overflow the panel. Single-line
+    /// pill controls (nav links, icon triggers) are allowed to go fully round.
+    #[test]
+    fn panel_rows_clamp_radius_so_pill_does_not_distort() {
+        let css = chrome_css();
+        assert!(
+            css.contains(".q-menu__item{display:flex;flex-direction:column;gap:var(--q-space-1);padding:var(--q-space-2) var(--q-space-3);border-radius:min(var(--q-radius-md),calc(var(--q-control-h,2.5rem) * .28))"),
+            "dropdown menu items must use density tokens and clamp radius at pill"
+        );
+        assert!(
+            css.contains(".q-tc__panel{display:flex;flex-direction:column;gap:var(--q-space-4);padding:var(--q-space-4)}"),
+            "appearance menu panel must use density spacing tokens"
+        );
+        assert!(
+            css.contains(".q-tc__seg{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--q-space-1);padding:var(--q-space-1);background:color-mix(in srgb,var(--q-color-bg) 84%,var(--q-color-surface));border:1px solid var(--q-surface-border,var(--q-color-border));border-radius:min(var(--q-radius-md),calc(var(--q-control-h,2.5rem) * .3))"),
+            "appearance segmented control container must use density tokens and clamp radius at pill"
+        );
+        assert!(
+            css.contains(".q-tc__opt{appearance:none;display:flex;align-items:center;justify-content:center;border:0;background:transparent;color:var(--q-color-muted);font:inherit;font-size:var(--q-font-size-sm);line-height:1;min-height:calc(var(--q-control-h,2.5rem) - var(--q-space-2));padding:0 var(--q-space-3);cursor:pointer;white-space:nowrap;text-align:center;border-radius:max(0px,min(calc(var(--q-radius-md) - var(--q-space-1)),calc(var(--q-control-h,2.5rem) * .24)))"),
+            "appearance segmented options must use control-height tokens and clamp radius at pill"
+        );
+        assert!(
+            css.contains(".q-tc__swatch{appearance:none;width:calc(var(--q-control-h,2.5rem) * .66);height:calc(var(--q-control-h,2.5rem) * .66)"),
+            "accent swatches must scale from the shared control height"
+        );
+        // The header bar + nav links themselves must be density-token driven too,
+        // so Compact/Comfortable loosens/tightens the chrome consistently with
+        // the dropdowns (no leftover hardcoded rem gaps/padding).
+        assert!(
+            css.contains(".q-site-header__inner{max-width:var(--q-page-max,80rem);margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:var(--q-space-5);padding:var(--q-space-3) var(--q-page-pad,1.5rem)"),
+            "header inner must use density spacing tokens"
+        );
+        assert!(
+            css.contains(".q-nav__link{display:inline-flex;align-items:center;gap:var(--q-space-1);color:var(--q-color-muted);font-weight:var(--q-font-weight-medium);font-size:.95rem;line-height:1;padding:var(--q-space-2) var(--q-space-3)"),
+            "nav links must use density spacing tokens"
+        );
+        assert!(
+            css.contains(".q-foot__col{display:flex;flex-direction:column;gap:var(--q-space-2)}"),
+            "footer columns must use density spacing tokens"
+        );
+    }
 }

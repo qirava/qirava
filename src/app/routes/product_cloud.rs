@@ -46,14 +46,34 @@ fn body(css: &mut Css) -> Node {
          running a cloud app: it persists the whole fleet and orchestrates lifecycle, and it never \
          reads or mutates tenant data. The open-core managed layer; the engine stays Apache-2.0.",
         &[
-            Cta { label: "Read the cloud docs", href: "/docs/cloud", solid: true },
-            Cta { label: "View on GitHub", href: GITHUB_URL, solid: false },
+            Cta {
+                label: "Read the cloud docs",
+                href: "/docs/cloud",
+                solid: true,
+            },
+            Cta {
+                label: "View on GitHub",
+                href: GITHUB_URL,
+                solid: false,
+            },
         ],
         &[
-            HeroStat { value: "1", label: "isolated DMS per tenant" },
-            HeroStat { value: "7", label: "_cp_* control catalogs" },
-            HeroStat { value: "2-way", label: "standalone ↔ cluster" },
-            HeroStat { value: "0", label: "tenant data the Cloud sees" },
+            HeroStat {
+                value: "1",
+                label: "isolated DMS per tenant",
+            },
+            HeroStat {
+                value: "7",
+                label: "_cp_* control catalogs",
+            },
+            HeroStat {
+                value: "2-way",
+                label: "standalone ↔ cluster",
+            },
+            HeroStat {
+                value: "0",
+                label: "tenant data the Cloud sees",
+            },
         ],
     );
 
@@ -269,13 +289,23 @@ fn body(css: &mut Css) -> Node {
         "Qirava Cloud is documented in the open repo — the control catalogs, the cloud.* funnel, \
          the placement model, and the real-vs-simulated seam. Read how the managed layer works and \
          where it is honest about what is not yet real.",
-        Cta { label: "Read the cloud docs", href: "/docs/cloud", solid: true },
-        Cta { label: "Explore the DMS today", href: "/products/dms", solid: false },
+        Cta {
+            label: "Read the cloud docs",
+            href: "/docs/cloud",
+            solid: true,
+        },
+        Cta {
+            label: "Explore the DMS today",
+            href: "/products/dms",
+            solid: false,
+        },
     );
 
     // The honest banner sits right after the hero so the seam is unmissable.
-    let mut sections =
-        vec![hero, el("section").class("q-section").child(honest_banner())];
+    let mut sections = vec![
+        hero,
+        el("section").class("q-section").child(honest_banner()),
+    ];
     sections.extend([what, features, how, arch, status, closing]);
     main_wrap(sections)
 }
@@ -289,7 +319,11 @@ fn honest_banner() -> Node {
             .class("q-cloud-banner")
             .attr("data-q-reveal", "")
             .attr("role", "note")
-            .child(el("span").class("q-cloud-banner__tag").child(text("Honest")))
+            .child(
+                el("span")
+                    .class("q-cloud-banner__tag")
+                    .child(text("Honest")),
+            )
             .child(el("p").class("q-cloud-banner__text").child(text(
                 "The control-plane data model is real and durable today: provisioning, placement, \
                  scaling, lifecycle, and billing all persist through one audited funnel. The \
@@ -303,14 +337,18 @@ fn honest_banner() -> Node {
 pub fn respond(_input: &[u8]) -> FunctionResponse {
     let mut css = Css::new();
     let content = body(&mut css);
-    let meta = Meta { title: TITLE, description: DESCRIPTION, path: "/products/cloud" };
+    let meta = Meta {
+        title: TITLE,
+        description: DESCRIPTION,
+        path: "/products/cloud",
+    };
     page(&meta, css, content)
 }
 
 /// Cloud-only CSS: the honest banner. Token-driven; pushed once + deduped.
 fn cloud_css() -> &'static str {
     "\
-.q-cloud-banner{display:flex;align-items:flex-start;gap:var(--q-space-3);padding:var(--q-space-4) var(--q-space-5);border:1px solid color-mix(in srgb,var(--q-color-brand) 35%,var(--q-color-border));border-left:3px solid var(--q-color-brand);border-radius:var(--q-radius-lg);background:color-mix(in srgb,var(--q-color-brand) 7%,var(--q-color-surface))}\
+.q-cloud-banner{display:flex;align-items:flex-start;gap:var(--q-space-3);padding:var(--q-space-4) var(--q-space-5);border:1px solid color-mix(in srgb,var(--q-color-brand) 35%,var(--q-surface-border,var(--q-color-border)));border-left:3px solid var(--q-color-brand);border-radius:var(--q-radius-lg);background:var(--q-surface-bg,var(--q-color-surface));box-shadow:var(--q-surface-shadow,none);-webkit-backdrop-filter:var(--q-surface-filter,none);backdrop-filter:var(--q-surface-filter,none)}\
 .q-cloud-banner__tag{flex:0 0 auto;font-size:.68rem;font-weight:var(--q-font-weight-bold);letter-spacing:.08em;text-transform:uppercase;padding:.25rem .6rem;border-radius:var(--q-radius-full);color:var(--q-color-on-brand);background:var(--q-color-brand);margin-top:.1rem}\
 .q-cloud-banner__text{margin:0;font-size:.95rem;line-height:1.6;color:var(--q-color-fg)}"
 }

@@ -47,7 +47,9 @@ fn what_it_is() -> Node {
              whether served from the engine or from a CDN.",
         )));
 
-    el("section").class("q-section").child(reveal("quill-what", head))
+    el("section")
+        .class("q-section")
+        .child(reveal("quill-what", head))
 }
 
 /// One ordered step in the "how it works" section.
@@ -101,7 +103,8 @@ fn how_it_works() -> Node {
         Step {
             n: "4",
             title: "Serve live or export static",
-            body: "The same render path answers a live request or writes a CDN-ready dist/. Because \
+            body:
+                "The same render path answers a live request or writes a CDN-ready dist/. Because \
                    it is one path, the served HTML and the exported HTML are byte-identical.",
         },
     ];
@@ -113,12 +116,25 @@ fn how_it_works() -> Node {
                 .class("q-qw-step")
                 .attr("data-q-reveal", "")
                 .attr("data-reveal-delay", ((i % 3) + 1).to_string())
-                .child(el("span").class("q-qw-step__n").attr("aria-hidden", "true").child(text(s.n.to_string())))
+                .child(
+                    el("span")
+                        .class("q-qw-step__n")
+                        .attr("aria-hidden", "true")
+                        .child(text(s.n.to_string())),
+                )
                 .child(
                     el("div")
                         .class("q-qw-step__text")
-                        .child(el("h3").class("q-qw-step__title").child(text(s.title.to_string())))
-                        .child(el("p").class("q-qw-step__body").child(text(s.body.to_string()))),
+                        .child(
+                            el("h3")
+                                .class("q-qw-step__title")
+                                .child(text(s.title.to_string())),
+                        )
+                        .child(
+                            el("p")
+                                .class("q-qw-step__body")
+                                .child(text(s.body.to_string())),
+                        ),
                 ),
         );
     }
@@ -137,7 +153,7 @@ fn quill_extra_css() -> &'static str {
     "\
 .q-qw-lead2{margin-top:var(--q-space-4);margin-bottom:0}\
 .q-qw-steps{list-style:none;margin:0;padding:0;display:grid;gap:var(--q-space-3)}\
-.q-qw-step{display:flex;align-items:flex-start;gap:var(--q-space-4);padding:var(--q-space-5);border:1px solid var(--q-color-border);border-radius:var(--q-radius-lg);background:var(--q-color-surface)}\
+.q-qw-step{display:flex;align-items:flex-start;gap:var(--q-space-4);padding:var(--q-space-5);border:1px solid var(--q-surface-border,var(--q-color-border));border-radius:var(--q-radius-lg);background:var(--q-surface-bg,var(--q-color-surface));box-shadow:var(--q-surface-shadow,none);-webkit-backdrop-filter:var(--q-surface-filter,none);backdrop-filter:var(--q-surface-filter,none)}\
 .q-qw-step__n{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:var(--q-radius-full);font-family:var(--q-font-mono);font-weight:var(--q-font-weight-bold);font-size:.9rem;color:var(--q-color-on-brand);background:var(--q-color-brand)}\
 .q-qw-step__text{display:flex;flex-direction:column;gap:.25rem;min-width:0}\
 .q-qw-step__title{margin:0;font-size:1.06rem;font-weight:var(--q-font-weight-bold);letter-spacing:-.01em}\
@@ -162,14 +178,34 @@ fn body(css: &mut Css) -> Node {
          dependency chain — just a hand-written runtime shipped only where a page actually needs \
          it. This very site is a Quill app.",
         &[
-            Cta { label: "Read the docs", href: "/docs/quill", solid: true },
-            Cta { label: "View on GitHub", href: GITHUB_URL, solid: false },
+            Cta {
+                label: "Read the docs",
+                href: "/docs/quill",
+                solid: true,
+            },
+            Cta {
+                label: "View on GitHub",
+                href: GITHUB_URL,
+                solid: false,
+            },
         ],
         &[
-            HeroStat { value: "view!{}", label: "components in Rust" },
-            HeroStat { value: "0", label: "server-side JS" },
-            HeroStat { value: "0", label: "third-party deps" },
-            HeroStat { value: "SSR·SSG", label: "byte-identical" },
+            HeroStat {
+                value: "view!{}",
+                label: "components in Rust",
+            },
+            HeroStat {
+                value: "0",
+                label: "server-side JS",
+            },
+            HeroStat {
+                value: "0",
+                label: "third-party deps",
+            },
+            HeroStat {
+                value: "SSR·SSG",
+                label: "byte-identical",
+            },
         ],
     );
 
@@ -187,7 +223,8 @@ fn body(css: &mut Css) -> Node {
             Feature {
                 kicker: "view!{}",
                 title: "Declarative components",
-                body: "Build the UI tree with the view!{} macro: composable, typed components that \
+                body:
+                    "Build the UI tree with the view!{} macro: composable, typed components that \
                        render the same on the server and, where needed, hydrate on the client.",
             },
             Feature {
@@ -236,11 +273,31 @@ fn body(css: &mut Css) -> Node {
          authoring, and a page hydrates left-to-right as its islands come alive. Reduced-motion \
          renders the same diagram, static.",
         &[
-            ArchNode { label: "view!{}", sub: "authoring", badge: "" },
-            ArchNode { label: "style · theme · signal", sub: "substrate", badge: "" },
-            ArchNode { label: "ui (headless)", sub: "state + ARIA", badge: "" },
-            ArchNode { label: "design (styled)", sub: "tokens", badge: "" },
-            ArchNode { label: "runtime", sub: "island hydrate", badge: "" },
+            ArchNode {
+                label: "view!{}",
+                sub: "authoring",
+                badge: "",
+            },
+            ArchNode {
+                label: "style · theme · signal",
+                sub: "substrate",
+                badge: "",
+            },
+            ArchNode {
+                label: "ui (headless)",
+                sub: "state + ARIA",
+                badge: "",
+            },
+            ArchNode {
+                label: "design (styled)",
+                sub: "tokens",
+                badge: "",
+            },
+            ArchNode {
+                label: "runtime",
+                sub: "island hydrate",
+                badge: "",
+            },
         ],
     );
 
@@ -249,7 +306,7 @@ fn body(css: &mut Css) -> Node {
         "quill-status",
         "Status",
         "What's built today",
-        "Quill is shipping: components, native SSR, islands, and the static export are all in use \
+        "Quill is shipping: components, native SSR, islands, motion/3D interactions, and the static export are all in use \
          by this site, which dogfoods the framework end to end.",
         &[
             (Status::Built, "view!{} components + theme tokens",
@@ -258,6 +315,8 @@ fn body(css: &mut Css) -> Node {
              "Server-rendered HTML by default; content pages ship zero JavaScript."),
             (Status::Built, "Islands runtime",
              "Hand-written, zero-import; hydrates only the interactive components a page declares."),
+            (Status::Built, "Motion + 3D interaction",
+             "Motion::Press, Motion::Lift, and Motion::Tilt3d are reusable design axes, not page-specific CSS."),
             (Status::Built, "Static export (SSG)",
              "quill build writes a CDN-ready dist/ whose HTML is byte-identical to the live serve."),
             (Status::Built, "quill new / quill build CLI",
@@ -272,8 +331,16 @@ fn body(css: &mut Css) -> Node {
         "Build your UI with Quill",
         "Read the getting-started guide, browse the component catalog with its live playground, \
          or follow how the islands runtime hydrates in place.",
-        Cta { label: "Read the docs", href: "/docs/quill", solid: true },
-        Cta { label: "Browse components", href: "/docs/quill/components", solid: false },
+        Cta {
+            label: "Read the docs",
+            href: "/docs/quill",
+            solid: true,
+        },
+        Cta {
+            label: "Browse components",
+            href: "/docs/quill/components",
+            solid: false,
+        },
     );
 
     main_wrap(vec![hero, what, features, how, arch, status, closing])
@@ -282,6 +349,10 @@ fn body(css: &mut Css) -> Node {
 pub fn respond(_input: &[u8]) -> FunctionResponse {
     let mut css = Css::new();
     let content = body(&mut css);
-    let meta = Meta { title: TITLE, description: DESCRIPTION, path: "/products/quill" };
+    let meta = Meta {
+        title: TITLE,
+        description: DESCRIPTION,
+        path: "/products/quill",
+    };
     page(&meta, css, content)
 }
